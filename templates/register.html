@@ -115,12 +115,35 @@
   }
 
   /* [MEMBER 1] message area */
-  #message{
-    font-size:13px;
-    padding:10px 13px;
-    border-radius:9px;
-    margin-bottom:15px;
-    display:none;
+/* =========================================================
+   ERROR / SUCCESS MESSAGE
+========================================================= */
+
+  #message {
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+/* Error message - light red box */
+
+  #message.msg-error {
+    display: block;
+    color: #b42318;
+    background: #fef3f2;
+    border: 1px solid #fecdca;
+  }
+
+/* Success message - light green box */
+
+  #message.msg-ok {
+    display: block;
+    color: #087f5b;
+    background: #eaf8f3;
+    border: 1px solid #b7e4d3;
   }
 
   /* [MEMBER 1] link row */
@@ -173,6 +196,11 @@
         <form id="registerForm">
 
           <div class="formField">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+          </div>
+
+          <div class="formField">
             <label for="username">Username</label>
             <input type="text" id="username" placeholder="Choose a username" autocomplete="username">
             <!-- [MEMBER 2] optional .fieldError text here -->
@@ -204,88 +232,199 @@
   </main>
 
 
-  <!-- FOOTER (footer.html comes from landing-page member) -->
   <div id="footerContainer"></div>
 
 
-  <script>
-
-    /* =====================================================
-       LOAD SHARED HEADER + FOOTER — [ MEMBER 1 - ME ]
-    ===================================================== */
-    fetch("header.html")
-      .then(res => res.text())
-      .then(html => { document.getElementById("headerContainer").innerHTML = html; })
-      .catch(() => console.log("header.html not added yet (landing-page member)"));
-
-    fetch("footer.html")
-      .then(res => res.text())
-      .then(html => { document.getElementById("footerContainer").innerHTML = html; })
-      .catch(() => console.log("footer.html not added yet (landing-page member)"));
+<script>
 
 
-    /* =====================================================
-       REGISTER FORM — SUBMIT SKELETON — [ MEMBER 1 - ME ]
-    ===================================================== */
-    const registerForm = document.getElementById("registerForm");
-    const message = document.getElementById("message");
-
-    registerForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-
-      // ---- call MEMBER 3's validation ----
-      const error = validateRegistration(username, password, confirmPassword);
-
-      if (error) {
-        showMessage(error, false);
-        return;
-      }
-
-      // ---- MEMBER 1: save the new user to LocalStorage ----
-      const users = JSON.parse(localStorage.getItem("em_users")) || [];
-      users.push({ username: username, password: password });
-      localStorage.setItem("em_users", JSON.stringify(users));
-
-      // start a session (SessionStorage)
-      sessionStorage.setItem("em_session", JSON.stringify({ username: username }));
-
-      showMessage("Account created! Redirecting…", true);
-      setTimeout(function () { window.location.href = "dashboard.html"; }, 1000);
+  fetch("header.html")
+    .then(function(res) {
+      return res.text();
+    })
+    .then(function(html) {
+      document.getElementById("headerContainer").innerHTML = html;
+    })
+    .catch(function() {
+      console.log("header.html not added yet");
     });
 
 
-    /* =====================================================
-       showMessage() — [ MEMBER 1 - ME ] helper
-    ===================================================== */
-    function showMessage(text, isOk) {
-      message.textContent = text;
-      message.style.display = "block";
-      message.className = isOk ? "msg-ok" : "msg-error";
+  fetch("footer.html")
+    .then(function(res) {
+      return res.text();
+    })
+    .then(function(html) {
+      document.getElementById("footerContainer").innerHTML = html;
+    })
+    .catch(function() {
+      console.log("footer.html not added yet");
+    });
+
+
+  let registerForm = document.getElementById("registerForm");
+  let message = document.getElementById("message");
+
+  let emailInput = document.getElementById("email");
+  let usernameInput = document.getElementById("username");
+  let passwordInput = document.getElementById("password");
+  let confirmPasswordInput = document.getElementById("confirmPassword");
+
+
+  /* =====================================================
+     PASSWORD VALIDATION
+  ===================================================== */
+
+  function getPasswordError(password) {
+
+    let missing = [];
+
+    if (!/[A-Z]/.test(password)) {
+      missing.push("capital letter");
     }
 
+    if (!/[a-z]/.test(password)) {
+      missing.push("small letter");
+    }
 
-    /* =====================================================
-       >>> [ MEMBER 3 - TODO: VALIDATION LOGIC ] <<<
-       Return an ERROR STRING if something's wrong, or "" if all good.
-         1. empty fields -> "Please fill in all fields."
-         2. password !== confirmPassword -> "Passwords do not match."
-         3. username taken (check em_users) -> "That username is already taken."
-         4. (optional) password length < 6 -> "Password too short."
-       Currently returns "" so the form runs while you build it.
-       (leave your name in a comment when done)
-    ===================================================== */
-    function validateRegistration(username, password, confirmPassword) {
+    if (!/[0-9]/.test(password)) {
+      missing.push("number");
+    }
 
-      // TODO [MEMBER 3]: replace with real checks
+    if (!/[!@#$%^&*(),.?":{}|<>_\-\\[\]/+=;'`~]/.test(password)) {
+      missing.push("special character");
+    }
+
+    if (missing.length === 0) {
       return "";
+    }
+
+    if (missing.length === 1) {
+      return "Add a " + missing[0] + ".";
+    }
+
+    if (missing.length === 2) {
+      return "Add a " + missing[0] + " and " + missing[1] +".";
+    }
+
+    let last = missing.pop();
+    return "Add a " + missing.join(", ") +", and " +last +".";
+
+  }
+
+  function validateRegistration(username,email,password,confirmPassword) {
+
+    if (username === "" || email === "" || password === "" || confirmPassword === "") {
+      return "Please fill in all fields.";
+    }
+
+    let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
+      return "Please enter a valid email address.";
+    }
+
+    if (password.length < 6) {
+      return "Password must be at least 6 characters.";
+    }
+
+    let passwordError = getPasswordError(password);
+
+    if (passwordError !== "") {
+      return passwordError;
+    }
+
+    if (password !== confirmPassword) {
+      return "Passwords do not match.";
 
     }
 
-  </script>
+    let users = JSON.parse(localStorage.getItem("em_users")) || [];
 
-</body>
-</html>
+    for (let i = 0; i < users.length; i++) {
+      if (
+        users[i].username &&
+        users[i].username.toLowerCase() ===
+        username.toLowerCase()
+      ) {
+        return "That username is already taken.";
+      }
+    }
+
+    for (let i = 0; i < users.length; i++) {
+      if (
+        users[i].email &&
+        users[i].email.toLowerCase() ===
+        email.toLowerCase()
+      ) {
+        return "That email is already registered.";
+      }
+    }
+    return "";
+  }
+
+  function showMessage(text, isOk) {
+    message.textContent = text;
+    message.style.display = "block";
+    if (isOk) {
+      message.className = "msg-ok";
+    } else {
+      message.className = "msg-error";
+    }
+  }
+
+  registerForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    let username = usernameInput.value.trim();
+    let email = emailInput.value.trim();
+    let password = passwordInput.value;
+    let confirmPassword = confirmPasswordInput.value;
+    let error =
+      validateRegistration(
+        username,
+        email,
+        password,
+        confirmPassword
+      );
+
+    if (error !== "") {
+      showMessage(error, false);
+      return;
+    }
+
+    let users =
+      JSON.parse(localStorage.getItem("em_users")) || [];
+
+    users.push({
+      username: username,
+      email: email,
+      password: password
+    });
+
+    localStorage.setItem(
+      "em_users",
+      JSON.stringify(users)
+    );
+
+    sessionStorage.setItem(
+      "em_session",
+      JSON.stringify({
+        username: username,
+        email: email
+      })
+    );
+
+    showMessage(
+      "Account created successfully! Redirecting to login...",
+      true
+    );
+
+    setTimeout(function() {
+      window.location.href = "login.html";
+    }, 1000);
+
+  });
+
+
+</script>
