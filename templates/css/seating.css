@@ -1,0 +1,411 @@
+/* =========================================================
+   GLOBAL RESET & CONTAINER
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #fcfcfc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #2b3331;
+}
+
+.seatingContainer {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px 50px;
+}
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.pageHead {
+    margin-bottom: 20px;
+}
+
+.pageTitle {
+    margin: 0;
+    font-size: 32px;
+    font-family: Georgia, serif;
+    font-weight: 700;
+    color: #0b4f37;
+}
+
+.pageSub {
+    margin: 6px 0 0;
+    color: #7b8581;
+    font-size: 14px;
+}
+
+/* =========================================================
+   NAVBAR & FOOTER BARS
+   ========================================================= */
+
+.innerNavbar,
+.innerFooter {
+    background-color: #212b27;
+    border-radius: 12px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #ffffff;
+    margin-bottom: 25px;
+}
+
+.navBrand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brandIcon {
+    background-color: #10b981;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+
+.brandName {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.navLinks,
+.footerLinks {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.navLinks a,
+.footerLinks a {
+    color: #a0acba;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.navLinks a.active {
+    background-color: #384540;
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 6px;
+}
+
+.btnLogout {
+    background: transparent;
+    border: 1px solid #4a5752;
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.innerFooter {
+    margin-top: 30px;
+}
+
+.footerLinks a {
+    color: #d1d5db;
+}
+
+/* =========================================================
+   EXAM INFO & LEGEND
+   ========================================================= */
+
+.metaSection {
+    margin-bottom: 20px;
+}
+
+.examTitle {
+    margin: 0;
+    font-family: Georgia, serif;
+    font-size: 22px;
+    color: #1f2926;
+}
+
+.examSub {
+    margin: 4px 0 16px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.legendCard {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.legendLabel {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #9ca3af;
+}
+
+.legendSwatches {
+    display: flex;
+    gap: 15px;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.legendDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+/* Class-based dynamic color dots */
+.legendDot.cs { background-color: #0d7a5f; }
+.legendDot.ai { background-color: #2563eb; }
+.legendDot.ec { background-color: #d97706; }
+.legendDot.me { background-color: #7c3aed; }
+
+/* =========================================================
+   METRICS
+   ========================================================= */
+
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.metricCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.metricValue {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0d7a5f;
+    line-height: 1;
+}
+
+.metricLabel {
+    margin-top: 6px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #9ca3af;
+}
+
+/* =========================================================
+   HALL GRID (5 ROWS x 10 COLUMNS)
+   ========================================================= */
+
+.hallsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.hallCard {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px;
+    width: 100%;
+}
+
+.hallHeader {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.hallTitle {
+    margin: 0;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: #111827;
+}
+
+.hallInfo {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.hallDirection {
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    margin: 12px 0 10px;
+}
+
+.seatingGrid {
+    display: grid;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.grid5x10 {
+    grid-template-columns: repeat(10, minmax(65px, 1fr));
+}
+
+.seat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    border-radius: 6px;
+    color: #ffffff;
+    text-align: center;
+    min-height: 46px;
+}
+
+.seat strong {
+    font-size: 11px;
+    line-height: 1.1;
+}
+
+.seat span {
+    font-size: 8px;
+    opacity: 0.85;
+}
+
+/* Class-based dynamic seat background colors */
+.seat.cs { background-color: #0d7a5f; }
+.seat.ai { background-color: #2563eb; }
+.seat.ec { background-color: #d97706; }
+.seat.me { background-color: #7c3aed; }
+
+.seat.empty {
+    background: #f3f4f6;
+    border: 1px dashed #d1d5db;
+    background-image: repeating-linear-gradient(
+        45deg,
+        #e5e7eb,
+        #e5e7eb 5px,
+        #f3f4f6 5px,
+        #f3f4f6 10px
+    );
+}
+
+/* =========================================================
+   CONTROLS CARD
+   ========================================================= */
+
+.controlsCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 18px;
+}
+
+.actionButtons {
+    display: flex;
+    gap: 8px;
+}
+
+.btnPrimary,
+.btnSecondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btnPrimary {
+    background-color: #0d7a5f;
+    border: none;
+    color: #ffffff;
+}
+
+.btnSecondary {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+.searchBox {
+    width: 220px;
+}
+
+#seatSearchInput {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 12px;
+    outline: none;
+}
+
+#seatSearchInput::placeholder {
+    color: #9ca3af;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* =========================================================
+   PRINT STYLES
+   ========================================================= */
+
+@media print {
+    .innerNavbar,
+    .innerFooter,
+    .controlsCard,
+    .pageSub {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff;
+    }
+
+    .seatingContainer {
+        max-width: 100%;
+        padding: 0;
+    }
+}
