@@ -319,6 +319,16 @@ function clearClashInfo(){
   infoEl.innerHTML = '<span>Hover a locked subject to see which students clash.</span>';
 }
 
+/* clear all picked subjects and halls, then reset the UI (Member B) */
+function clearAllPicks(){
+  // uncheck every subject and hall checkbox
+  let allBoxes = document.querySelectorAll('#subjectList input, #hallList input');
+  for (let i = 0; i < allBoxes.length; i++) {
+    allBoxes[i].checked = false;
+  }
+  // rebuild state + refresh everything (reuses the existing onPickChange)
+  onPickChange();
+}
 
 
 /* =========================================================
