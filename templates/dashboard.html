@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ExamMatrix - Dashboard</title>
+
+    <!-- shared design system (Jiya's theme + header/footer styles) -->
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/headerFooter.css">
+    <!-- dashboard-specific styles -->
+    <link rel="stylesheet" href="./css/dashboard.css">
+
+</head>
+
+<body data-page="dashboard">
+
+    <!-- Shared logged-in navbar (loaded by app-shell.js) -->
+    <div id="navbarContainer"></div>
+
+    <div id="page">
+
+        <!-- Top Section -->
+        <div id="top-section">
+
+            <div>
+                <h1>Dashboard (after login)</h1>
+                <p id="top-description">
+                    Header (app tabs) · stat tiles · recent-exams table · footer
+                </p>
+            </div>
+
+            <div id="page-number">
+                04 · Dashboard
+            </div>
+
+        </div>
+
+
+
+
+        <!-- Dashboard Header -->
+        <div id="dashboard-header">
+
+            <div id="dashboard-title">
+                <h2>Dashboard</h2>
+                <p id="dashboard-description">
+                    Overview of your exam sessions
+                </p>
+            </div>
+
+            <button id="new-exam-btn" onclick="window.location.href='createExam.html'">
+                + New exam
+            </button>
+
+        </div>
+
+
+        <!-- Statistics Cards -->
+        <div id="stats">
+
+            <div id="exam-card">
+                <div id="exam-number">0</div>
+                <div id="exam-label">Exams scheduled</div>
+            </div>
+
+            <div id="student-card">
+                <div id="student-number">0</div>
+                <div id="student-label">Students seated</div>
+            </div>
+
+            <div id="hall-card">
+                <div id="hall-number">0</div>
+                <div id="hall-label">Halls available</div>
+            </div>
+
+            <div id="conflict-card">
+                <div id="conflict-number">0</div>
+                <div id="conflict-label">Total conflicts</div>
+            </div>
+
+        </div>
+
+
+        <!-- Recent Exams -->
+        <section id="recent-exams">
+
+            <div id="recent-title">
+                RECENT EXAMS
+            </div>
+
+            <div id="table-container">
+
+                <table id="exam-table">
+
+                    <thead>
+                        <tr>
+                            <th>EXAM</th>
+                            <th>DATE</th>
+                            <th>SLOT</th>
+                            <th>HALLS</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr id="exam-row-1">
+                            <td>Data Structures</td>
+                            <td>20 Aug</td>
+                            <td>09–11</td>
+                            <td>H3, H7</td>
+                            <td>
+                                <a href="#" id="view-link-1">View</a>
+                            </td>
+                        </tr>
+
+                        <tr id="exam-row-2">
+                            <td>Physics</td>
+                            <td>22 Aug</td>
+                            <td>14–16</td>
+                            <td>H1</td>
+                            <td>
+                                <a href="#" id="view-link-2">View</a>
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+
+    </div>
+
+    <!-- Shared footer (loaded by app-shell.js) -->
+    <div id="footerContainer"></div>
+
+    <!-- loads navbar + footer, shows username, handles logout + auth gate -->
+    <script src="js/app-shell.js"></script>
+
+</body>
+</html>
