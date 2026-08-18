@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - ExamMatrix</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Login — ExamMatrix</title>
 
-<link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/login.css">
-<link rel="stylesheet" href="css/headerFooter.css">
-
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/headerFooter.css">
 </head>
 
 <body>
@@ -17,34 +17,66 @@
 
   <main id="main">
     <div id="loginCard" class="authCard">
-
+      
+      <!-- Institutional Split-Tone Header Band -->
       <div id="cardHero">
-        <div class="logoMark">EM</div>
+        <div class="hero-top-row">
+          <div class="logoMark">EM</div>
+          <span class="authBadge font-mono">ADMIN / STAFF</span>
+        </div>
         <h2>Welcome back</h2>
-        <p>Log in to manage exams</p>
+        <p>Log in to manage examinations & seating grids</p>
       </div>
 
+      <!-- Crisp White Form Body -->
       <div id="cardBody">
-        <p id="message"></p>
+        <div id="message" role="alert"></div>
 
-        <form id="loginForm">
+        <form id="loginForm" novalidate>
           <div class="formField">
-            <label for="username">Username</label>
-            <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+            <label for="username">Staff Username</label>
+            <input 
+              type="text" 
+              id="username" 
+              placeholder="e.g. admin or faculty ID" 
+              autocomplete="username" 
+              spellcheck="false"
+              required
+            >
           </div>
+
           <div class="formField">
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+            
+              <label for="password">Password</label>
+              
+            <!-- Wrapped for Show/Hide Toggle -->
+            <div class="pwWrap">
+              <input 
+                type="password" 
+                id="password" 
+                placeholder="Enter password" 
+                autocomplete="current-password"
+                required
+              >
+              <button type="button" id="pwToggle" class="pwToggle" aria-label="Show password" title="Toggle visibility">
+                👁
+              </button>
+            </div>
           </div>
-          <button type="submit" id="loginButton" class="btnPrimary">Log in</button>
+
+          
+
+          <button type="submit" id="loginButton" class="btnPrimary">
+            <span class="btnText">Log in</span>
+            <span class="btnSpinner" aria-hidden="true"></span>
+          </button>
         </form>
 
-        <p id="loginRedirect">
-          Don't have an account?
-          <a href="register.html">Register</a>
+        <div id="loginRedirect">
+          <span>Need admin access? <a href="register.html">Register</a></span>
           <span class="separator">·</span>
-          <a href="find-seat.html">Find your seat</a>
-        </p>
+          <a href="find-seat.html" class="studentLink">🎓 Student Seat Finder</a>
+        </div>
       </div>
 
     </div>
