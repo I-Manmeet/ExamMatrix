@@ -489,6 +489,66 @@
         );
       });
 
+
+    /* =====================================================
+       [MEMBER 2] LOGIN FORM LOGIC
+       - reads username + password
+       - checks em_users in localStorage
+       - shows error / creates session / redirects
+    ===================================================== */
+
+    let loginForm = document.getElementById("loginForm");
+    let message = document.getElementById("message");
+
+    loginForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      // read the values
+      let username = document.getElementById("username").value.trim();
+      let password = document.getElementById("password").value;
+
+      // basic empty check
+      if (username === "" || password === "") {
+        showMessage("Please enter your username and password.", false);
+        return;
+      }
+
+      // get saved users from localStorage
+      let users = JSON.parse(localStorage.getItem("em_users")) || [];
+
+      // find a user whose username + password both match
+      let foundUser = users.find(function (user) {
+        return user.username === username && user.password === password;
+      });
+
+      // no match -> error
+      if (!foundUser) {
+        showMessage("Wrong username or password.", false);
+        return;
+      }
+
+      // success -> create the session
+      sessionStorage.setItem(
+        "em_session",
+        JSON.stringify({ username: username })
+      );
+
+      // redirect to dashboard
+      showMessage("Login successful! Redirecting…", true);
+      setTimeout(function () {
+        window.location.href = "dashboard.html";
+      }, 1000);
+    });
+
+
+    /* small helper: uses the .msg-error / .msg-ok styles
+       already written in the CSS above */
+    function showMessage(text, isOk) {
+      message.textContent = text;
+      message.style.display = "block";
+      message.className = isOk ? "msg-ok" : "msg-error";
+    }
+
   </script>
 
 </body>
