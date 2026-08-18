@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - ExamMatrix</title>
+
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+
+  <div id="headerContainer"></div>
+
+  <main id="main">
+    <div id="loginCard" class="authCard">
+
+      <div id="cardHero">
+        <div class="logoMark">EM</div>
+        <h2>Welcome back</h2>
+        <p>Log in to manage exams</p>
+      </div>
+
+      <div id="cardBody">
+        <p id="message"></p>
+
+        <form id="loginForm">
+          <div class="formField">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+          </div>
+          <div class="formField">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+          </div>
+          <button type="submit" id="loginButton" class="btnPrimary">Log in</button>
+        </form>
+
+        <p id="loginRedirect">
+          Don't have an account?
+          <a href="register.html">Register</a>
+          <span class="separator">·</span>
+          <a href="find-seat.html">Find your seat</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="footerContainer"></div>
+
+  <script src="js/auth-shared.js"></script>
+  <script src="js/login.js"></script>
+
+</body>
+</html>
