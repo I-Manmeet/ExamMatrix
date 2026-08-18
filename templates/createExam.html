@@ -6,13 +6,14 @@
 <title>Create Exam - ExamMatrix</title>
 
 <link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/createExam.css">
 <link rel="stylesheet" href="css/headerFooter.css">
+<link rel="stylesheet" href="css/createExam.css">
 </head>
 
-<body>
+<body data-page="create">
 
-  <div id="headerContainer"></div>
+  <!-- Shared logged-in navbar (same as dashboard) -->
+  <div id="navbarContainer"></div>
 
   <main id="createMain">
 
@@ -84,9 +85,11 @@
 
   </main>
 
+  <!-- Shared footer -->
   <div id="footerContainer"></div>
 
-  <script src="js/auth-shared.js"></script>
+  <!-- logged-in navbar + footer + username + logout + auth gate -->
+  <script src="js/app-shell.js"></script>
   <script src="js/data.js"></script>
   <script src="js/createExam.js"></script>
 
