@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Exam - ExamMatrix</title>
+
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/createExam.css">
+<link rel="stylesheet" href="css/headerFooter.css">
+</head>
+
+<body>
+
+  <div id="headerContainer"></div>
+
+  <main id="createMain">
+
+    <div class="pageHead">
+      <div>
+        <h1 class="pageTitle">Create exam session</h1>
+        <p class="pageSub" id="loadInfo">Loading data…</p>
+      </div>
+    </div>
+
+    <!-- STEP 1: exam details -->
+    <div class="card">
+      <div class="cardLabel">1 · Exam details</div>
+      <div class="detailRow">
+        <div class="field big">
+          <label>Exam name</label>
+          <input type="text" id="examName" value="Mid-Semester Exam">
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="examDate" value="2026-08-20">
+        </div>
+        <div class="field">
+          <label>Slot</label>
+          <select id="examSlot">
+            <option>09:00–11:00</option>
+            <option>11:30–13:30</option>
+            <option>14:00–16:00</option>
+            <option>16:30–18:30</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 + 3: pickers side by side -->
+    <div class="pickerGrid">
+      <div class="card">
+        <div class="cardLabel">2 · Subjects</div>
+        <div id="subjectList" class="pickList"></div>
+      </div>
+      <div class="card">
+        <div class="cardLabel">3 · Halls</div>
+        <div id="hallList" class="pickList"></div>
+      </div>
+    </div>
+
+    <!-- STEP 4: matched students -->
+    <div class="card">
+      <div class="cardLabel">
+        4 · Matched students
+        <span id="matchCount" class="cardLabelRight"></span>
+      </div>
+      <div class="previewWrap">
+        <table>
+          <thead><tr><th>Roll</th><th>Name</th><th>Subject</th></tr></thead>
+          <tbody id="matchBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- status bar -->
+    <div class="statusBar">
+      <div class="statusMsg neutral" id="statusMsg">
+        <span class="dot"></span>
+        <span id="statusText">Pick subjects and halls to begin.</span>
+      </div>
+      <button class="btnPrimary btnSmall" id="generateBtn" disabled>Generate seating &amp; save →</button>
+    </div>
+
+  </main>
+
+  <div id="footerContainer"></div>
+
+  <script src="js/auth-shared.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/createExam.js"></script>
+
+</body>
+</html>
