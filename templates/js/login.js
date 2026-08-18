@@ -2,6 +2,8 @@
    [MEMBER 2] LOGIN LOGIC
 ========================================================= */
 
+
+
 let loginForm = document.getElementById("loginForm");
 
 loginForm.addEventListener("submit", function (event) {
