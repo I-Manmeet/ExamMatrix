@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExamMatrix - Smart Seating. Zero Conflicts</title>
+  <link rel="stylesheet" href="./css/theme.css">
+  <link rel="stylesheet" href="./css/index.css">
+</head>
+<body>
+
+  <!-- header.html loads into this slot (JIYA) -->
+  <div id="site-header-slot"></div>
+
+  <main>
+
+    <!-- ===================== HERO (JIYA) ===================== -->
+    <section class="hero-section" id="hero">
+      <div class="container hero-container">
+        <div class="hero-content">
+          <div class="eyebrow-pill"><span class="gold-dot"></span><span>Smart Seating. Zero Conflicts</span></div>
+          <h1 class="hero-title">Fair seating.<br>Clear schedules.<br><em>Zero confusion.</em></h1>
+          <p class="hero-description">Arrange halls so no two same-course students sit together, schedule without clashes, and show every student their seat in seconds.</p>
+          <div class="hero-cta-group">
+            <a href="#lookup" class="btn btn-primary btn-large">Get started</a>
+            <a href="#lookup" class="btn btn-academic btn-large">🎓 Find my seat</a>
+          </div>
+          <div class="hero-metrics">
+            <div class="metric-item"><span class="metric-val font-mono">0</span><span class="metric-label">Adjacent Clashes</span></div>
+            <div class="metric-divider"></div>
+            <div class="metric-item"><span class="metric-val font-mono">100%</span><span class="metric-label">Anti-Copy Grid</span></div>
+            <div class="metric-divider"></div>
+            <div class="metric-item"><span class="metric-val font-mono">&lt;1s</span><span class="metric-label">Solver Speed</span></div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="preview-card">
+            <div class="preview-header">
+              <div class="preview-title-wrap">
+                <span class="preview-title">Block A - Room 101</span>
+                <span class="preview-meta font-mono">6×5 · 30 seats</span>
+              </div>
+              <div class="badge-status badge-success"><span class="status-indicator"></span><span>0 conflicts</span></div>
+            </div>
+            <div class="preview-legend">
+              <span class="legend-chip chip-cs"><span class="legend-color"></span>AI302</span>
+              <span class="legend-chip chip-ma"><span class="legend-color"></span>CS301</span>
+              <span class="legend-chip chip-ph"><span class="legend-color"></span>EC301</span>
+            </div>
+            <div class="hall-direction-indicator"><span>↑ F R O N T (BLACKBOARD) ↑</span></div>
+            <div class="seating-matrix-grid" id="heroSeatingGrid"></div>
+            <div class="preview-footer">
+              <div class="seat-inspection-info" id="seatInspectionInfo"><span class="prompt-text">💡 Hover any seat to inspect student details</span></div>
+              <div class="verified-badge">✓ 0 clashes verified</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================================
+         FIND MY SEAT — OWNER: MANMEET
+         ----------------------------------------------------------------------------
+         WHAT TO BUILD: a public roll-number lookup card. A student types their roll
+         number, clicks "Find Seat", and sees their exam, hall, row and desk.
+         PUT INSIDE .container:
+           1. A section header (tag + title "Find your exam seat instantly" + subtitle).
+           2. A .lookup-card containing:
+              - a text input  (id="rollSearchInput")  + a "Find Seat" button (id="btnSearchSeat")
+              - optional sample roll-number pills (class="pill-sample" data-roll="...")
+              - a result area with fields for: name (id="resStudentName"),
+                subject (id="resSubject"), date/time (id="resTime"),
+                hall (id="resHall"), desk (id="resDesk")
+         JS: on click, search the roster for the roll number → fill the result fields,
+             or show "not seated in the current exam" if not found.
+         ============================================================================ -->
+    <section class="section lookup-section" id="lookup">
+      <div class="container">
+        <!-- MANMEET: build the roll-lookup card here (see description above) -->
+      </div>
+    </section>
+
+    <!-- ===================== FEATURES (JIYA) ===================== -->
+    <section class="section features-section" id="features">
+      <div class="container">
+        <div class="section-header text-center">
+          <div class="section-tag">CORE CAPABILITIES</div>
+          <h2 class="section-title">Built for academic rigor, crafted for ease</h2>
+          <p class="section-subtitle">Every feature reduces exam admin workload while guaranteeing academic integrity.</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon-wrapper icon-emerald">🧩</div>
+            <h3 class="feature-title">Smart Anti-Clash Seating</h3>
+            <p class="feature-desc">A constraint-satisfaction algorithm guarantees no two students taking the same exam sit next to each other, overflowing across halls when a room fills up.</p>
+            <div class="feature-chip font-mono">Zero Adjacent Pairs</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon-wrapper icon-charcoal">📅</div>
+            <h3 class="feature-title">Clash-Free Timetable</h3>
+            <p class="feature-desc">Prevents scheduling two exams in the same slot when students take both, catching double-bookings before dates are published.</p>
+            <div class="feature-chip font-mono">Real-time Validation</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon-wrapper icon-gold">🔍</div>
+            <h3 class="feature-title">Instant Roll Lookup</h3>
+            <p class="feature-desc">Students check their assigned desk in one tap, ending morning crowding around paper notice boards.</p>
+            <div class="feature-chip font-mono">Instant Public Route</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon-wrapper icon-emerald">🖨</div>
+            <h3 class="feature-title">Printable Door Rosters</h3>
+            <p class="feature-desc">One-click export of clean, paper-optimized seating charts and CSV reports for the invigilator.</p>
+            <div class="feature-chip font-mono">Print Ready</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HOW IT WORKS (JIYA) ===================== -->
+    <section class="section workflow-section" id="workflow">
+      <div class="container">
+        <div class="section-header text-center">
+          <div class="section-tag">HOW IT WORKS</div>
+          <h2 class="section-title">How the Seating Engine Operates</h2>
+          <p class="section-subtitle">From a course roster to a clean, non-conflicting exam hall in seconds.</p>
+        </div>
+        <div class="workflow-steps-grid">
+          <div class="workflow-step-card">
+            <div class="step-num font-mono">01</div><div class="step-dot"></div>
+            <h4 class="step-title">Load Course Rosters</h4>
+            <p class="step-desc">Import student roll numbers and their enrolled subjects for the exam session.</p>
+          </div>
+          <div class="workflow-step-card">
+            <div class="step-num font-mono">02</div><div class="step-dot"></div>
+            <h4 class="step-title">Select Available Halls</h4>
+            <p class="step-desc">Choose exam venues with their grid dimensions (rows × columns) and capacity.</p>
+          </div>
+          <div class="workflow-step-card">
+            <div class="step-num font-mono">03</div><div class="step-dot"></div>
+            <h4 class="step-title">Constraint Solving</h4>
+            <p class="step-desc">The engine places students so no same-subject neighbors touch, overflowing across halls as needed.</p>
+          </div>
+          <div class="workflow-step-card">
+            <div class="step-num font-mono">04</div><div class="step-dot"></div>
+            <h4 class="step-title">Publish and Print</h4>
+            <p class="step-desc">Push to the student lookup and generate print-ready seating charts.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================================
+         ADMIN SHOWCASE / STATS BANNER — OWNER: OTHER MEMBER
+         ----------------------------------------------------------------------------
+         WHAT TO BUILD: a dark rounded banner split into two halves.
+           LEFT half:  a small eyebrow label, a heading like
+                       "Complete visibility over multi-hall exam sessions", a short
+                       paragraph, and two buttons ("Launch console", "View documentation").
+           RIGHT half: a 2x2 grid of stat cards, each = a big number + a label:
+                       - "3  Active exam sessions"
+                       - "58 Students currently in hall"
+                       - "4  Staff members currently active"
+                       - "0  Student clashes detected"  (highlight this green)
+         SUGGESTED CLASSES: .showcase-section > .container > .showcase-box
+                            (left: .showcase-content, right: .showcase-stats-panel > .stat-card)
+         ============================================================================ -->
+    <section class="section showcase-section">
+      <div class="container">
+        <!-- OTHER MEMBER: build the showcase / stats banner here (see description above) -->
+      </div>
+    </section>
+
+    <!-- ============================================================================
+         TEAM / DEVELOPERS — OWNER: OTHER MEMBER
+         ----------------------------------------------------------------------------
+         WHAT TO BUILD: a centered section header (tag "OUR TECHNICAL STACK" +
+         heading "Built with precision by developers" + short subtitle), then a row
+         of THREE cards, one per team member. Each card has:
+           - a round avatar with the member's initial (A / B / C)
+           - the member's name  (e.g. "Member A")
+           - their role         (e.g. "Backend Developer")
+           - a short skills line (e.g. "Laravel, PHP, MySQL")
+           - two small tags at the bottom (e.g. "Dockerization", "Database Design")
+         SUGGESTED CLASSES: .developers-section > .container >
+                            .section-header + .developers-grid > .dev-card
+                            (inside card: .dev-avatar, .dev-name, .dev-role, .dev-bio, .dev-skills > .skill-tag)
+         ============================================================================ -->
+    <section class="section developers-section" id="developers">
+      <div class="container">
+        <!-- OTHER MEMBER: build the 3 team member cards here (see description above) -->
+      </div>
+    </section>
+
+    <!-- ============================================================================
+         CALL TO ACTION (CTA) — OWNER: OTHER MEMBER
+         ----------------------------------------------------------------------------
+         WHAT TO BUILD: a smaller dark rounded banner, centered text:
+           - a heading: "Experience calm, clash-free examinations."
+           - a short one-line description
+           - two buttons ("Launch console", "View Student Guides")
+         SUGGESTED CLASSES: .cta-section > .container > .cta-banner > .cta-inner
+                            (.cta-title, .cta-desc, .cta-button-row with two .btn)
+         ============================================================================ -->
+    <section class="section cta-section" id="demo">
+      <div class="container">
+        <!-- OTHER MEMBER: build the CTA banner here (see description above) -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- footer.html loads into this slot (JIYA) -->
+  <div id="site-footer-slot"></div>
+
+  <script src="./js/index.js"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@
    Username-only (no email). Uses showMessage() from auth-shared.js.
 ========================================================= */
 
+
 let registerForm = document.getElementById("registerForm");
 
 let usernameInput = document.getElementById("username");
