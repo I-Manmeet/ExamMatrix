@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login - ExamMatrix</title>
+
+<!-- SHARED THEME -->
+<link rel="stylesheet" href="css/theme.css">
+
+<style>
+
+  /* =========================================================
+     LOGIN PAGE STYLES
+     Same styling system as register.html
+  ========================================================= */
+
+  :root{
+    --emerald:#0f7a5c;
+    --charcoal:#212b28;
+    --bg:#f6f7f5;
+    --paper:#ffffff;
+    --ink:#1a1f1d;
+    --ink-2:#4a534f;
+    --ink-3:#8a938e;
+    --line:#e4e8e4;
+    --danger:#c0392b;
+    --danger-soft:#fbe9e7;
+    --emerald-soft:#d9efe7;
+
+    --serif:"Iowan Old Style", Palatino, Georgia, serif;
+
+    --ui:-apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+  }
+
+
+  /* =========================================================
+     GLOBAL
+  ========================================================= */
+
+  *{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+  }
+
+  body{
+    font-family:var(--ui);
+    background:var(--bg);
+    color:var(--ink);
+
+    min-height:100vh;
+
+    display:flex;
+    flex-direction:column;
+  }
+
+
+  /* =========================================================
+     MAIN / CENTERING
+  ========================================================= */
+
+  #main{
+    flex:1;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:40px 20px;
+  }
+
+
+  /* =========================================================
+     LOGIN CARD
+  ========================================================= */
+
+  #loginCard{
+    width:410px;
+    max-width:100%;
+
+    background:var(--paper);
+
+    border-radius:16px;
+
+    box-shadow:
+      0 12px 40px rgba(26,31,29,.12);
+
+    overflow:hidden;
+  }
+
+
+  /* =========================================================
+     CARD HEADER
+  ========================================================= */
+
+  #cardHero{
+    background:var(--charcoal);
+
+    color:#fff;
+
+    padding:24px 30px;
+  }
+
+  #cardHero .logoMark{
+    width:38px;
+    height:38px;
+
+    border-radius:10px;
+
+    background:var(--emerald);
+
+    display:grid;
+    place-items:center;
+
+    font-size:16px;
+    font-weight:800;
+
+    margin-bottom:12px;
+  }
+
+  #cardHero h2{
+    font-family:var(--serif);
+
+    font-size:22px;
+    font-weight:600;
+  }
+
+  #cardHero p{
+    font-size:13px;
+
+    opacity:.72;
+
+    margin-top:2px;
+  }
+
+
+  /* =========================================================
+     FORM BODY
+  ========================================================= */
+
+  #cardBody{
+    padding:26px 30px 30px;
+  }
+
+
+  /* =========================================================
+     FORM FIELDS
+  ========================================================= */
+
+  .formField{
+    margin-bottom:15px;
+  }
+
+  .formField label{
+    display:block;
+
+    font-size:12.5px;
+    font-weight:600;
+
+    color:var(--ink-2);
+
+    margin-bottom:6px;
+  }
+
+  .formField input{
+    width:100%;
+
+    padding:11px 13px;
+
+    border:1px solid var(--line);
+
+    border-radius:10px;
+
+    font-family:var(--ui);
+
+    font-size:14px;
+
+    background:#fff;
+
+    color:var(--ink);
+
+    outline:none;
+
+    transition:
+      border-color .2s ease,
+      box-shadow .2s ease;
+  }
+
+  .formField input:focus{
+    border-color:var(--emerald);
+
+    box-shadow:
+      0 0 0 3px rgba(15,122,92,.10);
+  }
+
+  .formField input::placeholder{
+    color:var(--ink-3);
+  }
+
+
+  /* =========================================================
+     LOGIN BUTTON
+  ========================================================= */
+
+  #loginButton{
+    width:100%;
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:var(--emerald);
+
+    color:#fff;
+
+    font-family:var(--ui);
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:
+      background .2s ease,
+      transform .15s ease,
+      box-shadow .2s ease;
+  }
+
+  #loginButton:hover{
+    background:#0c6b50;
+
+    box-shadow:
+      0 5px 14px rgba(15,122,92,.18);
+
+    transform:translateY(-1px);
+  }
+
+  #loginButton:active{
+    transform:translateY(0);
+  }
+
+
+  /* =========================================================
+     MESSAGE
+  ========================================================= */
+
+  #message{
+    font-size:13px;
+
+    padding:10px 13px;
+
+    border-radius:9px;
+
+    margin-bottom:15px;
+
+    display:none;
+  }
+
+  .msg-error{
+    background:var(--danger-soft);
+
+    color:var(--danger);
+  }
+
+  .msg-ok{
+    background:var(--emerald-soft);
+
+    color:var(--emerald);
+  }
+
+
+  /* =========================================================
+     REGISTER / FIND SEAT LINKS
+  ========================================================= */
+
+  #loginRedirect{
+    text-align:center;
+
+    font-size:13.5px;
+
+    color:var(--ink-2);
+
+    margin-top:18px;
+
+    padding-top:16px;
+
+    border-top:1px solid var(--line);
+  }
+
+  #loginRedirect a{
+    color:var(--emerald);
+
+    font-weight:700;
+
+    text-decoration:none;
+  }
+
+  #loginRedirect a:hover{
+    text-decoration:underline;
+  }
+
+  .separator{
+    color:var(--ink-3);
+
+    margin:0 5px;
+  }
+
+
+  /* =========================================================
+     RESPONSIVE
+  ========================================================= */
+
+  @media (max-width:600px){
+
+    #main{
+      padding:30px 16px;
+    }
+
+    #loginCard{
+      width:100%;
+
+      border-radius:14px;
+    }
+
+    #cardHero{
+      padding:22px 24px;
+    }
+
+    #cardBody{
+      padding:24px 24px 26px;
+    }
+
+    #cardHero h2{
+      font-size:21px;
+    }
+  }
+
+</style>
+</head>
+
+
+<body>
+
+  <!-- HEADER -->
+  <div id="headerContainer"></div>
+
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <div id="loginCard">
+
+      <!-- CARD HEADER -->
+      <div id="cardHero">
+
+        <div class="logoMark">
+          EM
+        </div>
+
+        <h2>Welcome back</h2>
+
+        <p>Log in to manage exams</p>
+
+      </div>
+
+
+      <!-- CARD BODY -->
+      <div id="cardBody">
+
+        <p id="message"></p>
+
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm">
+
+          <div class="formField">
+
+            <label for="username">
+              Username
+            </label>
+
+            <input
+              type="text"
+              id="username"
+              placeholder="Enter your username"
+              autocomplete="username"
+            >
+
+          </div>
+
+
+          <div class="formField">
+
+            <label for="password">
+              Password
+            </label>
+
+            <input
+              type="password"
+              id="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            >
+
+          </div>
+
+
+          <button
+            type="submit"
+            id="loginButton"
+          >
+            Log in
+          </button>
+
+        </form>
+
+
+        <!-- LINKS -->
+        <p id="loginRedirect">
+
+          Don't have an account?
+
+          <a href="register.html">
+            Register
+          </a>
+
+          <span class="separator">·</span>
+
+          <a href="find-seat.html">
+            Find your seat
+          </a>
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- FOOTER -->
+  <div id="footerContainer"></div>
+
+
+  <script>
+
+    /* =====================================================
+       LOAD SHARED HEADER
+    ===================================================== */
+
+    fetch("header.html")
+      .then(function(res){
+        return res.text();
+      })
+      .then(function(html){
+        document.getElementById("headerContainer").innerHTML = html;
+      })
+      .catch(function(){
+        console.log(
+          "header.html not added yet"
+        );
+      });
+
+
+    /* =====================================================
+       LOAD SHARED FOOTER
+    ===================================================== */
+
+    fetch("footer.html")
+      .then(function(res){
+        return res.text();
+      })
+      .then(function(html){
+        document.getElementById("footerContainer").innerHTML = html;
+      })
+      .catch(function(){
+        console.log(
+          "footer.html not added yet"
+        );
+      });
+
+  </script>
+
+</body>
+</html>
