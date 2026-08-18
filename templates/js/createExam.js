@@ -162,18 +162,163 @@ function fits(grid, row, col, student){
      and get the course from its parent's dataset.course
 ========================================================= */
 
+/* runs whenever any subject/hall checkbox changes */
 function onPickChange(){
-  // TODO [MEMBER B]
+
+  // rebuild pickedCourses from the checked subject boxes
+  pickedCourses = [];
+  let subjectBoxes = document.querySelectorAll('#subjectList input:checked');
+  for (let i = 0; i < subjectBoxes.length; i++) {
+    pickedCourses.push(subjectBoxes[i].parentElement.dataset.course);
+  }
+
+  // rebuild pickedHalls from the checked hall boxes
+  pickedHalls = [];
+  let hallBoxes = document.querySelectorAll('#hallList input:checked');
+  for (let i = 0; i < hallBoxes.length; i++) {
+    pickedHalls.push(hallBoxes[i].parentElement.dataset.hall);
+  }
+
+  // refresh everything
+  refreshMatchedTable();
+  applyClashPrevention();
+  updateStatusBar();   // Member C's function
 }
 
+/* return the students enrolled in the picked courses */
 function getMatchedStudents(){
-  // TODO [MEMBER B]
-  return [];
+  let matched = [];
+
+  for (let i = 0; i < EM_DATA.students.length; i++) {
+    let student = EM_DATA.students[i];
+
+    // find which picked course this student is in
+    for (let c = 0; c < pickedCourses.length; c++) {
+      if (student.subjects.indexOf(pickedCourses[c]) !== -1) {
+        matched.push({
+          roll: student.roll,
+          name: student.name,
+          examCode: pickedCourses[c]
+        });
+        break;   // one exam per student in the table
+      }
+    }
+  }
+  return matched;
 }
 
-function applyClashPrevention(){
-  // TODO [MEMBER B]  (use getBusyStudents(pickedCourses) from Member A)
+/* fill the matched-students preview table */
+function refreshMatchedTable(){
+  let students = getMatchedStudents();
+  let body = document.getElementById("matchBody");
+  let count = document.getElementById("matchCount");
+
+  count.textContent = pickedCourses.length ? (students.length + " students") : "";
+
+  if (students.length === 0) {
+    body.innerHTML = '<tr><td colspan="3" class="emptyHint">Tick one or more subjects to load students.</td></tr>';
+    return;
+  }
+
+  let html = "";
+  for (let i = 0; i < students.length; i++) {
+    let s = students[i];
+    html +=
+      '<tr><td>' + s.roll + '</td>' +
+      '<td>' + s.name + '</td>' +
+      '<td>' + s.examCode + '</td></tr>';
+  }
+  body.innerHTML = html;
 }
+
+/* grey out courses/halls that would clash with the current picks.
+   Uses Member A's getBusyStudents(). */
+/* grey out courses that clash + wire the clash info bar (Member B) */
+function applyClashPrevention(){
+  var busy = getBusyStudents(pickedCourses);      // Member A's function
+  var rows = document.querySelectorAll('#subjectList .pickRow');
+
+  for (let i = 0; i < rows.length; i++) {
+    let row = rows[i];
+    let course = row.dataset.course;
+    let box = row.querySelector('input');
+
+    // collect the actual rolls this course shares with the picked set
+    let sharedRolls = [];
+    if (pickedCourses.indexOf(course) === -1) {
+      for (let s = 0; s < EM_DATA.students.length; s++) {
+        let student = EM_DATA.students[s];
+        if (student.subjects.indexOf(course) !== -1 && busy[student.roll]) {
+          sharedRolls.push(student.roll);
+        }
+      }
+    }
+
+    if (sharedRolls.length > 0) {
+      // LOCK this course
+      row.classList.add('locked');
+      box.disabled = true;
+
+      let right = row.querySelector('.pickRight');
+      if (right && !row.querySelector('.pickLock')) {
+        right.className = 'pickLock';
+      }
+      let lock = row.querySelector('.pickLock');
+      if (lock) lock.textContent = '🔒 locked · ' + sharedRolls.length + ' shared';
+
+      // store the rolls on the row so hover can read them
+      row.dataset.sharedRolls = sharedRolls.join(',');
+
+      row.setAttribute('aria-disabled', 'true');
+      row.setAttribute('aria-label',
+        course + ' locked — shares ' + sharedRolls.length +
+        ' students with a picked subject, so it cannot be scheduled in the same slot.');
+
+      // hover → update the info bar below the list
+      row.onmouseenter = function(){ showClashInfo(course, sharedRolls); };
+      row.onmouseleave = clearClashInfo;
+
+    } else {
+      // UNLOCK this course
+      row.classList.remove('locked');
+      box.disabled = false;
+      row.onmouseenter = null;
+      row.onmouseleave = null;
+      delete row.dataset.sharedRolls;
+
+      let lock = row.querySelector('.pickLock');
+      if (lock) {
+        lock.className = 'pickRight';
+        lock.textContent = countStudentsForCourse(course) + ' students';
+      }
+    }
+  }
+}
+
+/* show the clash detail in the info bar (first 3 rolls + "+N more") */
+function showClashInfo(course, rolls){
+  let infoEl = document.getElementById('clashInfo');
+  if (!infoEl) return;
+
+  let shown = rolls.slice(0, 3).join(', ');
+  let extra = rolls.length - 3;
+  let moreText = extra > 0 ? ' <span class="clashMore">+' + extra + ' more</span>' : '';
+
+  infoEl.className = 'clashInfo';
+  infoEl.innerHTML =
+    '<span><b>' + course + '</b> shares ' + rolls.length +
+    ' students with your picked subjects, so it is locked.</span> ' +
+    '<span class="clashRolls">' + shown + '</span>' + moreText;
+}
+
+/* reset the info bar */
+function clearClashInfo(){
+  let infoEl = document.getElementById('clashInfo');
+  if (!infoEl) return;
+  infoEl.className = 'clashInfo clashInfo--idle';
+  infoEl.innerHTML = '<span>Hover a locked subject to see which students clash.</span>';
+}
+
 
 
 /* =========================================================
