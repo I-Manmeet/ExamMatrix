@@ -102,10 +102,10 @@
 }
 
 /* Class-based dynamic color dots */
-.legendDot.cs { background-color: #0f7a5c; }
+/* .legendDot.cs { background-color: #0f7a5c; }
 .legendDot.ai { background-color: #2563eb; }
 .legendDot.ec { background-color: #d97706; }
-.legendDot.me { background-color: #7c3aed; }
+.legendDot.me { background-color: #7c3aed; } */
 
 /* =========================================================
    METRICS
@@ -245,11 +245,11 @@
     opacity: 0.88;
 }
 
-/* Class-based dynamic seat background colors */
-.seat.cs { background-color: #0f7a5c; }
-.seat.ai { background-color: #2563eb; }
-.seat.ec { background-color: #d97706; }
-.seat.me { background-color: #7c3aed; }
+.seat strong,
+.seat span {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
 
 .seat.empty {
     background: #f3f4f6;
