@@ -287,6 +287,7 @@ function refreshMatchedTable() {
 /* grey out courses/halls that would clash with the current picks.
    Uses Member A's getBusyStudents(). */
 /* grey out courses that clash + wire the clash info bar (Member B) */
+/* grey out courses that clash + wire the clash info bar (Member B) */
 function applyClashPrevention() {
   var busy = getBusyStudents(pickedCourses);      // Member A's function
   var rows = document.querySelectorAll('#subjectList .pickRow');
@@ -308,7 +309,7 @@ function applyClashPrevention() {
     }
 
     if (sharedRolls.length > 0) {
-      // LOCK this course
+      // LOCK this course (clash)
       row.classList.add('locked');
       box.disabled = true;
 
@@ -332,6 +333,12 @@ function applyClashPrevention() {
       row.onmouseleave = clearClashInfo;
 
     } else {
+      // keep already-conducted courses locked — don't unlock them
+      let usedCourses = getUsedCourses();
+      if (usedCourses[course]) {
+        continue;
+      }
+
       // UNLOCK this course
       row.classList.remove('locked');
       box.disabled = false;
@@ -347,6 +354,7 @@ function applyClashPrevention() {
     }
   }
 }
+
 
 /* show the clash detail in the info bar (first 3 rolls + "+N more") */
 function showClashInfo(course, rolls) {
