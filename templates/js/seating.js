@@ -19,20 +19,20 @@ var stats = { conflicts: 0, hallsUsed: 0, utilization: 0, backtracks: 0, unplace
 
 
 /* ---- colour: use Anupam's branch classes, fallback inline for others ---- */
-var BRANCH_CLASSES = { CS: "cs", AI: "ai", EC: "ec", ME: "me" };
-var FALLBACK_PALETTE = ["#0d7a5f","#2563eb","#d97706","#7c3aed","#0891b2","#65a30d","#c0392b","#be123c"];
-var fallbackColorMap = {};
+/* ---- colour: a distinct, readable colour generated PER course code ---- */
+// No fixed list — colours are generated with the golden-angle so any number
+// of subjects stay far apart on the colour wheel. Fixed S/L keeps white text readable.
+var courseColorMap = {};
+var GOLDEN_ANGLE = 137.508;   // degrees — spreads hues maximally
 
 function styleForCourse(courseCode) {
-  var prefix = courseCode.substring(0, 2).toUpperCase();
-  if (BRANCH_CLASSES[prefix]) {
-    return { cls: BRANCH_CLASSES[prefix], color: "" };
+  if (!(courseCode in courseColorMap)) {
+    var index = Object.keys(courseColorMap).length;      // 0, 1, 2, ...
+    var hue = (index * GOLDEN_ANGLE) % 360;              // next well-spaced hue
+    // saturation 68%, lightness 40% -> rich + dark enough for white text
+    courseColorMap[courseCode] = "hsl(" + hue.toFixed(1) + ", 68%, 40%)";
   }
-  if (!(courseCode in fallbackColorMap)) {
-    fallbackColorMap[courseCode] =
-      FALLBACK_PALETTE[Object.keys(fallbackColorMap).length % FALLBACK_PALETTE.length];
-  }
-  return { cls: "", color: fallbackColorMap[courseCode] };
+  return { cls: "", color: courseColorMap[courseCode] };
 }
 
 
