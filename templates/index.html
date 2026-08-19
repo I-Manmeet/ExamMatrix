@@ -78,7 +78,35 @@
          ============================================================================ -->
     <section class="section lookup-section" id="lookup">
       <div class="container">
-        <!-- MANMEET: build the roll-lookup card here (see description above) -->
+        <div class="section-header text-center">
+  <div class="section-tag">STUDENT LOOKUP</div>
+  <h2 class="section-title">Find your exam seat instantly</h2>
+  <p class="section-subtitle">Enter your roll number to see your exam, date, hall and desk.</p>
+</div>
+
+<div class="lookup-card">
+  <div class="lookup-input-row">
+    <input type="search" id="rollSearchInput" placeholder="e.g. 24AI1001" autocomplete="off">
+    <button type="button" id="btnSearchSeat" class="btn btn-primary">Find Seat</button>
+  </div>
+
+  <div class="lookup-samples">
+    <span class="pill-sample" data-roll="24AI1001">24AI1001</span>
+    <span class="pill-sample" data-roll="24CS2001">24CS2001</span>
+    <span class="pill-sample" data-roll="24EC3001">24EC3001</span>
+  </div>
+
+  <div id="lookupResult" class="lookup-result" hidden>
+    <p class="res-line"><span class="res-key">Student</span> <span id="resStudentName"></span></p>
+    <p class="res-line"><span class="res-key">Exam</span> <span id="resSubject"></span></p>
+    <p class="res-line"><span class="res-key">Date &amp; slot</span> <span id="resTime"></span></p>
+    <p class="res-line"><span class="res-key">Hall</span> <span id="resHall"></span></p>
+    <p class="res-line"><span class="res-key">Desk</span> <span id="resDesk"></span></p>
+  </div>
+
+  <div id="lookupEmpty" class="lookup-empty" hidden></div>
+</div>
+
       </div>
     </section>
 
@@ -347,7 +375,9 @@
   <!-- footer.html loads into this slot (JIYA) -->
   <div id="site-footer-slot"></div>
 
+  <script src="./js/data.js"></script>
   <script src="./js/index.js"></script>
   <script src="./js/theme.js"></script>
+  
 </body>
 </html>
