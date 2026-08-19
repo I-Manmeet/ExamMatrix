@@ -1,16 +1,20 @@
 /* =========================================================
-   TIMETABLE PAGE  (shared vars from theme.css)
-   [YOU] page shell   [M2] calendar + clash   [M3] print
+   TIMETABLE PAGE
+   ExamMatrix — Monthly Calendar View
 ========================================================= */
 
 .timetableContainer {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 30px 20px 50px;
 }
 
-/* ---- page header ---- */
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
 .pageHead {
   display: flex;
   align-items: flex-end;
@@ -18,6 +22,7 @@
   gap: 16px;
   margin-bottom: 22px;
 }
+
 .pageTitle {
   margin: 0;
   font-size: 32px;
@@ -25,92 +30,572 @@
   font-weight: 700;
   color: #0b4f37;
 }
-.pageSub { margin: 6px 0 0; color: #7b8581; font-size: 14px; }
-.ttActions { display: flex; gap: 8px; }
-.btnSecondary {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 700;
-  background: #fff; border: 1px solid #e5e7eb; color: #374151; cursor: pointer;
+
+.pageSub {
+  margin: 6px 0 0;
+  color: #7b8581;
+  font-size: 14px;
 }
 
-/* ---- [MEMBER 2] calendar grid ---- */
+.ttActions {
+  display: flex;
+  gap: 8px;
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  cursor: pointer;
+}
+
+.btnSecondary:hover {
+  background: #f5f7f6;
+}
+
+
+/* =========================================================
+   CALENDAR CONTAINER
+========================================================= */
+
 .calendarContainer {
+  width: 100%;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   background: #fff;
-  overflow-x: auto;
+  overflow: hidden;
   margin-bottom: 20px;
 }
-.calGrid { display: grid; min-width: 600px; }
+
+
+/* =========================================================
+   MONTH HEADER
+========================================================= */
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.calendarMonthTitle {
+  margin: 0;
+  min-width: 220px;
+  text-align: center;
+  font-family: Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0b4f37;
+}
+
+
+/* Previous / Next buttons */
+
+.monthBtn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+
+  background: #fff;
+  color: #0b4f37;
+
+  font-size: 24px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.monthBtn:hover {
+  background: #0b4f37;
+  color: #fff;
+}
+
+
+/* =========================================================
+   MONTH CALENDAR GRID
+========================================================= */
+
+.monthCalendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+
+  width: 100%;
+
+  border-top: 1px solid #e5e7eb;
+  border-left: 1px solid #e5e7eb;
+}
+
+
+/* =========================================================
+   WEEKDAY HEADERS
+========================================================= */
+
+.calendarWeekDay {
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f1f4f1;
+
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+
+  color: #4b5563;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   INDIVIDUAL DATE CELL
+========================================================= */
+
+.calendarDate {
+  position: relative;
+
+  min-height: 135px;
+
+  padding: 8px;
+
+  background: #fff;
+
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+
+  overflow: hidden;
+
+  transition: background 0.2s ease;
+}
+
+.calendarDate:hover {
+  background: #fafcfb;
+}
+
+
+/* Empty days before / after month */
+
+.emptyDate {
+  background: #f8f9f8;
+}
+
+.emptyDate:hover {
+  background: #f8f9f8;
+}
+
+
+/* =========================================================
+   DATE NUMBER
+========================================================= */
+
+.calendarDateNumber {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-left: auto;
+  margin-bottom: 7px;
+
+  border-radius: 50%;
+
+  color: #374151;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TODAY
+========================================================= */
+
+.calendarDate.today {
+  background: #f5faf7;
+}
+
+.calendarDate.today .calendarDateNumber {
+  background: #0b4f37;
+  color: #fff;
+}
+
+
+/* =========================================================
+   EXAM CARD INSIDE DATE
+========================================================= */
+
+.calendarExamCard {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 7px 8px;
+
+  margin-bottom: 5px;
+
+  border-radius: 7px;
+
+  background: #0b4f37;
+  color: #fff;
+
+  font-size: 10.5px;
+
+  cursor: pointer;
+
+  overflow: hidden;
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.calendarExamCard:hover {
+  transform: translateY(-1px);
+
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+
+/* Exam time */
+
+.calendarExamSlot {
+  font-family: monospace;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  margin-bottom: 3px;
+}
+
+
+/* Exam name */
+
+.calendarExamName {
+  font-size: 11px;
+  font-weight: 700;
+
+  line-height: 1.3;
+
+  margin-bottom: 3px;
+}
+
+
+/* Courses */
+
+.calendarExamCourses {
+  font-size: 9.5px;
+
+  line-height: 1.3;
+
+  opacity: 0.9;
+
+  margin-bottom: 2px;
+}
+
+
+/* Hall */
+
+.calendarExamHall {
+  font-size: 9.5px;
+
+  line-height: 1.3;
+
+  opacity: 0.9;
+}
+
+
+/* =========================================================
+   CLASH PANEL
+========================================================= */
+
+.clashPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clashItem {
+  padding: 12px 16px;
+
+  border-radius: 10px;
+
+  font-size: 13.5px;
+
+  border: 1px solid #e5e7eb;
+}
+
+.clashItem.bad {
+  background: #fbe9e7;
+  color: #8a2820;
+  border-color: #f3c9c9;
+}
+
+.clashItem.good {
+  background: #d9efe7;
+  color: #0f7a5c;
+  border-color: #b7e4d3;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.ttEmpty {
+  padding: 50px 20px;
+
+  text-align: center;
+
+  color: #9ca3af;
+
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+
+  background: #fff;
+}
+
+
+/* =========================================================
+   OLD CALENDAR CLASSES
+   Kept for compatibility with other JS/CSS
+========================================================= */
+
+.calGrid {
+  display: grid;
+  min-width: 600px;
+}
+
 .calCell {
   border-right: 1px solid #eef0f3;
   border-bottom: 1px solid #eef0f3;
   min-height: 74px;
   padding: 6px;
 }
+
 .calHead {
   background: #f1f4f1;
-  font-size: 12px; font-weight: 700; color: #4b5563;
-  text-align: center; padding: 10px 6px; min-height: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5563;
+  text-align: center;
+  padding: 10px 6px;
+  min-height: 0;
 }
+
 .calTime {
-  background: #fafbfa; font-family: monospace; font-size: 11px;
-  color: #9ca3af; display: flex; align-items: center; justify-content: center; text-align: center;
+  background: #fafbfa;
+  font-family: monospace;
+  font-size: 11px;
+  color: #9ca3af;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
 }
+
 .examBlock {
-  border-radius: 7px; padding: 6px 8px; margin-bottom: 4px;
-  color: #fff; font-size: 11.5px; cursor: pointer;
-}
-.examBlock .ebTitle { font-weight: 700; font-family: monospace; }
-.examBlock .ebMeta { opacity: .9; font-size: 10.5px; margin-top: 1px; }
-.examBlock.clash { outline: 2px solid #c0392b; outline-offset: 1px; }
+  border-radius: 7px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
 
-/* ---- [MEMBER 2] clash panel ---- */
-.clashPanel { display: flex; flex-direction: column; gap: 8px; }
-.clashItem {
-  padding: 12px 16px; border-radius: 10px; font-size: 13.5px;
-  border: 1px solid #e5e7eb;
-}
-.clashItem.bad { background: #fbe9e7; color: #8a2820; border-color: #f3c9c9; }
-.clashItem.good { background: #d9efe7; color: #0f7a5c; border-color: #b7e4d3; }
+  color: #fff;
 
-/* ---- empty state ---- */
-.ttEmpty {
-  padding: 50px 20px; text-align: center; color: #9ca3af;
-  border: 1px dashed #d1d5db; border-radius: 12px; background: #fff;
+  font-size: 11.5px;
+
+  cursor: pointer;
 }
+
+.examBlock .ebTitle {
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.examBlock .ebMeta {
+  opacity: 0.9;
+  font-size: 10.5px;
+  margin-top: 1px;
+}
+
+.examBlock.clash {
+  outline: 2px solid #c0392b;
+  outline-offset: 1px;
+}
+
 
 /* =========================================================
-   >>> [MEMBER 3 - TODO: PRINT STYLES] <<<
-   Add an @media print block: hide navbar/footer/buttons,
-   keep the calendar + clash panel, keep colours
-   (print-color-adjust: exact on .examBlock).
+   RESPONSIVE
 ========================================================= */
+
+@media (max-width: 900px) {
+
+  .timetableContainer {
+    padding: 25px 15px 40px;
+  }
+
+  .calendarDate {
+    min-height: 110px;
+  }
+
+  .calendarExamCard {
+    font-size: 9.5px;
+    padding: 6px;
+  }
+
+  .calendarExamName {
+    font-size: 10px;
+  }
+
+  .calendarExamCourses,
+  .calendarExamHall {
+    font-size: 8.5px;
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .pageHead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ttActions {
+    width: 100%;
+  }
+
+  .btnSecondary {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .calendarHeader {
+    padding: 15px;
+  }
+
+  .calendarMonthTitle {
+    min-width: 170px;
+    font-size: 21px;
+  }
+
+  .monthBtn {
+    width: 34px;
+    height: 34px;
+    font-size: 20px;
+  }
+
+  .calendarWeekDay {
+    min-height: 35px;
+    font-size: 9px;
+  }
+
+  .calendarDate {
+    min-height: 90px;
+    padding: 4px;
+  }
+
+  .calendarDateNumber {
+    width: 23px;
+    height: 23px;
+
+    font-size: 11px;
+  }
+
+  .calendarExamCard {
+    padding: 5px;
+    border-radius: 5px;
+  }
+
+  .calendarExamSlot {
+    font-size: 8px;
+  }
+
+  .calendarExamName {
+    font-size: 8.5px;
+  }
+
+  .calendarExamCourses,
+  .calendarExamHall {
+    font-size: 7.5px;
+  }
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
 @media print {
-  /* hide everything that isn't the timetable */
-  .navbar, .app-header, header,
-  .footer, footer,
-  #exportBtn, .ttButtons, button {
+
+  .navbar,
+  .app-header,
+  header,
+  .footer,
+  footer,
+  #exportBtn,
+  .ttButtons,
+  button {
     display: none !important;
   }
 
-  /* keep exam-block colours when printing */
-  .examBlock,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .timetableContainer {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  .calendarContainer {
+    width: 100%;
+    border: none;
+    box-shadow: none;
+  }
+
+  .calendarExamCard,
   .clashItem.bad,
   .clashItem.good {
+
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* give the calendar + clash panel the full page */
   #calendarContainer,
   #clashPanel {
     width: 100%;
     page-break-inside: avoid;
   }
 
-  body {
-    margin: 0;
-    padding: 0;
+  .calendarDate {
+    min-height: 110px;
+  }
+
+  .calendarExamCard {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

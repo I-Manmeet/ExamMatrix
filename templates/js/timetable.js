@@ -87,73 +87,314 @@ function examsInCell(exams, date, slot) {
 
 function renderCalendar(exams) {
   var container = document.getElementById("calendarContainer");
-  if (!container) { return; }
 
-  var dates = getExamDates(exams);
-  var slots = getExamSlots(exams);
+  if (!container) {
+    return;
+  }
+
   container.innerHTML = "";
 
-  var table = document.createElement("table");
-  table.className = "ttCalendar";
+  /* =====================================
+     CURRENT SELECTED MONTH
+  ===================================== */
 
-  var thead = document.createElement("thead");
-  var headRow = document.createElement("tr");
-  var corner = document.createElement("th");
-  corner.textContent = "Slot / Date";
-  headRow.appendChild(corner);
-  for (var d = 0; d < dates.length; d++) {
-    var th = document.createElement("th");
-    th.textContent = dates[d];
-    headRow.appendChild(th);
+  if (window.timetableMonth === undefined) {
+    window.timetableMonth = new Date().getMonth();
   }
-  thead.appendChild(headRow);
-  table.appendChild(thead);
 
-  var tbody = document.createElement("tbody");
-  for (var s = 0; s < slots.length; s++) {
-    var row = document.createElement("tr");
-    var slotCell = document.createElement("th");
-    slotCell.textContent = slots[s];
-    slotCell.className = "ttSlotLabel";
-    row.appendChild(slotCell);
+  if (window.timetableYear === undefined) {
+    window.timetableYear = new Date().getFullYear();
+  }
 
-    for (var c = 0; c < dates.length; c++) {
-      var td = document.createElement("td");
-      td.className = "ttCell";
-      var cellExams = examsInCell(exams, dates[c], slots[s]);
+  var month = window.timetableMonth;
+  var year = window.timetableYear;
 
-      for (var e = 0; e < cellExams.length; e++) {
-        var ex = cellExams[e];
-        var block = document.createElement("div");
-        block.className = "examBlock";
 
-        var nameEl = document.createElement("div");
-        nameEl.className = "examName";
-        nameEl.textContent = ex.examName || "Exam";
-        block.appendChild(nameEl);
+  /* =====================================
+     MONTH HEADER
+  ===================================== */
 
-        var courseEl = document.createElement("div");
-        courseEl.className = "examCourses";
-        courseEl.textContent = (ex.pickedCourses || []).join(", ");
-        block.appendChild(courseEl);
+  var header = document.createElement("div");
+  header.className = "calendarHeader";
 
-        var halls = ex.pickedHalls || [];
-        if (halls.length) {
-          var hallEl = document.createElement("div");
-          hallEl.className = "examHalls";
-          hallEl.textContent = halls.join(", ");
-          block.appendChild(hallEl);
-        }
-        td.appendChild(block);
-      }
-      row.appendChild(td);
+  var previousBtn = document.createElement("button");
+  previousBtn.className = "monthBtn";
+  previousBtn.textContent = "‹";
+
+  var monthTitle = document.createElement("h2");
+  monthTitle.className = "calendarMonthTitle";
+
+  var monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  monthTitle.textContent = monthNames[month] + " " + year;
+
+  var nextBtn = document.createElement("button");
+  nextBtn.className = "monthBtn";
+  nextBtn.textContent = "›";
+
+
+  /* Previous month */
+
+  previousBtn.addEventListener("click", function () {
+
+    month--;
+
+    if (month < 0) {
+      month = 11;
+      year--;
     }
-    tbody.appendChild(row);
-  }
-  table.appendChild(tbody);
-  container.appendChild(table);
-}
 
+    window.timetableMonth = month;
+    window.timetableYear = year;
+
+    renderCalendar(exams);
+  });
+
+
+  /* Next month */
+
+  nextBtn.addEventListener("click", function () {
+
+    month++;
+
+    if (month > 11) {
+      month = 0;
+      year++;
+    }
+
+    window.timetableMonth = month;
+    window.timetableYear = year;
+
+    renderCalendar(exams);
+  });
+
+
+  header.appendChild(previousBtn);
+  header.appendChild(monthTitle);
+  header.appendChild(nextBtn);
+
+  container.appendChild(header);
+
+
+  /* =====================================
+     CALENDAR
+  ===================================== */
+
+  var calendar = document.createElement("div");
+  calendar.className = "monthCalendar";
+
+
+  /* Week names */
+
+  var weekDays = [
+    "SUN",
+    "MON",
+    "TUE",
+    "WED",
+    "THU",
+    "FRI",
+    "SAT"
+  ];
+
+  for (var w = 0; w < weekDays.length; w++) {
+
+    var weekDay = document.createElement("div");
+
+    weekDay.className = "calendarWeekDay";
+
+    weekDay.textContent = weekDays[w];
+
+    calendar.appendChild(weekDay);
+  }
+
+
+  /* =====================================
+     MONTH INFORMATION
+  ===================================== */
+
+  var firstDay = new Date(year, month, 1).getDay();
+
+  var daysInMonth =
+    new Date(year, month + 1, 0).getDate();
+
+
+  /* Empty cells before first day */
+
+  for (var empty = 0; empty < firstDay; empty++) {
+
+    var emptyCell = document.createElement("div");
+
+    emptyCell.className =
+      "calendarDate emptyDate";
+
+    calendar.appendChild(emptyCell);
+  }
+
+
+  /* =====================================
+     CREATE DAYS
+  ===================================== */
+
+  for (var day = 1; day <= daysInMonth; day++) {
+
+    var dateCell = document.createElement("div");
+
+    dateCell.className = "calendarDate";
+
+
+    /* Date number */
+
+    var dateNumber = document.createElement("div");
+
+    dateNumber.className = "calendarDateNumber";
+
+    dateNumber.textContent = day;
+
+    dateCell.appendChild(dateNumber);
+
+
+    /* =================================
+       CREATE YYYY-MM-DD
+    ================================= */
+
+    var monthString =
+      String(month + 1).padStart(2, "0");
+
+    var dayString =
+      String(day).padStart(2, "0");
+
+    var fullDate =
+      year + "-" +
+      monthString + "-" +
+      dayString;
+
+
+    /* =================================
+       FIND EXAMS FOR THIS DATE
+    ================================= */
+
+    for (var e = 0; e < exams.length; e++) {
+
+      var exam = exams[e];
+
+      if (exam.date !== fullDate) {
+        continue;
+      }
+
+
+      /* Exam card */
+
+      var examCard =
+        document.createElement("div");
+
+      examCard.className = "calendarExamCard";
+
+
+      /* Slot */
+
+      var slot = document.createElement("div");
+
+      slot.className = "calendarExamSlot";
+
+      slot.textContent =
+        exam.slot || "Exam";
+
+      examCard.appendChild(slot);
+
+
+      /* Exam name */
+
+      var examName =
+        document.createElement("div");
+
+      examName.className =
+        "calendarExamName";
+
+      examName.textContent =
+        exam.examName || "Exam";
+
+      examCard.appendChild(examName);
+
+
+      /* Courses */
+
+      if (
+        exam.pickedCourses &&
+        exam.pickedCourses.length
+      ) {
+
+        var courses =
+          document.createElement("div");
+
+        courses.className =
+          "calendarExamCourses";
+
+        courses.textContent =
+          exam.pickedCourses.join(", ");
+
+        examCard.appendChild(courses);
+      }
+
+
+      /* Halls */
+
+      if (
+        exam.pickedHalls &&
+        exam.pickedHalls.length
+      ) {
+
+        var halls =
+          document.createElement("div");
+
+        halls.className =
+          "calendarExamHall";
+
+        halls.textContent =
+          exam.pickedHalls.join(", ");
+
+        examCard.appendChild(halls);
+      }
+
+
+      dateCell.appendChild(examCard);
+    }
+
+
+    /* =================================
+       TODAY
+    ================================= */
+
+    var today = new Date();
+
+    if (
+      day === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear()
+    ) {
+
+      dateCell.classList.add("today");
+    }
+
+
+    calendar.appendChild(dateCell);
+  }
+
+
+  container.appendChild(calendar);
+}
 
 /* =========================================================
    ==============  [JIYA] CLASH DETECTION  ===============
