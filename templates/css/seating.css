@@ -1,24 +1,18 @@
 /* =========================================================
-   GLOBAL RESET & CONTAINER
+   SEATING RESULT PAGE  (Member 2 — CSS & UI)
+   Builds on theme.css. No JS/logic touched. All class + ID
+   names kept identical so seating.js keeps working.
    ========================================================= */
 
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    background-color: #fcfcfc;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #2b3331;
-}
+/* =========================================================
+   CONTAINER
+   ========================================================= */
 
 .seatingContainer {
     width: 100%;
-    max-width: 1000px;
+    max-width: 1040px;
     margin: 0 auto;
-    padding: 30px 20px 50px;
+    padding: 40px 24px 64px;
 }
 
 /* =========================================================
@@ -26,98 +20,22 @@ body {
    ========================================================= */
 
 .pageHead {
-    margin-bottom: 20px;
+    margin-bottom: 28px;
 }
 
 .pageTitle {
     margin: 0;
-    font-size: 32px;
-    font-family: Georgia, serif;
+    font-family: var(--serif);
+    font-size: 34px;
     font-weight: 700;
-    color: #0b4f37;
+    letter-spacing: -0.02em;
+    color: var(--emerald);
 }
 
 .pageSub {
-    margin: 6px 0 0;
-    color: #7b8581;
+    margin: 8px 0 0;
+    color: var(--ink-3);
     font-size: 14px;
-}
-
-/* =========================================================
-   NAVBAR & FOOTER BARS
-   ========================================================= */
-
-.innerNavbar,
-.innerFooter {
-    background-color: #212b27;
-    border-radius: 12px;
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: #ffffff;
-    margin-bottom: 25px;
-}
-
-.navBrand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.brandIcon {
-    background-color: #10b981;
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 4px 6px;
-    border-radius: 4px;
-}
-
-.brandName {
-    font-family: Georgia, serif;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.navLinks,
-.footerLinks {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-
-.navLinks a,
-.footerLinks a {
-    color: #a0acba;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.navLinks a.active {
-    background-color: #384540;
-    color: #ffffff;
-    padding: 6px 14px;
-    border-radius: 6px;
-}
-
-.btnLogout {
-    background: transparent;
-    border: 1px solid #4a5752;
-    color: #ffffff;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-.innerFooter {
-    margin-top: 30px;
-}
-
-.footerLinks a {
-    color: #d1d5db;
 }
 
 /* =========================================================
@@ -125,61 +43,66 @@ body {
    ========================================================= */
 
 .metaSection {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .examTitle {
     margin: 0;
-    font-family: Georgia, serif;
-    font-size: 22px;
-    color: #1f2926;
+    font-family: var(--serif);
+    font-size: 23px;
+    font-weight: 700;
+    color: var(--ink);
 }
 
 .examSub {
-    margin: 4px 0 16px;
-    color: #6b7280;
-    font-size: 13px;
+    margin: 5px 0 18px;
+    color: var(--ink-2);
+    font-size: 13.5px;
 }
 
 .legendCard {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 15px;
-    padding: 12px 18px;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    background: #ffffff;
+    gap: 16px;
+    padding: 13px 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
 }
 
 .legendLabel {
     font-size: 10px;
     font-weight: 800;
-    letter-spacing: 0.5px;
-    color: #9ca3af;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
 }
 
 .legendSwatches {
     display: flex;
-    gap: 15px;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
 .legendItem {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     font-size: 12px;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--ink);
 }
 
 .legendDot {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    flex: none;
 }
 
 /* Class-based dynamic color dots */
-.legendDot.cs { background-color: #0d7a5f; }
+.legendDot.cs { background-color: #0f7a5c; }
 .legendDot.ai { background-color: #2563eb; }
 .legendDot.ec { background-color: #d97706; }
 .legendDot.me { background-color: #7c3aed; }
@@ -191,89 +114,106 @@ body {
 .metricsGrid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
+    gap: 16px;
+    margin-bottom: 28px;
 }
 
 .metricCard {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    background: #ffffff;
+    gap: 6px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.metricCard:hover {
+    border-color: var(--emerald);
+    box-shadow: 0 6px 18px rgba(15,122,92,.08);
+    transform: translateY(-2px);
 }
 
 .metricValue {
-    font-size: 22px;
-    font-weight: 700;
-    color: #0d7a5f;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--emerald);
     line-height: 1;
 }
 
 .metricLabel {
-    margin-top: 6px;
-    font-size: 9px;
+    font-size: 9.5px;
     font-weight: 800;
-    letter-spacing: 0.5px;
-    color: #9ca3af;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
 }
 
 /* =========================================================
-   HALL GRID (5 ROWS x 10 COLUMNS)
+   HALL GRID
    ========================================================= */
 
 .hallsGrid {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 22px;
+    margin-bottom: 24px;
 }
 
 .hallCard {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
     width: 100%;
 }
 
 .hallHeader {
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
 }
 
 .hallTitle {
     margin: 0;
-    font-family: Georgia, serif;
-    font-size: 16px;
-    color: #111827;
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
 }
 
 .hallInfo {
-    font-size: 11px;
-    color: #9ca3af;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-3);
 }
 
 .hallDirection {
     text-align: center;
     font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #9ca3af;
-    margin: 12px 0 10px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    color: #ffffff;
+    margin: 16px 0 18px;
+    background: linear-gradient(180deg, var(--charcoal), #2c3833);
+    padding: 9px;
+    border-radius: 10px;
 }
 
 .seatingGrid {
     display: grid;
-    gap: 8px;
+    gap: 9px;
     overflow-x: auto;
+    padding-bottom: 4px;
 }
 
 .grid5x10 {
-    grid-template-columns: repeat(10, minmax(65px, 1fr));
+    grid-template-columns: repeat(10, minmax(64px, 1fr));
 }
 
 .seat {
@@ -281,32 +221,39 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px 4px;
-    border-radius: 6px;
+    padding: 9px 4px;
+    border-radius: 8px;
     color: #ffffff;
     text-align: center;
-    min-height: 46px;
+    min-height: 58px;
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.seat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26,31,29,.18);
 }
 
 .seat strong {
-    font-size: 11px;
-    line-height: 1.1;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.15;
 }
 
 .seat span {
-    font-size: 8px;
-    opacity: 0.85;
+    font-size: 14px;
+    opacity: 0.88;
 }
 
 /* Class-based dynamic seat background colors */
-.seat.cs { background-color: #0d7a5f; }
+.seat.cs { background-color: #0f7a5c; }
 .seat.ai { background-color: #2563eb; }
 .seat.ec { background-color: #d97706; }
 .seat.me { background-color: #7c3aed; }
 
 .seat.empty {
     background: #f3f4f6;
-    border: 1px dashed #d1d5db;
+    border: 1px dashed var(--line);
     background-image: repeating-linear-gradient(
         45deg,
         #e5e7eb,
@@ -314,6 +261,19 @@ body {
         #f3f4f6 5px,
         #f3f4f6 10px
     );
+}
+
+.seat.empty:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* highlight state used by find-my-seat search (seating.js may toggle .highlight) */
+.seat.highlight {
+    outline: 3px solid var(--charcoal);
+    outline-offset: 2px;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 16px rgba(26,31,29,.28);
 }
 
 /* =========================================================
@@ -324,58 +284,97 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 15px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 14px 18px;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 20px;
 }
 
 .actionButtons {
     display: flex;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .btnPrimary,
 .btnSecondary {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-size: 12px;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-family: var(--ui);
+    font-size: 12.5px;
     font-weight: 700;
     cursor: pointer;
+    transition: background .18s ease, border-color .18s ease,
+                box-shadow .18s ease, transform .12s ease;
 }
 
 .btnPrimary {
-    background-color: #0d7a5f;
-    border: none;
+    background-color: var(--emerald);
+    border: 1px solid var(--emerald);
     color: #ffffff;
 }
 
+.btnPrimary:hover {
+    background-color: #0c6b50;
+    box-shadow: 0 5px 14px rgba(15,122,92,.22);
+    transform: translateY(-1px);
+}
+
+.btnPrimary:active { transform: translateY(0); box-shadow: none; }
+
 .btnSecondary {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    color: #374151;
+    background-color: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+}
+
+.btnSecondary:hover {
+    border-color: var(--emerald);
+    color: var(--emerald);
+    background: var(--emerald-tint);
+    transform: translateY(-1px);
+}
+
+.btnSecondary:active { transform: translateY(0); }
+
+.btnPrimary:focus-visible,
+.btnSecondary:focus-visible,
+#seatSearchInput:focus-visible {
+    outline: 2px solid var(--emerald);
+    outline-offset: 2px;
 }
 
 .searchBox {
-    width: 220px;
+    width: 240px;
+    max-width: 100%;
 }
 
 #seatSearchInput {
     width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    font-size: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: var(--ui);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--paper);
     outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-#seatSearchInput::placeholder {
-    color: #9ca3af;
+#seatSearchInput:hover { border-color: var(--ink-3); }
+
+#seatSearchInput:focus {
+    border-color: var(--emerald);
+    box-shadow: 0 0 0 3px rgba(15,122,92,.12);
 }
+
+#seatSearchInput::placeholder { color: var(--ink-3); }
 
 .srOnly {
     position: absolute;
@@ -389,31 +388,53 @@ body {
 }
 
 /* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 720px) {
+    .metricsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .controlsCard {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .actionButtons { justify-content: center; }
+    .searchBox { width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .seatingContainer { padding: 28px 16px 48px; }
+    .pageTitle { font-size: 28px; }
+    #seatSearchInput { font-size: 16px; } /* stops iOS zoom */
+}
+
+/* =========================================================
    PRINT STYLES
    ========================================================= */
 
 @media print {
-        /* ---- keep seat colours when printing ---- */
     .seat,
     .legendDot {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
-    .innerNavbar,
-    .innerFooter,
+    #navbarContainer,
+    #footerContainer,
     .controlsCard,
     .pageSub {
         display: none !important;
     }
 
-    body {
-        background: #ffffff;
-    }
+    body { background: #ffffff; }
 
     .seatingContainer {
         max-width: 100%;
         padding: 0;
     }
-    
+
+    .metricCard,
+    .hallCard,
+    .legendCard { break-inside: avoid; }
 }
