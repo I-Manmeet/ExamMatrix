@@ -333,26 +333,154 @@ function clearAllPicks(){
 
 /* =========================================================
    ============  [MEMBER C] VALIDATE + SAVE  ==============
-   Status: TODO
-
-   WRITE:
-     updateStatusBar()   - total seats (sum of picked halls' rows*cols)
-                           vs matched student count. If enough -> green,
-                           enable #generateBtn; else -> red/neutral, disable.
-     generateAndSave()   - collect { examName, date, slot, pickedCourses,
-                           pickedHalls, students } and save to localStorage
-                           key "em_currentExam", then redirect to seating.html.
-
-   HINT: localStorage.setItem("em_currentExam", JSON.stringify(exam));
-         window.location.href = "seating.html";
+   Status: DONE
 ========================================================= */
 
 function updateStatusBar(){
-  // TODO [MEMBER C]
+
+  let totalSeats = 0;
+  for (let i = 0; i < pickedHalls.length; i++) {
+    for (let h = 0; h < EM_DATA.halls.length; h++) {
+      let hall = EM_DATA.halls[h];
+      if (hall.hallNo === pickedHalls[i]) {
+        totalSeats += hall.rows * hall.cols;
+        break;
+      }
+    }
+  }
+
+  let students = getMatchedStudents();
+  let studentCount = students.length;
+
+  let statusMsg = document.getElementById("statusMsg");
+  let statusText = document.getElementById("statusText");
+  let generateBtn = document.getElementById("generateBtn");
+
+  if (!statusMsg || !statusText || !generateBtn) {
+    return;
+  }
+
+  if (pickedCourses.length === 0 && pickedHalls.length === 0) {
+    statusMsg.className = "statusMsg neutral";
+    statusText.textContent =
+      "Pick subjects and halls to begin.";
+    generateBtn.disabled = true;
+    return;
+  }
+
+  if (pickedCourses.length === 0) {
+    statusMsg.className = "statusMsg neutral";
+    statusText.textContent =
+      "Pick at least one subject.";
+    generateBtn.disabled = true;
+    return;
+  }
+
+  if (pickedHalls.length === 0) {
+    statusMsg.className = "statusMsg neutral";
+    statusText.textContent =
+      studentCount + " students selected · Pick at least one hall.";
+    generateBtn.disabled = true;
+    return;
+  }
+
+  if (totalSeats >= studentCount) {
+    statusMsg.className = "statusMsg good";
+    statusText.textContent =
+      totalSeats + " seats available · " +
+      studentCount + " students selected · " +
+      "Ready to generate.";
+    generateBtn.disabled = false;
+  }
+
+  else {
+    let shortage = studentCount - totalSeats;
+    statusMsg.className = "statusMsg bad";
+    statusText.textContent =
+      totalSeats + " seats available · " +
+      studentCount + " students selected · " +
+      shortage + " more seat" +
+      (shortage === 1 ? "" : "s") +
+      " required.";
+    generateBtn.disabled = true;
+  }
 }
 
 function generateAndSave(){
-  // TODO [MEMBER C]
+
+  let examName = document.getElementById("examName").value.trim();
+  let date = document.getElementById("examDate").value;
+  let slot = document.getElementById("examSlot").value;
+
+  if (examName === "") {
+    alert("Please enter an exam name.");
+    document.getElementById("examName").focus();
+    return;
+  }
+
+  if (date === "") {
+    alert("Please select an exam date.");
+    document.getElementById("examDate").focus();
+    return;
+  }
+
+  if (slot === "") {
+    alert("Please select an exam slot.");
+    document.getElementById("examSlot").focus();
+    return;
+  }
+
+  if (pickedCourses.length === 0) {
+    alert("Please select at least one subject.");
+    return;
+  }
+
+  if (pickedHalls.length === 0) {
+    alert("Please select at least one hall.");
+    return;
+  }
+
+  let students = getMatchedStudents();
+  if (students.length === 0) {
+    alert("No students found for the selected subjects.");
+    return;
+  }
+
+  let totalSeats = 0;
+  for (let i = 0; i < pickedHalls.length; i++) {
+    for (let h = 0; h < EM_DATA.halls.length; h++) {
+      let hall = EM_DATA.halls[h];
+      if (hall.hallNo === pickedHalls[i]) {
+        totalSeats += hall.rows * hall.cols;
+        break;
+      }
+    }
+  }
+
+  if (totalSeats < students.length) {
+    alert(
+      "Not enough seats.\n\n" +
+      "Students: " + students.length + "\n" +
+      "Available seats: " + totalSeats
+    );
+    return;
+  }
+
+  let exam = {
+    examName: examName,
+    date: date,
+    slot: slot,
+    pickedCourses: pickedCourses,
+    pickedHalls: pickedHalls,
+    students: students
+  };
+
+  localStorage.setItem(
+    "em_currentExam",
+    JSON.stringify(exam)
+  );
+
+  window.location.href = "seating.html";
 }
 
 
