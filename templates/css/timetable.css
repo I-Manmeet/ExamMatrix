@@ -87,5 +87,30 @@
    (print-color-adjust: exact on .examBlock).
 ========================================================= */
 @media print {
-  /* [MEMBER 3] fill this in */
+  /* hide everything that isn't the timetable */
+  .navbar, .app-header, header,
+  .footer, footer,
+  #exportBtn, .ttButtons, button {
+    display: none !important;
+  }
+
+  /* keep exam-block colours when printing */
+  .examBlock,
+  .clashItem.bad,
+  .clashItem.good {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* give the calendar + clash panel the full page */
+  #calendarContainer,
+  #clashPanel {
+    width: 100%;
+    page-break-inside: avoid;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
 }
