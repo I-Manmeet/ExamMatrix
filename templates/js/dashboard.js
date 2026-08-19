@@ -8,7 +8,7 @@
 (function () {
   "use strict";
 
-  var EXAMS_KEY   = "em_exams";        // list of saved exams
+  var EXAMS_KEY = "em_exams";        // list of saved exams
   var CURRENT_KEY = "em_currentExam";  // single exam createExam.js writes
   var SESSION_KEY = "em_session";      // sessionStorage, set by login.html
   var SEATING_PAGE = "seating.html";
@@ -22,7 +22,7 @@
         var parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) list = parsed;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     if (!list.length) {
       try {
@@ -34,7 +34,7 @@
             list = [one];
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     return list;
   }
@@ -125,21 +125,23 @@
     }).slice(0, 5);
 
     tbody.innerHTML = rows.map(function (ex, i) {
-      var id       = ex.id != null ? ex.id : i;
-      var name     = escapeHtml(ex.examName || "Untitled Exam");
-      var courses  = Array.isArray(ex.pickedCourses) ? ex.pickedCourses : [];
-      var subLine  = escapeHtml(courses.length ? courses.join(", ") : "—");
-      var slot     = escapeHtml(ex.slot || "");
-      var date     = escapeHtml(ex.date || "TBD");
+      var id = ex.id != null ? ex.id : i;
+      var name = escapeHtml(ex.examName || "Untitled Exam");
+      var courses = Array.isArray(ex.pickedCourses) ? ex.pickedCourses : [];
+      var subLine = escapeHtml(courses.length ? courses.join(", ") : "—");
+      var slot = escapeHtml(ex.slot || "");
+      var date = escapeHtml(ex.date || "TBD");
       var dateTime = slot ? (date + " · " + slot) : date;
 
       return (
         '<tr>' +
-          '<td><strong>' + name + '</strong><span class="sub-code">' + subLine + '</span></td>' +
-          '<td>' + dateTime + '</td>' +
-          '<td><span class="status-badge ready"><i class="fa-solid fa-circle"></i> Seating Ready</span></td>' +
-          '<td class="text-right"><a href="#" class="action-link" data-exam-id="' +
-            escapeHtml(id) + '">View Details &rarr;</a></td>' +
+        '<td><strong>' + name + '</strong><span class="sub-code">' + subLine + '</span></td>' +
+        '<td>' + dateTime + '</td>' +
+        '<td><span class="status-badge ready"><i class="fa-solid fa-circle"></i> Seating Ready</span></td>' +
+        '<td class="text-right">' +
+        '<a href="#" class="action-link" data-exam-id="' + escapeHtml(id) + '">View Details &rarr;</a>' +
+        '<a href="#" class="delete-link" data-exam-id="' + escapeHtml(id) + '">Delete</a>' +
+        '</td>' +
         '</tr>'
       );
     }).join("");
@@ -147,10 +149,10 @@
 
   /* ---- Hall Capacity live matrix ---- */
   function hallState(pct) {
-    if (pct >= 100) return { badge: "status-full",      bar: "bar-full",  label: "Filled" };
-    if (pct >= 50)  return { badge: "status-occupied",  bar: "bar-blue",  label: "Occupied" };
-    if (pct >  0)   return { badge: "status-available", bar: "bar-gold",  label: "Available" };
-    return          { badge: "status-empty",     bar: "bar-empty", label: "Empty" };
+    if (pct >= 100) return { badge: "status-full", bar: "bar-full", label: "Filled" };
+    if (pct >= 50) return { badge: "status-occupied", bar: "bar-blue", label: "Occupied" };
+    if (pct > 0) return { badge: "status-available", bar: "bar-gold", label: "Available" };
+    return { badge: "status-empty", bar: "bar-empty", label: "Empty" };
   }
 
   function renderHallMatrix(occ) {
@@ -168,28 +170,28 @@
     }
 
     grid.innerHTML = halls.map(function (h) {
-      var name     = escapeHtml(h.hallNo || "Hall");
+      var name = escapeHtml(h.hallNo || "Hall");
       var capacity = num(h.rows) * num(h.cols);
-      var seated   = Math.round(num(occ[h.hallNo]));
+      var seated = Math.round(num(occ[h.hallNo]));
       if (seated > capacity) seated = capacity;
       var pct = capacity > 0 ? Math.round((seated / capacity) * 100) : 0;
-      var s   = hallState(pct);
+      var s = hallState(pct);
       var barInner = (pct === 0)
         ? '<span class="hall-percent empty-text">0%</span>'
         : '<span class="hall-percent">' + pct + '%</span>';
 
       return (
         '<div class="hall-card">' +
-          '<div class="hall-info-row">' +
-            '<span class="hall-title">' + name + '</span>' +
-            '<div class="hall-meta">' +
-              '<span class="capacity-count">' + seated + ' / ' + capacity + ' Seats</span>' +
-              '<span class="hall-status-badge ' + s.badge + '"><i class="fa-solid fa-circle"></i> ' + s.label + '</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="progress-bar-wrapper">' +
-            '<div class="progress-bar ' + s.bar + '" style="width: ' + pct + '%;">' + barInner + '</div>' +
-          '</div>' +
+        '<div class="hall-info-row">' +
+        '<span class="hall-title">' + name + '</span>' +
+        '<div class="hall-meta">' +
+        '<span class="capacity-count">' + seated + ' / ' + capacity + ' Seats</span>' +
+        '<span class="hall-status-badge ' + s.badge + '"><i class="fa-solid fa-circle"></i> ' + s.label + '</span>' +
+        '</div>' +
+        '</div>' +
+        '<div class="progress-bar-wrapper">' +
+        '<div class="progress-bar ' + s.bar + '" style="width: ' + pct + '%;">' + barInner + '</div>' +
+        '</div>' +
         '</div>'
       );
     }).join("");
@@ -211,11 +213,55 @@
       if (id == null || id === "") return;
       var exam = byId[id];
       if (exam) {
-        try { localStorage.setItem(CURRENT_KEY, JSON.stringify(exam)); } catch (err) {}
+        try { localStorage.setItem(CURRENT_KEY, JSON.stringify(exam)); } catch (err) { }
       }
       window.location.href = SEATING_PAGE + "?examId=" + encodeURIComponent(id);
     });
   }
+
+    /* ---- Delete an exam (frees its halls + subjects automatically) ---- */
+  function deleteExam(id) {
+    // remove from the em_exams list
+    var list = getExams().filter(function (ex, i) {
+      var exId = String(ex.id != null ? ex.id : i);
+      return exId !== String(id);
+    });
+    try { localStorage.setItem(EXAMS_KEY, JSON.stringify(list)); } catch (e) {}
+
+    // if the deleted exam was the "current" one, clear it too
+    try {
+      var cur = JSON.parse(localStorage.getItem(CURRENT_KEY));
+      if (cur && String(cur.id) === String(id)) {
+        localStorage.removeItem(CURRENT_KEY);
+      }
+    } catch (e) {}
+
+    // re-render everything: stats, table, and hall matrix all recompute
+    // from the new list, so the freed halls + subjects update instantly
+    renderAll();
+  }
+
+  function wireDeleteLinks() {
+    var table = document.getElementById("exam-table");
+    if (!table) return;
+    table.addEventListener("click", function (e) {
+      var link = e.target.closest(".delete-link");
+      if (!link) return;
+      e.preventDefault();
+      var id = link.getAttribute("data-exam-id");
+      if (id == null || id === "") return;
+
+      // find the exam name for a clearer confirm message
+      var row = link.closest("tr");
+      var nameEl = row ? row.querySelector("strong") : null;
+      var name = nameEl ? nameEl.textContent : "this exam";
+
+      if (window.confirm('Delete "' + name + '"?\nIts halls and subjects will be freed.')) {
+        deleteExam(id);
+      }
+    });
+  }
+
 
   /* ---- New Exam button (inline onclick already exists; fallback) ---- */
   function wireNewExam() {
@@ -227,11 +273,12 @@
   /* ---- Render + init ---- */
   function renderAll() {
     var exams = getExams();
-    var occ   = computeOccupancy(exams);
+    var occ = computeOccupancy(exams);
     renderStats(exams, occ);
     renderExamsTable(exams);
     renderHallMatrix(occ);
     wireViewLinks(exams);
+    wireDeleteLinks();
     wireNewExam();
   }
 
