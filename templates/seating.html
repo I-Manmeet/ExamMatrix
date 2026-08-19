@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View generated exam seating arrangements and find student seats in ExamHall.">
+    <title>Seating Result - ExamHall</title>
+    <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/headerFooter.css">
+    <link rel="stylesheet" href="css/seating.css">
+</head>
+
+<body data-page="seating">
+
+  <div id="navbarContainer"></div>
+    <main id="seatingMain" class="seatingContainer">
+
+        <!-- PAGE HEADER -->
+        <section class="pageHead" aria-labelledby="seatingTitle">
+            <div class="pageHeadContent">
+                <h1 id="seatingTitle" class="pageTitle">
+                    Seating result
+                </h1>
+                <p class="pageSub">
+                    Legend · metrics · hall grids (color-coded) · controls + find-my-seat
+                </p>
+            </div>
+        </section>
+
+        <!-- NAVIGATION BAR -->
+
+
+        <!-- EXAM INFORMATION & LEGEND -->
+        <section class="metaSection" aria-labelledby="examTitle">
+            <h2 id="examTitle" class="examTitle">
+                Data Structures Mid-Sem
+            </h2>
+            <p id="examSub" class="examSub">
+                20 Aug 2026 · 09:00–11:00 · CS201, MA201
+            </p>
+
+            <!-- LEGEND -->
+            <div class="legendCard" aria-label="Seating legend">
+                <span class="legendLabel">LEGEND</span>
+                <div id="legendSwatches" class="legendSwatches" role="list">
+                    <span class="legendItem">
+                        <span class="legendDot cs"></span>
+                        CS
+                    </span>
+                    <span class="legendItem">
+                        <span class="legendDot ai"></span>
+                        AI
+                    </span>
+                    <span class="legendItem">
+                        <span class="legendDot ec"></span>
+                        EC
+                    </span>
+                    <span class="legendItem">
+                        <span class="legendDot me"></span>
+                        ME
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- METRICS -->
+        <section class="metricsGrid" aria-label="Seating metrics">
+            <div class="metricCard">
+                <span class="metricValue" id="metricConflicts">0</span>
+                <span class="metricLabel">CONFLICTS</span>
+            </div>
+
+            <div class="metricCard">
+                <span class="metricValue" id="metricHalls">1</span>
+                <span class="metricLabel">HALLS USED</span>
+            </div>
+
+            <div class="metricCard">
+                <span class="metricValue" id="metricUtilization">100%</span>
+                <span class="metricLabel">UTILIZATION</span>
+            </div>
+
+            <div class="metricCard">
+                <span class="metricValue" id="metricBacktracks">0</span>
+                <span class="metricLabel">BACKTRACKS</span>
+            </div>
+        </section>
+
+        <!-- HALL GRIDS -->
+        <section id="hallsContainer" class="hallsGrid" aria-label="Examination hall seating arrangements">
+            
+            <div class="hallCard">
+                <div class="hallHeader">
+                    <h3 class="hallTitle">Main Examination Hall</h3>
+                    <span class="hallInfo">5x10 · 50 seats</span>
+                </div>
+                <div class="hallDirection">↑ FRONT ↑</div>
+                
+                <!-- Target container for Javascript rendering -->
+                <div id="seatingGrid" class="seatingGrid grid5x10">
+                    <!-- JavaScript dynamically injects seats here -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- CONTROLS & SEARCH -->
+        <section class="card controlsCard" aria-label="Seating controls">
+            <div class="actionButtons">
+                <button type="button" class="btnPrimary" id="regenerateBtn" onclick="location.reload()">
+                    <span>↻</span> Regenerate
+                </button>
+
+                <button type="button" class="btnSecondary" id="printBtn" onclick="window.print()">
+                    <span>🖨</span> Print
+                </button>
+
+                <button type="button" class="btnSecondary" id="exportBtn">
+                    <span>↓</span> Export CSV
+                </button>
+            </div>
+
+            <div class="searchBox">
+                <label for="seatSearchInput" class="srOnly">Find seat by roll number</label>
+                <input type="search" id="seatSearchInput" name="seatSearch" placeholder="Find seat by roll #" autocomplete="off">
+            </div>
+        </section>
+
+        <!-- FOOTER BAR -->
+
+
+    </main>
+  <!-- Shared footer -->
+  <div id="footerContainer"></div>
+
+  <!-- logged-in navbar + footer + username + logout + auth gate -->
+  <script src="js/app-shell.js"></script>
+  <script src="js/data.js"></script>
+    <script src="js/seating.js"></script>
+
+</body>
+</html>

@@ -6,13 +6,14 @@
 <title>Create Exam - ExamMatrix</title>
 
 <link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/createExam.css">
 <link rel="stylesheet" href="css/headerFooter.css">
+<link rel="stylesheet" href="css/createExam.css">
 </head>
 
-<body>
+<body data-page="create">
 
-  <div id="headerContainer"></div>
+  <!-- Shared logged-in navbar (same as dashboard) -->
+  <div id="navbarContainer"></div>
 
   <main id="createMain">
 
@@ -52,6 +53,9 @@
       <div class="card">
         <div class="cardLabel">2 · Subjects</div>
         <div id="subjectList" class="pickList"></div>
+        <div id="clashInfo" class="clashInfo clashInfo--idle">
+          <span>Hover a locked subject to see which students clash.</span>
+        </div>
       </div>
       <div class="card">
         <div class="cardLabel">3 · Halls</div>
@@ -79,14 +83,17 @@
         <span class="dot"></span>
         <span id="statusText">Pick subjects and halls to begin.</span>
       </div>
+      <button type="button" class="btnGhostSmall" id="clearAllBtn" onclick="clearAllPicks()">Clear all</button>
       <button class="btnPrimary btnSmall" id="generateBtn" disabled>Generate seating &amp; save →</button>
     </div>
 
   </main>
 
+  <!-- Shared footer -->
   <div id="footerContainer"></div>
 
-  <script src="js/auth-shared.js"></script>
+  <!-- logged-in navbar + footer + username + logout + auth gate -->
+  <script src="js/app-shell.js"></script>
   <script src="js/data.js"></script>
   <script src="js/createExam.js"></script>
 

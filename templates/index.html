@@ -167,9 +167,72 @@
          SUGGESTED CLASSES: .showcase-section > .container > .showcase-box
                             (left: .showcase-content, right: .showcase-stats-panel > .stat-card)
          ============================================================================ -->
-    <section class="section showcase-section">
+<!-- ============================================================================ 
+     ADMIN SHOWCASE / STATS BANNER
+     ============================================================================ -->
+    <section class="section showcase-section" id="showcase">
       <div class="container">
-        <!-- OTHER MEMBER: build the showcase / stats banner here (see description above) -->
+
+        <div class="showcase-box">
+
+          <!-- LEFT SIDE -->
+          <div class="showcase-content">
+
+            <div class="showcase-eyebrow">
+              <span class="showcase-dot"></span>
+              ADMIN CONSOLE
+            </div>
+
+            <h2 class="showcase-title">
+              Designed for university
+              administrators and invigilators
+            </h2>
+
+            <p class="showcase-description">
+              Track hall utilization, inspect student distribution, and catch
+              scheduling collisions before exam week begins.
+            </p>
+
+            <div class="showcase-buttons">
+              <a href="dashboard.html" class="showcase-btn showcase-btn-primary">
+                Try Student Lookup
+              </a>
+
+              <a href="#features" class="showcase-btn showcase-btn-secondary">
+                View Features
+              </a>
+            </div>
+
+          </div>
+
+
+          <!-- RIGHT SIDE / STATISTICS -->
+          <div class="showcase-stats-panel">
+
+            <div class="stat-card">
+              <span class="stat-number">3</span>
+              <span class="stat-label">Active Sessions Scheduled</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number">50</span>
+              <span class="stat-label">Students Seated Without Clash</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number">8</span>
+              <span class="stat-label">Halls Configured</span>
+            </div>
+
+            <div class="stat-card stat-card-success">
+              <span class="stat-number">0</span>
+              <span class="stat-label">Unresolved Venue Overlaps</span>
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
     </section>
 
@@ -188,12 +251,70 @@
                             .section-header + .developers-grid > .dev-card
                             (inside card: .dev-avatar, .dev-name, .dev-role, .dev-bio, .dev-skills > .skill-tag)
          ============================================================================ -->
-    <section class="section developers-section" id="developers">
-      <div class="container">
-        <!-- OTHER MEMBER: build the 3 team member cards here (see description above) -->
-      </div>
-    </section>
+        <section class="section developers-section" id="developers">
+          <div class="container">
+            
+            <!-- Section Header -->
+            <div class="section-header text-center">
+              <div class="section-tag">ENGINEERING TEAM</div>
+              <h2 class="section-title">Built by our team</h2>
+              <p class="section-subtitle">
+                Each page is built together, with every member contributing across authentication, timetable, and the seating engine.
+              </p>
+            </div>
 
+            <!-- Horizontal Cards Grid -->
+            <div class="developers-grid">
+
+              <!-- Member A -->
+              <div class="dev-card card-emerald">
+                <div class="dev-avatar">A</div>
+                <h3 class="dev-name">Member A</h3>
+                <div class="dev-role">AUTH &amp; STUDENT PORTAL</div>
+                <p class="dev-bio">
+                  Login and session handling, the public roll-number lookup, and the student seat view.
+                </p>
+                <div class="dev-skills">
+                  <span class="skill-tag">Authentication</span>
+                  <span class="skill-tag">Student Lookup</span>
+                  <span class="skill-tag">Responsive UI</span>
+                </div>
+              </div>
+
+              <!-- Member B -->
+              <div class="dev-card card-blue">
+                <div class="dev-avatar">B</div>
+                <h3 class="dev-name">Member B</h3>
+                <div class="dev-role">DATA &amp; TIMETABLE</div>
+                <p class="dev-bio">
+                  Course data loading, the timetable calendar, and real-time clash detection between subjects.
+                </p>
+                <div class="dev-skills">
+                  <span class="skill-tag">Timetable</span>
+                  <span class="skill-tag">Clash Detection</span>
+                  <span class="skill-tag">Data Filters</span>
+                </div>
+              </div>
+
+              <!-- Member C -->
+              <div class="dev-card card-amber">
+                <div class="dev-avatar">C</div>
+                <h3 class="dev-name">Member C</h3>
+                <div class="dev-role">SEATING ENGINE &amp; EXPORTS</div>
+                <p class="dev-bio">
+                  The constraint-satisfaction seating algorithm, overflow and backtracking, and print / CSV exports.
+                </p>
+                <div class="dev-skills">
+                  <span class="skill-tag">Seating Algorithm</span>
+                  <span class="skill-tag">Print View</span>
+                  <span class="skill-tag">CSV Export</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
     <!-- ============================================================================
          CALL TO ACTION (CTA) — OWNER: OTHER MEMBER
          ----------------------------------------------------------------------------
@@ -204,11 +325,22 @@
          SUGGESTED CLASSES: .cta-section > .container > .cta-banner > .cta-inner
                             (.cta-title, .cta-desc, .cta-button-row with two .btn)
          ============================================================================ -->
-    <section class="section cta-section" id="demo">
-      <div class="container">
-        <!-- OTHER MEMBER: build the CTA banner here (see description above) -->
+<section class="section cta-section" id="demo">
+  <div class="container">
+    <div class="cta-banner">
+      <div class="cta-inner">
+        <h2 class="cta-title">Calm, clash-free examinations.</h2>
+        <p class="cta-desc">
+          ExamHall handles seating and scheduling for mid-semester and final examinations.
+        </p>
+        <div class="cta-button-row">
+          <a href="#hero" class="btn btn-primary">Back to Top</a>
+          <a href="#lookup" class="btn btn-secondary">Try Student Lookup</a>
+        </div>
       </div>
-    </section>
+    </div>
+  </div>
+</section>
 
   </main>
 

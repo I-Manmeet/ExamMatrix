@@ -172,3 +172,469 @@ body{
   #cardBody{padding:24px 24px 26px}
   #cardHero h2{font-size:21px}
 }
+
+
+
+
+
+
+/* =========================================================
+   ADMIN SHOWCASE / STATS SECTION
+   ========================================================= */
+
+.showcase-section {
+  padding-top: 70px;
+  padding-bottom: 70px;
+}
+
+
+/* Main dark container */
+.showcase-box {
+  width: 100%;
+  background: #1d2926;
+  border-radius: 14px;
+  padding: 42px;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   LEFT CONTENT
+   ========================================================= */
+
+.showcase-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+
+.showcase-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #b9c5c1;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+
+  margin-bottom: 18px;
+}
+
+
+.showcase-dot {
+  width: 7px;
+  height: 7px;
+  background: #d6a84f;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+
+.showcase-title {
+  margin: 0;
+  max-width: 500px;
+
+  color: #ffffff;
+  font-family: Georgia, "Times New Roman", serif;
+
+  font-size: 38px;
+  line-height: 1.12;
+  font-weight: 500;
+}
+
+
+.showcase-description {
+  max-width: 500px;
+
+  margin: 20px 0 25px;
+
+  color: #aebbb6;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.showcase-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+
+.showcase-btn {
+  text-decoration: none;
+
+  padding: 10px 16px;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  transition: 0.2s ease;
+}
+
+
+.showcase-btn-primary {
+  background: #0e9f78;
+  color: #ffffff;
+  border: 1px solid #0e9f78;
+}
+
+
+.showcase-btn-primary:hover {
+  background: #0b8666;
+  border-color: #0b8666;
+}
+
+
+.showcase-btn-secondary {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #53615d;
+}
+
+
+.showcase-btn-secondary:hover {
+  background: #2a3834;
+  border-color: #697772;
+}
+
+
+/* =========================================================
+   STATISTICS PANEL
+   ========================================================= */
+
+.showcase-stats-panel {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+/* Individual statistic card */
+.stat-card {
+  min-height: 105px;
+  padding: 20px;
+
+  border-radius: 6px;
+
+  background: #26332f;
+  border: 1px solid #3a4743;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  box-sizing: border-box;
+}
+
+.stat-card {
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: scale(1.03);
+}
+
+
+
+
+.stat-number {
+  color: #55e0bd;
+
+  font-family: "Courier New", monospace;
+
+  font-size: 25px;
+  font-weight: 600;
+
+  line-height: 1;
+
+  margin-bottom: 10px;
+}
+
+
+.stat-label {
+  color: #aebbb6;
+
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .showcase-box {
+    padding: 30px;
+    gap: 30px;
+  }
+
+  .showcase-title {
+    font-size: 32px;
+  }
+
+  .showcase-stats-panel {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .showcase-section {
+    padding-top: 45px;
+    padding-bottom: 45px;
+  }
+
+  .showcase-box {
+    padding: 25px;
+    border-radius: 10px;
+  }
+
+  .showcase-title {
+    font-size: 28px;
+  }
+
+  .showcase-description {
+    font-size: 13px;
+  }
+
+  .showcase-stats-panel {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+  }
+
+  .stat-card {
+    min-height: 95px;
+    padding: 14px;
+  }
+
+  .stat-number {
+    font-size: 22px;
+  }
+
+  .stat-label {
+    font-size: 8px;
+  }
+}
+
+
+.developers-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 2rem;
+  margin-top: 2.5rem; /* Standard top margin */
+  flex-wrap: wrap;
+}
+
+/* Individual Developer Cards */
+.dev-card {
+  position: relative;
+  flex: 1 1 300px;
+  max-width: 360px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2.5rem 1.75rem 2rem 1.75rem; /* Even internal padding */
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Top Floating Avatar Circle */
+.dev-avatar {
+  position: static; /* Flow naturally inside the card flex layout */
+  transform: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.25rem; /* Space between circle and member name */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Typography Inside Card */
+.dev-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.dev-role {
+  font-size: 0.725rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.dev-bio {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* Skill Tags */
+.dev-skills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.skill-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: 20px;
+  background-color: #f3f4f6;
+  color: #374151;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Member-Specific Color Variants */
+/* Member A (Emerald) */
+.card-emerald .dev-avatar { background: #0f766e; }
+.card-emerald .dev-role { color: #0f766e; }
+
+/* Member B (Blue) */
+.card-blue .dev-avatar { background: #1e6091; }
+.card-blue .dev-role { color: #1e6091; }
+
+/* Member C (Amber) */
+.card-amber .dev-avatar { background: #b45309; }
+.card-amber .dev-role { color: #b45309; }
+
+/* Interactive Hover States */
+.dev-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.08);
+}
+
+.dev-card:hover .dev-avatar {
+  transform: scale(1.08); /* Scales up inside the card on hover */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+.card-emerald:hover { border-color: rgba(15, 118, 110, 0.4); }
+.card-blue:hover { border-color: rgba(30, 96, 145, 0.4); }
+.card-amber:hover { border-color: rgba(180, 83, 9, 0.4); }
+
+
+
+.card-emerald:hover .skill-tag { background-color: #e6f4f1; color: #0f766e; }
+.card-blue:hover .skill-tag { background-color: #e8f1f8; color: #1e6091; }
+.card-amber:hover .skill-tag { background-color: #fef3c7; color: #b45309; }
+
+
+
+/* CTA Section Layout */
+.cta-section {
+  padding: 4rem 0;
+}
+
+/* Main Dark Card Container */
+.cta-banner {
+  background-color: #1c2523; /* Dark slate dark-teal tone */
+  border-radius: 16px;
+  padding: 4rem 2rem;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.cta-inner {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+/* Serif Headline */
+.cta-title {
+  font-family: 'Times New Roman', Times, Georgia, serif; /* Clean serif font styling */
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #ffffff;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* Subtitle Description */
+.cta-desc {
+  font-size: 1rem;
+  color: #d1d5db;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+/* Buttons Container */
+.cta-button-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Primary Green Filled Button */
+.cta-button-row .btn-primary {
+  background-color: #0d7a5f;
+  color: #ffffff;
+  border: 1px solid #0d7a5f;
+  padding: 0.85rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.cta-button-row .btn-primary:hover {
+  background-color: #0b6851;
+  border-color: #0b6851;
+}
+
+/* Secondary Outlined Button */
+.cta-button-row .btn-secondary {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1px solid #4b5563;
+  padding: 0.85rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.cta-button-row .btn-secondary:hover {
+  border-color: #9ca3af;
+  background-color: rgba(255, 255, 255, 0.05);
+}

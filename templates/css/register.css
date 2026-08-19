@@ -1,0 +1,122 @@
+/* =========================================================
+   REGISTER PAGE — CSS (Member 2)
+   Focus states, button states, messages, responsive, field errors.
+   Builds on theme.css. Register page only.
+========================================================= */
+
+/* ---- center the card on a soft backdrop (matches login) ---- */
+#main{
+  min-height:calc(100vh - 136px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(15,122,92,.06) 0, transparent 55%),
+    var(--bg, #f6f7f5);
+}
+
+/* ---- card ---- */
+.authCard{
+  width:400px;
+  max-width:100%;
+  border-radius:16px;
+  box-shadow:0 12px 40px rgba(26,31,29,.10);
+  animation:cardIn .35s cubic-bezier(.16,1,.3,1);
+}
+@keyframes cardIn{
+  from{ opacity:0; transform:translateY(10px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+
+/* ---- hero band + body spacing ---- */
+#cardHero{ padding:28px 32px; }
+#cardHero .logoMark{ margin-bottom:14px; }
+#cardHero h2{ font-size:22px; margin-bottom:3px; }
+#cardBody{ padding:28px 32px 32px; }
+
+/* ---- 1) INPUT FOCUS STATE ---- */
+.formField{ margin-bottom:18px; }
+.formField label{ margin-bottom:7px; }
+.formField input{ padding:12px 14px; transition:border-color .15s ease, box-shadow .15s ease; }
+.formField input:hover{ border-color:var(--ink-3, #8a938e); }
+.formField input:focus{
+  outline:none;
+  border-color:var(--emerald, #0f7a5c);
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(15,122,92,.12);
+}
+.formField:focus-within label{ color:var(--emerald, #0f7a5c); transition:color .15s ease; }
+.formField input:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 40px #fff inset;
+  -webkit-text-fill-color:var(--ink, #212b28);
+}
+
+/* ---- 2) BUTTON HOVER + ACTIVE ---- */
+.btnPrimary{
+  margin-top:4px;
+  padding:12px;
+  transition:background .2s ease, transform .12s ease, box-shadow .2s ease;
+}
+.btnPrimary:hover{
+  background:var(--emerald-hover, #0c634a);
+  box-shadow:0 6px 16px rgba(15,122,92,.20);
+  transform:translateY(-1px);
+}
+.btnPrimary:active{
+  transform:translateY(0);
+  box-shadow:0 2px 6px rgba(15,122,92,.18);
+}
+.btnPrimary:disabled{ opacity:.6; cursor:not-allowed; transform:none; box-shadow:none; }
+
+/* ---- 3) MESSAGE BOX (error / success) ---- */
+#message{
+  display:none;
+  font-size:13px; font-weight:600;
+  padding:11px 14px; border-radius:9px;
+  margin-bottom:15px; border-left:3px solid transparent;
+  animation:msgIn .25s ease;
+}
+#message.msg-error{
+  display:block;
+  background:var(--danger-soft, #fdf2f2);
+  color:var(--danger, #c0392b);
+  border-left-color:var(--danger, #c0392b);
+}
+#message.msg-ok{
+  display:block;
+  background:var(--emerald-soft, #d9efe7);
+  color:var(--emerald, #0f7a5c);
+  border-left-color:var(--emerald, #0f7a5c);
+}
+@keyframes msgIn{
+  from{opacity:0; transform:translateY(-4px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* ---- 5) FIELD-LEVEL ERROR TEXT ---- */
+.fieldError{
+  display:block;
+  font-size:12px;
+  color:var(--danger, #c0392b);
+  margin-top:5px;
+}
+/* red border on an invalid input (add class "invalid" via JS if you use it) */
+.formField input.invalid{
+  border-color:var(--danger, #c0392b);
+  box-shadow:0 0 0 3px rgba(192,57,43,.10);
+}
+
+/* ---- bottom link ---- */
+#loginRedirect{ margin-top:20px; padding-top:16px; }
+#loginRedirect a{ transition:color .15s ease; }
+#loginRedirect a:hover{ color:var(--emerald-hover, #0c634a); text-decoration:underline; }
+
+/* ---- 4) RESPONSIVE ---- */
+@media (max-width:600px){
+  #main{ padding:28px 16px; min-height:auto; }
+  .authCard{ width:100%; border-radius:14px; }
+  #cardHero{ padding:22px 22px; }
+  #cardBody{ padding:24px 22px 26px; }
+  .formField input{ font-size:16px; }  /* stops iOS zoom */
+}
