@@ -33,6 +33,36 @@ function getUsedCourses() {
   return used;
 }
 
+/* -----------------------------------------------------------
+   LOCK already-scheduled courses in the picker.
+   A course that appears in any saved exam (em_exams) cannot be
+   scheduled again — grey it out and disable its checkbox.
+----------------------------------------------------------- */
+function lockUsedCourses() {
+  let used = getUsedCourses();
+  let rows = document.querySelectorAll('#subjectList .pickRow');
+
+  for (let i = 0; i < rows.length; i++) {
+    let row = rows[i];
+    let course = row.dataset.course;
+
+    if (used[course]) {
+      let box = row.querySelector('input');
+      row.classList.add('locked');
+      box.disabled = true;
+      box.checked = false;
+
+      let right = row.querySelector('.pickRight');
+      if (right) {
+        right.className = 'pickLock';
+        right.textContent = '✓ already conducted';
+      }
+      row.setAttribute('aria-disabled', 'true');
+      row.setAttribute('aria-label', course + ' has already been scheduled and cannot be conducted again.');
+    }
+  }
+}
+
 
 
 /* =========================================================
@@ -532,6 +562,7 @@ loadExamData(function () {
     EM_DATA.students.length + " students loaded";
 
   renderSubjectPickers();   // Member A
+  lockUsedCourses();        
   renderHallPickers();      // Member A
 
   let genBtn = document.getElementById("generateBtn");
