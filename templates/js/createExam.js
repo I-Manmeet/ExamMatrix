@@ -11,6 +11,29 @@
 let pickedCourses = [];
 let pickedHalls = [];
 
+/* -----------------------------------------------------------
+   ALREADY-CONDUCTED COURSES
+   Reads em_exams (saved exams) and returns the set of course
+   codes already scheduled — so a course can't be conducted twice.
+----------------------------------------------------------- */
+function getUsedCourses() {
+  let used = {};
+  let emExams = [];
+  try {
+    emExams = JSON.parse(localStorage.getItem("em_exams")) || [];
+    if (!Array.isArray(emExams)) { emExams = []; }
+  } catch (e) { emExams = []; }
+
+  for (let i = 0; i < emExams.length; i++) {
+    let courses = emExams[i].pickedCourses || [];
+    for (let c = 0; c < courses.length; c++) {
+      used[courses[c]] = true;
+    }
+  }
+  return used;
+}
+
+
 
 /* =========================================================
    ===========  [MEMBER A] LOAD + RENDER + DETECT  ========
