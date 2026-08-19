@@ -26,18 +26,34 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-});
+  // load hall data so findDesk can compute the exact desk
+  if (typeof loadExamData === 'function') { loadExamData(function () {}); }
+
   // ===== FIND MY SEAT (MANMEET) =====
   var rollInput  = document.getElementById('rollSearchInput');
   var searchBtn  = document.getElementById('btnSearchSeat');
   var resultBox  = document.getElementById('lookupResult');
   var emptyBox   = document.getElementById('lookupEmpty');
 
-  function getExams() {
+    function getExams() {
+    var list = [];
     try {
       var raw = JSON.parse(localStorage.getItem('em_exams'));
-      return Array.isArray(raw) ? raw : [];
-    } catch (e) { return []; }
+      if (Array.isArray(raw)) { list = raw; }
+    } catch (e) { list = []; }
+
+    // the seating page renders from em_currentExam — include it too
+    try {
+      var current = JSON.parse(localStorage.getItem('em_currentExam'));
+      if (current && current.students) {
+        var already = list.some(function (e) {
+          return e.id && current.id && e.id === current.id;
+        });
+        if (!already) { list.push(current); }
+      }
+    } catch (e) {}
+
+    return list;
   }
 
   function fmtDate(d) {
@@ -121,12 +137,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!roll) { return; }
 
     var exams = getExams();
-    // newest exam that contains this roll
     var match = null, student = null;
     for (var i = exams.length - 1; i >= 0; i--) {
       var studs = exams[i].students || [];
       for (var s = 0; s < studs.length; s++) {
-        if (String(studs[s].roll).toLowerCase() === roll.toLowerCase()) {
+        if (String(studs[s].roll).trim().toLowerCase() === roll.toLowerCase()) {
           match = exams[i]; student = studs[s]; break;
         }
       }
@@ -166,3 +181,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+});
