@@ -324,6 +324,7 @@ body {
 }
 
 
+
 /* Responsive adjustments */
 @media (max-width: 900px) {
     #stats { grid-template-columns: repeat(2, 1fr); }
