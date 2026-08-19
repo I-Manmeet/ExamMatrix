@@ -170,7 +170,59 @@ function renderCalendar(exams) {
 ========================================================= */
 
 function detectClashes(exams) {
-  // TODO [JIYA]
+  var panel = document.getElementById("clashPanel");
+  if (!panel) { return; }
+  panel.innerHTML = "";
+
+  var dates = getExamDates(exams);
+  var slots = getExamSlots(exams);
+  var clashes = [];
+
+  for (var d = 0; d < dates.length; d++) {
+    for (var s = 0; s < slots.length; s++) {
+      var cellExams = examsInCell(exams, dates[d], slots[s]);
+      if (cellExams.length < 2) { continue; }
+
+      var rollSeen = {}, hallSeen = {};
+      var when = dates[d] + " (" + slots[s] + ")";
+
+      for (var e = 0; e < cellExams.length; e++) {
+        var ex = cellExams[e];
+
+        // student clash: same roll in two exams, same date+slot
+        var studs = ex.students || [];
+        for (var r = 0; r < studs.length; r++) {
+          var roll = studs[r].roll;
+          if (rollSeen[roll]) {
+            clashes.push("Student " + roll + " has two exams on " + when);
+          } else { rollSeen[roll] = true; }
+        }
+
+        // hall clash: same hall used by two exams, same date+slot
+        var halls = ex.pickedHalls || [];
+        for (var h = 0; h < halls.length; h++) {
+          var hall = halls[h];
+          if (hallSeen[hall]) {
+            clashes.push("Hall \"" + hall + "\" is double-booked on " + when);
+          } else { hallSeen[hall] = true; }
+        }
+      }
+    }
+  }
+
+  if (clashes.length === 0) {
+    var good = document.createElement("div");
+    good.className = "clashItem good";
+    good.textContent = "No clashes found.";
+    panel.appendChild(good);
+    return;
+  }
+  for (var i = 0; i < clashes.length; i++) {
+    var bad = document.createElement("div");
+    bad.className = "clashItem bad";
+    bad.textContent = clashes[i];
+    panel.appendChild(bad);
+  }
 }
 
 
@@ -185,6 +237,9 @@ function detectClashes(exams) {
    keep exam-block colours (print-color-adjust: exact).
    (No JS needed here unless you want a custom print handler.)
 */
+
+
+
 
 /* ---- [ANUPAM — EXPORT] ----
    WRITE setupExport(): wire #exportBtn to download the timetable
