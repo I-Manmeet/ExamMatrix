@@ -86,7 +86,72 @@ function examsInCell(exams, date, slot) {
 ========================================================= */
 
 function renderCalendar(exams) {
-  // TODO [ANUPAM]
+  var container = document.getElementById("calendarContainer");
+  if (!container) { return; }
+
+  var dates = getExamDates(exams);
+  var slots = getExamSlots(exams);
+  container.innerHTML = "";
+
+  var table = document.createElement("table");
+  table.className = "ttCalendar";
+
+  var thead = document.createElement("thead");
+  var headRow = document.createElement("tr");
+  var corner = document.createElement("th");
+  corner.textContent = "Slot / Date";
+  headRow.appendChild(corner);
+  for (var d = 0; d < dates.length; d++) {
+    var th = document.createElement("th");
+    th.textContent = dates[d];
+    headRow.appendChild(th);
+  }
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  var tbody = document.createElement("tbody");
+  for (var s = 0; s < slots.length; s++) {
+    var row = document.createElement("tr");
+    var slotCell = document.createElement("th");
+    slotCell.textContent = slots[s];
+    slotCell.className = "ttSlotLabel";
+    row.appendChild(slotCell);
+
+    for (var c = 0; c < dates.length; c++) {
+      var td = document.createElement("td");
+      td.className = "ttCell";
+      var cellExams = examsInCell(exams, dates[c], slots[s]);
+
+      for (var e = 0; e < cellExams.length; e++) {
+        var ex = cellExams[e];
+        var block = document.createElement("div");
+        block.className = "examBlock";
+
+        var nameEl = document.createElement("div");
+        nameEl.className = "examName";
+        nameEl.textContent = ex.examName || "Exam";
+        block.appendChild(nameEl);
+
+        var courseEl = document.createElement("div");
+        courseEl.className = "examCourses";
+        courseEl.textContent = (ex.pickedCourses || []).join(", ");
+        block.appendChild(courseEl);
+
+        var halls = ex.pickedHalls || [];
+        if (halls.length) {
+          var hallEl = document.createElement("div");
+          hallEl.className = "examHalls";
+          hallEl.textContent = halls.join(", ");
+          block.appendChild(hallEl);
+        }
+        td.appendChild(block);
+      }
+      row.appendChild(td);
+    }
+    tbody.appendChild(row);
+  }
+  table.appendChild(tbody);
+  container.appendChild(table);
 }
 
 
@@ -127,7 +192,32 @@ function detectClashes(exams) {
    timetableExams, build the CSV string, trigger a Blob download.
 */
 function setupExport() {
-  // TODO [ANUPAM]
+  var btn = document.getElementById("exportBtn");
+  if (!btn) { return; }
+
+  btn.addEventListener("click", function () {
+    var rows = [["Exam", "Date", "Slot", "Courses", "Halls"]];
+    for (var i = 0; i < timetableExams.length; i++) {
+      var ex = timetableExams[i];
+      rows.push([
+        ex.examName || ("Exam " + (i + 1)),
+        ex.date || "",
+        ex.slot || "",
+        (ex.pickedCourses || []).join("; "),
+        (ex.pickedHalls || []).join("; ")
+      ]);
+    }
+    var csv = rows.map(function (r) {
+      return r.map(function (f) {
+        return '"' + String(f).replace(/"/g, '""') + '"';
+      }).join(",");
+    }).join("\n");
+
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    a.download = "timetable.csv";
+    a.click();
+  });
 }
 
 
