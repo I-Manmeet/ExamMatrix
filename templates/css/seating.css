@@ -221,11 +221,11 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4px;
+    padding: 9px 4px;
     border-radius: 8px;
     color: #ffffff;
     text-align: center;
-    aspect-ratio: 1 / 1;
+    min-height: 58px;
     transition: transform .12s ease, box-shadow .12s ease;
 }
 
@@ -235,13 +235,13 @@
 }
 
 .seat strong {
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1.15;
 }
 
 .seat span {
-    font-size: 8px;
+    font-size: 14px;
     opacity: 0.88;
 }
 
