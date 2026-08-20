@@ -1,130 +1,93 @@
 /* =========================================================
    ExamMatrix — TIMETABLE
    ---------------------------------------------------------
-   [YOU / MEMBER 1]  Page shell + Data & Fetch     -> DONE
-   [ANUPAM]          Calendar render + CSV export   -> TODO
-   [JIYA]            Clash detection + Print (CSS)  -> TODO
+   DATA + CALENDAR + DAY PANEL + EXPORT
+
+   Features:
+   - Monthly calendar
+   - Exam count badges
+   - Today button
+   - Next Exam button
+   - Click day -> show exams
+   - Hover exam -> CSS shows classes + room
+   - Mid-Semester Exam appears before Semester Exam
+   - CSV export
 ========================================================= */
 
 
 /* =========================================================
-   ===========  [MEMBER 1 - YOU] DATA & FETCH  ============
-   Status: DONE
-   Reads the saved exams and prepares helpers the calendar +
-   clash detection use.
+   GLOBAL DATA
 ========================================================= */
 
-/* the exams shown on the timetable */
 var timetableExams = [];
 
-/* read the saved exams from localStorage (em_exams list) */
+
+/* =========================================================
+   GET EXAMS FROM LOCAL STORAGE
+========================================================= */
+
 function getTimetableExams() {
-  var exams = [];
-  try {
-    var raw = localStorage.getItem("em_exams");
-    if (raw) {
-      var parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) { exams = parsed; }
+
+    var exams = [];
+
+    try {
+
+        var raw = localStorage.getItem("em_exams");
+
+        if (raw) {
+
+            var parsed = JSON.parse(raw);
+
+            if (Array.isArray(parsed)) {
+                exams = parsed;
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error("Unable to load exams:", error);
+
+        exams = [];
+
     }
-  } catch (e) { exams = []; }
-  return exams;
-}
 
-/* distinct exam dates (sorted) — calendar columns */
-function getExamDates(exams) {
-  var seen = {}, dates = [];
-  for (var i = 0; i < exams.length; i++) {
-    var d = exams[i].date;
-    if (d && !seen[d]) { seen[d] = true; dates.push(d); }
-  }
-  dates.sort();
-  return dates;
-}
-
-/* distinct time slots (sorted) — calendar rows */
-function getExamSlots(exams) {
-  var seen = {}, slots = [];
-  for (var i = 0; i < exams.length; i++) {
-    var s = exams[i].slot;
-    if (s && !seen[s]) { seen[s] = true; slots.push(s); }
-  }
-  slots.sort();
-  return slots;
-}
-
-/* which courses have already been conducted (consistent with Create Exam) */
-function getConductedCourses(exams) {
-  var used = {};
-  for (var i = 0; i < exams.length; i++) {
-    var courses = exams[i].pickedCourses || [];
-    for (var c = 0; c < courses.length; c++) { used[courses[c]] = true; }
-  }
-  return used;
-}
-
-/* exams in a given date + slot cell */
-function examsInCell(exams, date, slot) {
-  var out = [];
-  for (var i = 0; i < exams.length; i++) {
-    if (exams[i].date === date && exams[i].slot === slot) { out.push(exams[i]); }
-  }
-  return out;
+    return exams;
 }
 
 
 /* =========================================================
-   ==============  [ANUPAM] CALENDAR RENDER  =============
-   Status: TODO
-
-   WRITE renderCalendar(exams):
-     - columns = getExamDates(exams), rows = getExamSlots(exams)
-     - build a grid inside #calendarContainer
-     - for each (date, slot) cell, use examsInCell(exams, date, slot)
-       and draw an .examBlock for each exam (show course codes + halls)
-   Helpers you can use (from Member 1):
-     getExamDates(), getExamSlots(), examsInCell()
+   DATE HELPERS
 ========================================================= */
 
-function renderCalendar(exams) {
-  var container = document.getElementById("calendarContainer");
+function formatDate(date) {
 
-  if (!container) {
-    return;
-  }
+    var year = date.getFullYear();
 
-  container.innerHTML = "";
+    var month = String(
+        date.getMonth() + 1
+    ).padStart(2, "0");
 
-  /* =====================================
-     CURRENT SELECTED MONTH
-  ===================================== */
+    var day = String(
+        date.getDate()
+    ).padStart(2, "0");
 
-  if (window.timetableMonth === undefined) {
-    window.timetableMonth = new Date().getMonth();
-  }
-
-  if (window.timetableYear === undefined) {
-    window.timetableYear = new Date().getFullYear();
-  }
-
-  var month = window.timetableMonth;
-  var year = window.timetableYear;
+    return year + "-" + month + "-" + day;
+}
 
 
-  /* =====================================
-     MONTH HEADER
-  ===================================== */
+function getTodayDate() {
 
-  var header = document.createElement("div");
-  header.className = "calendarHeader";
+    return formatDate(new Date());
 
-  var previousBtn = document.createElement("button");
-  previousBtn.className = "monthBtn";
-  previousBtn.textContent = "‹";
+}
 
-  var monthTitle = document.createElement("h2");
-  monthTitle.className = "calendarMonthTitle";
 
-  var monthNames = [
+/* =========================================================
+   MONTH NAMES
+========================================================= */
+
+var monthNames = [
     "January",
     "February",
     "March",
@@ -137,418 +100,1602 @@ function renderCalendar(exams) {
     "October",
     "November",
     "December"
-  ];
-
-  monthTitle.textContent = monthNames[month] + " " + year;
-
-  var nextBtn = document.createElement("button");
-  nextBtn.className = "monthBtn";
-  nextBtn.textContent = "›";
-
-
-  /* Previous month */
-
-  previousBtn.addEventListener("click", function () {
-
-    month--;
-
-    if (month < 0) {
-      month = 11;
-      year--;
-    }
-
-    window.timetableMonth = month;
-    window.timetableYear = year;
-
-    renderCalendar(exams);
-  });
-
-
-  /* Next month */
-
-  nextBtn.addEventListener("click", function () {
-
-    month++;
-
-    if (month > 11) {
-      month = 0;
-      year++;
-    }
-
-    window.timetableMonth = month;
-    window.timetableYear = year;
-
-    renderCalendar(exams);
-  });
-
-
-  header.appendChild(previousBtn);
-  header.appendChild(monthTitle);
-  header.appendChild(nextBtn);
-
-  container.appendChild(header);
-
-
-  /* =====================================
-     CALENDAR
-  ===================================== */
-
-  var calendar = document.createElement("div");
-  calendar.className = "monthCalendar";
-
-
-  /* Week names */
-
-  var weekDays = [
-    "SUN",
-    "MON",
-    "TUE",
-    "WED",
-    "THU",
-    "FRI",
-    "SAT"
-  ];
-
-  for (var w = 0; w < weekDays.length; w++) {
-
-    var weekDay = document.createElement("div");
-
-    weekDay.className = "calendarWeekDay";
-
-    weekDay.textContent = weekDays[w];
-
-    calendar.appendChild(weekDay);
-  }
-
-
-  /* =====================================
-     MONTH INFORMATION
-  ===================================== */
-
-  var firstDay = new Date(year, month, 1).getDay();
-
-  var daysInMonth =
-    new Date(year, month + 1, 0).getDate();
-
-
-  /* Empty cells before first day */
-
-  for (var empty = 0; empty < firstDay; empty++) {
-
-    var emptyCell = document.createElement("div");
-
-    emptyCell.className =
-      "calendarDate emptyDate";
-
-    calendar.appendChild(emptyCell);
-  }
-
-
-  /* =====================================
-     CREATE DAYS
-  ===================================== */
-
-  for (var day = 1; day <= daysInMonth; day++) {
-
-    var dateCell = document.createElement("div");
-
-    dateCell.className = "calendarDate";
-
-
-    /* Date number */
-
-    var dateNumber = document.createElement("div");
-
-    dateNumber.className = "calendarDateNumber";
-
-    dateNumber.textContent = day;
-
-    dateCell.appendChild(dateNumber);
-
-
-    /* =================================
-       CREATE YYYY-MM-DD
-    ================================= */
-
-    var monthString =
-      String(month + 1).padStart(2, "0");
-
-    var dayString =
-      String(day).padStart(2, "0");
-
-    var fullDate =
-      year + "-" +
-      monthString + "-" +
-      dayString;
-
-
-    /* =================================
-       FIND EXAMS FOR THIS DATE
-    ================================= */
-
-    for (var e = 0; e < exams.length; e++) {
-
-      var exam = exams[e];
-
-      if (exam.date !== fullDate) {
-        continue;
-      }
-
-
-      /* Exam card */
-
-      var examCard =
-        document.createElement("div");
-
-      examCard.className = "calendarExamCard";
-
-
-      /* Slot */
-
-      var slot = document.createElement("div");
-
-      slot.className = "calendarExamSlot";
-
-      slot.textContent =
-        exam.slot || "Exam";
-
-      examCard.appendChild(slot);
-
-
-      /* Exam name */
-
-      var examName =
-        document.createElement("div");
-
-      examName.className =
-        "calendarExamName";
-
-      examName.textContent =
-        exam.examName || "Exam";
-
-      examCard.appendChild(examName);
-
-
-      /* Courses */
-
-      if (
-        exam.pickedCourses &&
-        exam.pickedCourses.length
-      ) {
-
-        var courses =
-          document.createElement("div");
-
-        courses.className =
-          "calendarExamCourses";
-
-        courses.textContent =
-          exam.pickedCourses.join(", ");
-
-        examCard.appendChild(courses);
-      }
-
-
-      /* Halls */
-
-      if (
-        exam.pickedHalls &&
-        exam.pickedHalls.length
-      ) {
-
-        var halls =
-          document.createElement("div");
-
-        halls.className =
-          "calendarExamHall";
-
-        halls.textContent =
-          exam.pickedHalls.join(", ");
-
-        examCard.appendChild(halls);
-      }
-
-
-      dateCell.appendChild(examCard);
-    }
-
-
-    /* =================================
-       TODAY
-    ================================= */
-
-    var today = new Date();
+];
+
+
+/* =========================================================
+   EXAM SORTING
+   ---------------------------------------------------------
+   Order:
+   1. Mid-Semester Exam
+   2. Semester Exam
+   3. Other exams
+
+   Then:
+   Date
+   Time
+========================================================= */
+
+function getExamTypePriority(exam) {
+
+    var name = (
+        exam.examName ||
+        ""
+    ).toLowerCase();
 
     if (
-      day === today.getDate() &&
-      month === today.getMonth() &&
-      year === today.getFullYear()
+        name.includes("mid-semester") ||
+        name.includes("mid semester") ||
+        name.includes("midsem") ||
+        name.includes("mid sem")
+    ) {
+        return 1;
+    }
+
+    if (
+        name.includes("semester")
+    ) {
+        return 2;
+    }
+
+    return 3;
+}
+
+
+function getSlotStartTime(slot) {
+
+    if (!slot) {
+        return "";
+    }
+
+    /*
+        Example:
+        "09:00-11:00"
+        becomes
+        "09:00"
+    */
+
+    return String(slot)
+        .split("-")[0]
+        .trim();
+}
+
+
+function compareExams(a, b) {
+
+    /* Date first */
+
+    var dateA = a.date || "";
+    var dateB = b.date || "";
+
+    if (dateA !== dateB) {
+        return dateA.localeCompare(dateB);
+    }
+
+
+    /* Time second */
+
+    var timeA = getSlotStartTime(a.slot);
+    var timeB = getSlotStartTime(b.slot);
+
+    if (timeA !== timeB) {
+        return timeA.localeCompare(timeB);
+    }
+
+
+    /* Exam type third */
+
+    var priorityA = getExamTypePriority(a);
+    var priorityB = getExamTypePriority(b);
+
+    if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+    }
+
+
+    /* Final alphabetical fallback */
+
+    var nameA = (
+        a.examName ||
+        ""
+    ).toLowerCase();
+
+    var nameB = (
+        b.examName ||
+        ""
+    ).toLowerCase();
+
+    return nameA.localeCompare(nameB);
+}
+
+
+/* =========================================================
+   SORT EXAMS
+========================================================= */
+
+function sortExams(exams) {
+
+    return exams.slice().sort(compareExams);
+
+}
+
+
+/* =========================================================
+   DISTINCT EXAM DATES
+========================================================= */
+
+function getExamDates(exams) {
+
+    var seen = {};
+    var dates = [];
+
+    for (var i = 0; i < exams.length; i++) {
+
+        var date = exams[i].date;
+
+        if (
+            date &&
+            !seen[date]
+        ) {
+
+            seen[date] = true;
+
+            dates.push(date);
+
+        }
+
+    }
+
+    dates.sort();
+
+    return dates;
+}
+
+
+/* =========================================================
+   DISTINCT EXAM SLOTS
+========================================================= */
+
+function getExamSlots(exams) {
+
+    var seen = {};
+    var slots = [];
+
+    for (var i = 0; i < exams.length; i++) {
+
+        var slot = exams[i].slot;
+
+        if (
+            slot &&
+            !seen[slot]
+        ) {
+
+            seen[slot] = true;
+
+            slots.push(slot);
+
+        }
+
+    }
+
+    slots.sort();
+
+    return slots;
+}
+
+
+/* =========================================================
+   COURSES ALREADY USED
+========================================================= */
+
+function getConductedCourses(exams) {
+
+    var used = {};
+
+    for (var i = 0; i < exams.length; i++) {
+
+        var courses =
+            exams[i].pickedCourses || [];
+
+        for (var c = 0; c < courses.length; c++) {
+
+            used[courses[c]] = true;
+
+        }
+
+    }
+
+    return used;
+}
+
+
+/* =========================================================
+   GET EXAMS FOR DATE + SLOT
+========================================================= */
+
+function examsInCell(
+    exams,
+    date,
+    slot
+) {
+
+    var out = [];
+
+    for (var i = 0; i < exams.length; i++) {
+
+        if (
+            exams[i].date === date &&
+            exams[i].slot === slot
+        ) {
+
+            out.push(exams[i]);
+
+        }
+
+    }
+
+    return sortExams(out);
+}
+
+
+/* =========================================================
+   CREATE TEXT ELEMENT
+========================================================= */
+
+function createTextElement(
+    tag,
+    className,
+    text
+) {
+
+    var element =
+        document.createElement(tag);
+
+    element.className = className;
+
+    element.textContent =
+        text || "";
+
+    return element;
+}
+
+
+/* =========================================================
+   CREATE EXAM CARD
+   ---------------------------------------------------------
+   Normal:
+   Time
+   Exam Name
+
+   Hover:
+   CSS reveals:
+   Classes
+   Room
+========================================================= */
+
+function createExamCard(exam) {
+
+    var card =
+        document.createElement("div");
+
+    card.className =
+        "calendarExamCard";
+
+
+    /* Prevent day click */
+
+    card.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+        }
+    );
+
+
+    /* =====================================
+       TIME
+    ===================================== */
+
+    var slot =
+        createTextElement(
+            "div",
+            "calendarExamSlot",
+            exam.slot || "Time not specified"
+        );
+
+    card.appendChild(slot);
+
+
+    /* =====================================
+       EXAM NAME
+    ===================================== */
+
+    var examName =
+        createTextElement(
+            "div",
+            "calendarExamName",
+            exam.examName || "Exam"
+        );
+
+    card.appendChild(examName);
+
+
+    /* =====================================
+       CLASSES
+       Hidden by CSS until hover
+    ===================================== */
+
+    if (
+        exam.pickedCourses &&
+        exam.pickedCourses.length > 0
     ) {
 
-      dateCell.classList.add("today");
+        var courses =
+            document.createElement("div");
+
+        courses.className =
+            "calendarExamCourses";
+
+
+        var courseLabel =
+            createTextElement(
+                "span",
+                "examLabel",
+                "Classes:"
+            );
+
+        courses.appendChild(courseLabel);
+
+        courses.appendChild(
+            document.createTextNode(
+                " " +
+                exam.pickedCourses.join(", ")
+            )
+        );
+
+        card.appendChild(courses);
+
     }
 
 
-    calendar.appendChild(dateCell);
-  }
+    /* =====================================
+       ROOM
+       Hidden by CSS until hover
+    ===================================== */
+
+    if (
+        exam.pickedHalls &&
+        exam.pickedHalls.length > 0
+    ) {
+
+        var halls =
+            document.createElement("div");
+
+        halls.className =
+            "calendarExamHall";
 
 
-  container.appendChild(calendar);
-}
+        var hallLabel =
+            createTextElement(
+                "span",
+                "examLabel",
+                "Room:"
+            );
 
-/* =========================================================
-   ==============  [JIYA] CLASH DETECTION  ===============
-   Status: TODO
+        halls.appendChild(hallLabel);
 
-   WRITE detectClashes(exams):
-     - group exams by (date + slot)
-     - in any slot with 2+ exams, check if a STUDENT roll or a HALL
-       appears in more than one exam -> that's a clash
-     - render results into #clashPanel:
-         .clashItem.bad  for a clash (list who/what)
-         .clashItem.good for "no clashes"
-   Helper you can use (from Member 1): examsInCell()
-========================================================= */
+        halls.appendChild(
+            document.createTextNode(
+                " " +
+                exam.pickedHalls.join(", ")
+            )
+        );
 
-function detectClashes(exams) {
-  var panel = document.getElementById("clashPanel");
-  if (!panel) { return; }
-  panel.innerHTML = "";
+        card.appendChild(halls);
 
-  var dates = getExamDates(exams);
-  var slots = getExamSlots(exams);
-  var clashes = [];
-
-  for (var d = 0; d < dates.length; d++) {
-    for (var s = 0; s < slots.length; s++) {
-      var cellExams = examsInCell(exams, dates[d], slots[s]);
-      if (cellExams.length < 2) { continue; }
-
-      var rollSeen = {}, hallSeen = {};
-      var when = dates[d] + " (" + slots[s] + ")";
-
-      for (var e = 0; e < cellExams.length; e++) {
-        var ex = cellExams[e];
-
-        // student clash: same roll in two exams, same date+slot
-        var studs = ex.students || [];
-        for (var r = 0; r < studs.length; r++) {
-          var roll = studs[r].roll;
-          if (rollSeen[roll]) {
-            clashes.push("Student " + roll + " has two exams on " + when);
-          } else { rollSeen[roll] = true; }
-        }
-
-        // hall clash: same hall used by two exams, same date+slot
-        var halls = ex.pickedHalls || [];
-        for (var h = 0; h < halls.length; h++) {
-          var hall = halls[h];
-          if (hallSeen[hall]) {
-            clashes.push("Hall \"" + hall + "\" is double-booked on " + when);
-          } else { hallSeen[hall] = true; }
-        }
-      }
     }
-  }
 
-  if (clashes.length === 0) {
-    var good = document.createElement("div");
-    good.className = "clashItem good";
-    good.textContent = "No clashes found.";
-    panel.appendChild(good);
-    return;
-  }
-  for (var i = 0; i < clashes.length; i++) {
-    var bad = document.createElement("div");
-    bad.className = "clashItem bad";
-    bad.textContent = clashes[i];
-    panel.appendChild(bad);
-  }
+
+    return card;
 }
 
 
 /* =========================================================
-   ============  PRINT (JIYA) + EXPORT (ANUPAM)  =========
+   CREATE DAY EXAM PANEL
 ========================================================= */
 
-/* ---- [JIYA — PRINT] ----
-   The Print button already calls window.print().
-   Your job is the @media print block in timetable.css:
-   hide navbar/footer/buttons, keep the calendar + clash panel,
-   keep exam-block colours (print-color-adjust: exact).
-   (No JS needed here unless you want a custom print handler.)
-*/
+function createDayExamPanel(container) {
+
+    var panel =
+        document.createElement("div");
+
+    panel.id =
+        "dayExamPanel";
+
+    panel.className =
+        "dayExamPanel";
+
+    container.appendChild(panel);
+
+    return panel;
+}
 
 
+/* =========================================================
+   RENDER CALENDAR
+========================================================= */
+
+function renderCalendar(exams) {
+
+    var container =
+        document.getElementById(
+            "calendarContainer"
+        );
+
+    if (!container) {
+        return;
+    }
 
 
-/* ---- [ANUPAM — EXPORT] ----
-   WRITE setupExport(): wire #exportBtn to download the timetable
-   as CSV (columns: Exam, Date, Slot, Courses, Halls). Loop
-   timetableExams, build the CSV string, trigger a Blob download.
-*/
+    /* Sort everything first */
+
+    exams = sortExams(exams);
+
+
+    /* Clear old calendar */
+
+    container.innerHTML = "";
+
+
+    /* =====================================
+       CURRENT MONTH
+    ===================================== */
+
+    if (
+        window.timetableMonth === undefined
+    ) {
+
+        window.timetableMonth =
+            new Date().getMonth();
+
+    }
+
+
+    if (
+        window.timetableYear === undefined
+    ) {
+
+        window.timetableYear =
+            new Date().getFullYear();
+
+    }
+
+
+    var month =
+        window.timetableMonth;
+
+    var year =
+        window.timetableYear;
+
+
+    /* =====================================
+       MONTH HEADER
+    ===================================== */
+
+    var header =
+        document.createElement("div");
+
+    header.className =
+        "calendarHeader";
+
+
+    /* Previous */
+
+    var previousBtn =
+        document.createElement("button");
+
+    previousBtn.type = "button";
+
+    previousBtn.className =
+        "monthBtn";
+
+    previousBtn.textContent = "‹";
+
+    previousBtn.setAttribute(
+        "aria-label",
+        "Previous month"
+    );
+
+
+    /* Month title */
+
+    var monthTitle =
+        document.createElement("h2");
+
+    monthTitle.className =
+        "calendarMonthTitle";
+
+    monthTitle.textContent =
+        monthNames[month] +
+        " " +
+        year;
+
+
+    /* Next */
+
+    var nextBtn =
+        document.createElement("button");
+
+    nextBtn.type = "button";
+
+    nextBtn.className =
+        "monthBtn";
+
+    nextBtn.textContent = "›";
+
+    nextBtn.setAttribute(
+        "aria-label",
+        "Next month"
+    );
+
+
+    /* =====================================
+       TODAY
+    ===================================== */
+
+    var todayBtn =
+        document.createElement("button");
+
+    todayBtn.type = "button";
+
+    todayBtn.className =
+        "monthBtn todayBtn";
+
+    todayBtn.textContent =
+        "Today";
+
+
+    todayBtn.addEventListener(
+        "click",
+        function () {
+
+            var today =
+                new Date();
+
+            window.timetableMonth =
+                today.getMonth();
+
+            window.timetableYear =
+                today.getFullYear();
+
+            renderCalendar(exams);
+
+        }
+    );
+
+
+    /* =====================================
+       NEXT EXAM
+    ===================================== */
+
+    var nextExamBtn =
+        document.createElement("button");
+
+    nextExamBtn.type = "button";
+
+    nextExamBtn.className =
+        "monthBtn nextExamBtn";
+
+    nextExamBtn.textContent =
+        "Next Exam →";
+
+
+    nextExamBtn.addEventListener(
+        "click",
+        function () {
+
+            var todayString =
+                getTodayDate();
+
+
+            var futureExams =
+                sortExams(exams)
+                    .filter(function (exam) {
+
+                        return (
+                            exam.date &&
+                            exam.date >= todayString
+                        );
+
+                    });
+
+
+            if (
+                futureExams.length === 0
+            ) {
+
+                alert(
+                    "No upcoming exams."
+                );
+
+                return;
+
+            }
+
+
+            var nextExam =
+                futureExams[0];
+
+
+            var parts =
+                nextExam.date.split("-");
+
+
+            window.timetableYear =
+                Number(parts[0]);
+
+            window.timetableMonth =
+                Number(parts[1]) - 1;
+
+
+            renderCalendar(exams);
+
+
+            /*
+                Wait until calendar is rendered.
+            */
+
+            setTimeout(
+                function () {
+
+                    var nextDay =
+                        document.querySelector(
+                            '[data-date="' +
+                            nextExam.date +
+                            '"]'
+                        );
+
+
+                    if (nextDay) {
+
+                        nextDay.click();
+
+                        nextDay.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+
+                    }
+
+                },
+                50
+            );
+
+        }
+    );
+
+
+    /* =====================================
+       MONTH NAVIGATION
+    ===================================== */
+
+    previousBtn.addEventListener(
+        "click",
+        function () {
+
+            month--;
+
+            if (month < 0) {
+
+                month = 11;
+
+                year--;
+
+            }
+
+            window.timetableMonth =
+                month;
+
+            window.timetableYear =
+                year;
+
+            renderCalendar(exams);
+
+        }
+    );
+
+
+    nextBtn.addEventListener(
+        "click",
+        function () {
+
+            month++;
+
+            if (month > 11) {
+
+                month = 0;
+
+                year++;
+
+            }
+
+            window.timetableMonth =
+                month;
+
+            window.timetableYear =
+                year;
+
+            renderCalendar(exams);
+
+        }
+    );
+
+
+    header.appendChild(
+        previousBtn
+    );
+
+    header.appendChild(
+        monthTitle
+    );
+
+    header.appendChild(
+        nextBtn
+    );
+
+    header.appendChild(
+        todayBtn
+    );
+
+    header.appendChild(
+        nextExamBtn
+    );
+
+    container.appendChild(header);
+
+
+    /* =====================================
+       CALENDAR GRID
+    ===================================== */
+
+    var calendar =
+        document.createElement("div");
+
+    calendar.className =
+        "monthCalendar";
+
+
+    /* =====================================
+       WEEKDAY HEADERS
+    ===================================== */
+
+    var weekDays = [
+        "SUN",
+        "MON",
+        "TUE",
+        "WED",
+        "THU",
+        "FRI",
+        "SAT"
+    ];
+
+
+    for (
+        var w = 0;
+        w < weekDays.length;
+        w++
+    ) {
+
+        var weekDay =
+            document.createElement("div");
+
+        weekDay.className =
+            "calendarWeekDay";
+
+        weekDay.textContent =
+            weekDays[w];
+
+        calendar.appendChild(
+            weekDay
+        );
+
+    }
+
+
+    /* =====================================
+       MONTH INFORMATION
+    ===================================== */
+
+    var firstDay =
+        new Date(
+            year,
+            month,
+            1
+        ).getDay();
+
+
+    var daysInMonth =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
+
+
+    /* =====================================
+       EMPTY DAYS
+    ===================================== */
+
+    for (
+        var empty = 0;
+        empty < firstDay;
+        empty++
+    ) {
+
+        var emptyCell =
+            document.createElement("div");
+
+        emptyCell.className =
+            "calendarDate emptyDate";
+
+        calendar.appendChild(
+            emptyCell
+        );
+
+    }
+
+
+    /* =====================================
+       CREATE EACH DAY
+    ===================================== */
+
+    for (
+        var day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
+
+        var dateCell =
+            document.createElement("div");
+
+        dateCell.className =
+            "calendarDate";
+
+
+        /* =================================
+           YYYY-MM-DD
+        ================================= */
+
+        var monthString =
+            String(
+                month + 1
+            ).padStart(2, "0");
+
+
+        var dayString =
+            String(day)
+                .padStart(2, "0");
+
+
+        var fullDate =
+            year +
+            "-" +
+            monthString +
+            "-" +
+            dayString;
+
+
+        dateCell.dataset.date =
+            fullDate;
+
+
+        /* =================================
+           DATE NUMBER
+        ================================= */
+
+        var dateNumber =
+            createTextElement(
+                "div",
+                "calendarDateNumber",
+                day
+            );
+
+        dateCell.appendChild(
+            dateNumber
+        );
+
+
+        /* =================================
+           EXAMS FOR THIS DAY
+        ================================= */
+
+        var dayExams =
+            exams.filter(
+                function (exam) {
+
+                    return (
+                        exam.date ===
+                        fullDate
+                    );
+
+                }
+            );
+
+
+        dayExams =
+            sortExams(dayExams);
+
+
+        /* =================================
+           EXAM COUNT BADGE
+        ================================= */
+
+        if (
+            dayExams.length > 0
+        ) {
+
+            var examBadge =
+                createTextElement(
+                    "span",
+                    "examCountBadge",
+                    dayExams.length
+                );
+
+            examBadge.title =
+                dayExams.length +
+                " exam(s)";
+
+            dateCell.appendChild(
+                examBadge
+            );
+
+        }
+
+
+        /* =================================
+           EXAM CARDS
+        ================================= */
+
+        for (
+            var e = 0;
+            e < dayExams.length;
+            e++
+        ) {
+
+            var exam =
+                dayExams[e];
+
+
+            var examCard =
+                createExamCard(exam);
+
+
+            dateCell.appendChild(
+                examCard
+            );
+
+        }
+
+
+        /* =================================
+           TODAY
+        ================================= */
+
+        if (
+            fullDate ===
+            getTodayDate()
+        ) {
+
+            dateCell.classList.add(
+                "today"
+            );
+
+        }
+
+
+        /* =================================
+           CLICK DAY
+        ================================= */
+
+        dateCell.addEventListener(
+            "click",
+            function () {
+
+                showDayExams(
+                    this.dataset.date,
+                    exams
+                );
+
+            }
+        );
+
+
+        calendar.appendChild(
+            dateCell
+        );
+
+    }
+
+
+    /* =====================================
+       ADD CALENDAR
+    ===================================== */
+
+    container.appendChild(
+        calendar
+    );
+
+
+    /* =====================================
+       DAY PANEL
+    ===================================== */
+
+    var panel =
+        createDayExamPanel(
+            container
+        );
+
+
+    /*
+       Automatically show today's exams
+       when opening the current month.
+    */
+
+    var todayString =
+        getTodayDate();
+
+
+    var currentMonthString =
+        year +
+        "-" +
+        String(month + 1)
+            .padStart(2, "0");
+
+
+    if (
+        todayString.startsWith(
+            currentMonthString
+        )
+    ) {
+
+        showDayExams(
+            todayString,
+            exams
+        );
+
+    } else {
+
+        panel.innerHTML = "";
+
+        var message =
+            document.createElement("p");
+
+        message.className =
+            "noDayExams";
+
+        message.textContent =
+            "Click a day to view its exams.";
+
+        panel.appendChild(
+            message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SHOW EXAMS FOR SELECTED DAY
+========================================================= */
+
+function showDayExams(date, exams) {
+
+    var panel = document.getElementById("dayExamPanel");
+
+    if (!panel) {
+        return;
+    }
+
+    /* Clear previous content */
+    panel.innerHTML = "";
+
+    /* Find exams for selected date */
+    var dayExams = exams.filter(function (exam) {
+        return exam.date === date;
+    });
+
+    /* Sort Mid-Semester Exam before Semester Exam */
+    dayExams.sort(function (a, b) {
+
+        var aName = (a.examName || "").toLowerCase();
+        var bName = (b.examName || "").toLowerCase();
+
+        if (aName.includes("mid") && !bName.includes("mid")) {
+            return -1;
+        }
+
+        if (!aName.includes("mid") && bName.includes("mid")) {
+            return 1;
+        }
+
+        return 0;
+    });
+
+    /* Format selected date */
+    var dateObject = new Date(date + "T00:00:00");
+
+    var formattedDate = dateObject.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+    });
+
+    /* =========================================
+       PANEL HEADER
+    ========================================= */
+
+    var title = document.createElement("h3");
+
+    title.textContent = "Exams on " + formattedDate;
+
+    panel.appendChild(title);
+
+
+    /* =========================================
+       NO EXAMS
+    ========================================= */
+
+    if (dayExams.length === 0) {
+
+        var noExam = document.createElement("p");
+
+        noExam.className = "noDayExams";
+
+        noExam.textContent =
+            "No exams scheduled for this day.";
+
+        panel.appendChild(noExam);
+
+        panel.classList.add("show");
+
+        return;
+    }
+
+
+    /* =========================================
+       EXAM COUNT
+    ========================================= */
+
+    var count = document.createElement("p");
+
+    count.className = "dayExamCount";
+
+    count.textContent =
+        dayExams.length +
+        (dayExams.length === 1
+            ? " exam scheduled"
+            : " exams scheduled");
+
+    panel.appendChild(count);
+
+
+    /* =========================================
+       EXAM ITEMS
+    ========================================= */
+
+    for (var i = 0; i < dayExams.length; i++) {
+
+        var exam = dayExams[i];
+
+        var item = document.createElement("div");
+
+        item.className = "dayExamItem";
+
+
+        /* Exam name */
+
+        var name = document.createElement("strong");
+
+        name.textContent =
+            exam.examName || "Exam";
+
+        item.appendChild(name);
+
+
+        /* Time */
+
+        var slot = document.createElement("div");
+
+        slot.className = "dayExamTime";
+
+        slot.textContent =
+            "🕐 " + (exam.slot || "Time not specified");
+
+        item.appendChild(slot);
+
+
+        /* Classes */
+
+        if (
+            exam.pickedCourses &&
+            exam.pickedCourses.length
+        ) {
+
+            var courses = document.createElement("div");
+
+            courses.className = "dayExamCourses";
+
+            courses.textContent =
+                "📚 Classes: " +
+                exam.pickedCourses.join(", ");
+
+            item.appendChild(courses);
+        }
+
+
+        /* Room */
+
+        if (
+            exam.pickedHalls &&
+            exam.pickedHalls.length
+        ) {
+
+            var halls = document.createElement("div");
+
+            halls.className = "dayExamHalls";
+
+            halls.textContent =
+                "📍 Room: " +
+                exam.pickedHalls.join(", ");
+
+            item.appendChild(halls);
+        }
+
+
+        panel.appendChild(item);
+    }
+
+
+    /* Show panel */
+
+    panel.classList.add("show");
+
+
+    /* Scroll smoothly to panel */
+
+    setTimeout(function () {
+
+        panel.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+
+    }, 100);
+}
+
+/* =========================================================
+   CSV EXPORT
+========================================================= */
+
 function setupExport() {
-  var btn = document.getElementById("exportBtn");
-  if (!btn) { return; }
 
-  btn.addEventListener("click", function () {
-    var rows = [["Exam", "Date", "Slot", "Courses", "Halls"]];
-    for (var i = 0; i < timetableExams.length; i++) {
-      var ex = timetableExams[i];
-      rows.push([
-        ex.examName || ("Exam " + (i + 1)),
-        ex.date || "",
-        ex.slot || "",
-        (ex.pickedCourses || []).join("; "),
-        (ex.pickedHalls || []).join("; ")
-      ]);
+    var btn =
+        document.getElementById(
+            "exportBtn"
+        );
+
+    if (!btn) {
+        return;
     }
-    var csv = rows.map(function (r) {
-      return r.map(function (f) {
-        return '"' + String(f).replace(/"/g, '""') + '"';
-      }).join(",");
-    }).join("\n");
 
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    a.download = "timetable.csv";
-    a.click();
-  });
+
+    /* Prevent duplicate listeners */
+
+    if (
+        btn.dataset.exportReady === "true"
+    ) {
+        return;
+    }
+
+
+    btn.dataset.exportReady =
+        "true";
+
+
+    btn.addEventListener(
+        "click",
+        function () {
+
+            if (
+                timetableExams.length === 0
+            ) {
+
+                alert(
+                    "There are no exams to export."
+                );
+
+                return;
+
+            }
+
+
+            var rows = [
+                [
+                    "Exam",
+                    "Date",
+                    "Slot",
+                    "Courses",
+                    "Halls"
+                ]
+            ];
+
+
+            var sorted =
+                sortExams(
+                    timetableExams
+                );
+
+
+            for (
+                var i = 0;
+                i < sorted.length;
+                i++
+            ) {
+
+                var exam =
+                    sorted[i];
+
+
+                rows.push([
+                    exam.examName ||
+                        ("Exam " + (i + 1)),
+
+                    exam.date || "",
+
+                    exam.slot || "",
+
+                    (
+                        exam.pickedCourses ||
+                        []
+                    ).join("; "),
+
+                    (
+                        exam.pickedHalls ||
+                        []
+                    ).join("; ")
+                ]);
+
+            }
+
+
+            /* Build CSV */
+
+            var csv =
+                rows.map(
+                    function (row) {
+
+                        return row.map(
+                            function (field) {
+
+                                return (
+                                    '"' +
+                                    String(field)
+                                        .replace(
+                                            /"/g,
+                                            '""'
+                                        ) +
+                                    '"'
+                                );
+
+                            }
+                        ).join(",");
+
+                    }
+                ).join("\n");
+
+
+            /* Download */
+
+            var blob =
+                new Blob(
+                    [csv],
+                    {
+                        type:
+                            "text/csv;charset=utf-8;"
+                    }
+                );
+
+
+            var url =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            var link =
+                document.createElement(
+                    "a"
+                );
+
+            link.href = url;
+
+            link.download =
+                "ExamMatrix-Timetable.csv";
+
+
+            document.body.appendChild(
+                link
+            );
+
+            link.click();
+
+
+            document.body.removeChild(
+                link
+            );
+
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        }
+    );
+
 }
 
 
 /* =========================================================
-   ==================  PAGE STARTUP  ======================
-   [MEMBER 1 - YOU] loads data, then hands off to the others.
+   PAGE STARTUP
 ========================================================= */
+
 function loadTimetable() {
-  timetableExams = getTimetableExams();
 
-  var info = document.getElementById("ttInfo");
-  if (info) {
-    info.textContent = timetableExams.length
-      ? (timetableExams.length + " exam(s) scheduled")
-      : "No exams scheduled yet.";
-  }
+    timetableExams =
+        getTimetableExams();
 
-  if (timetableExams.length === 0) {
-    var cal = document.getElementById("calendarContainer");
-    if (cal) {
-      cal.innerHTML = '<div class="ttEmpty">No exams scheduled yet. ' +
-        'Create one from <a href="createExam.html">Create Exam</a>.</div>';
+
+    /* =====================================
+       UPDATE INFO
+    ===================================== */
+
+    var info =
+        document.getElementById(
+            "ttInfo"
+        );
+
+
+    if (info) {
+
+        if (
+            timetableExams.length
+        ) {
+
+            info.textContent =
+                timetableExams.length +
+                " exam(s) scheduled";
+
+        } else {
+
+            info.textContent =
+                "No exams scheduled yet.";
+
+        }
+
     }
-    return;
-  }
 
-  // hand off to teammates' functions (safe if not written yet)
-  if (typeof renderCalendar === "function") { renderCalendar(timetableExams); }  // Anupam
-  if (typeof detectClashes === "function") { detectClashes(timetableExams); }    // Jiya
-  if (typeof setupExport === "function") { setupExport(); }                       // Anupam
+
+    /* =====================================
+       NO EXAMS
+    ===================================== */
+
+    if (
+        timetableExams.length === 0
+    ) {
+
+        var calendar =
+            document.getElementById(
+                "calendarContainer"
+            );
+
+
+        if (calendar) {
+
+            calendar.innerHTML =
+                '<div class="ttEmpty">' +
+                'No exams scheduled yet. ' +
+                '<a href="createExam.html">' +
+                'Create Exam' +
+                '</a>.' +
+                '</div>';
+
+        }
+
+
+        setupExport();
+
+        return;
+
+    }
+
+
+    /* =====================================
+       SORT DATA
+    ===================================== */
+
+    timetableExams =
+        sortExams(
+            timetableExams
+        );
+
+
+    /* =====================================
+       RENDER CALENDAR
+    ===================================== */
+
+    if (
+        typeof renderCalendar ===
+        "function"
+    ) {
+
+        renderCalendar(
+            timetableExams
+        );
+
+    }
+
+
+    /* =====================================
+       CLASH DETECTION
+    ===================================== */
+
+    if (
+        typeof detectClashes ===
+        "function"
+    ) {
+
+        detectClashes(
+            timetableExams
+        );
+
+    }
+
+
+    /* =====================================
+       EXPORT
+    ===================================== */
+
+    if (
+        typeof setupExport ===
+        "function"
+    ) {
+
+        setupExport();
+
+    }
+
 }
 
-/* EM_DATA (halls/subjects) comes from data.js; load then build */
-if (typeof loadExamData === "function") {
-  loadExamData(loadTimetable);
+
+/* =========================================================
+   LOAD DATA
+========================================================= */
+
+if (
+    typeof loadExamData ===
+    "function"
+) {
+
+    loadExamData(
+        loadTimetable
+    );
+
 } else {
-  loadTimetable();
+
+    loadTimetable();
+
 }
