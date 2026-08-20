@@ -32,6 +32,66 @@ function getUsedCourses() {
   }
   return used;
 }
+/* -----------------------------------------------------------
+   HALL BOOKINGS FOR A DATE + SLOT
+   Looks at all saved exams (em_exams) that happen on the SAME
+   date AND slot, and adds up how many students each hall already
+   holds. Halls are only "busy" relative to a specific date+slot —
+   a different day or slot leaves them free.
+
+   Returns: { hallNo: seatsUsed, ... }
+   e.g. { "Hall 1": 40, "Hall 3": 18 }
+----------------------------------------------------------- */
+function getHallBookings(date, slot) {
+  let bookings = {};                 // hallNo -> seats already used
+  let emExams = [];
+  try {
+    emExams = JSON.parse(localStorage.getItem("em_exams")) || [];
+    if (!Array.isArray(emExams)) { emExams = []; }
+  } catch (e) { emExams = []; }
+
+  for (let i = 0; i < emExams.length; i++) {
+    let ex = emExams[i];
+
+    // only exams in the SAME date + slot compete for halls
+    if (ex.date !== date || ex.slot !== slot) { continue; }
+
+    let halls = ex.pickedHalls || [];
+    let studentCount = (ex.students || []).length;
+
+    // spread that exam's students evenly across its halls
+    let perHall = halls.length ? Math.ceil(studentCount / halls.length) : 0;
+
+    for (let h = 0; h < halls.length; h++) {
+      let hallNo = halls[h];
+      bookings[hallNo] = (bookings[hallNo] || 0) + perHall;
+    }
+  }
+  return bookings;
+}
+/* total FREE seats across the picked halls, for the picked date+slot.
+   Uses getHallBookings so already-booked seats don't get counted twice. */
+function getAvailableSeats() {
+  let date = document.getElementById("examDate").value;
+  let slot = document.getElementById("examSlot").value;
+  let bookings = getHallBookings(date, slot);
+
+  let free = 0;
+  for (let i = 0; i < pickedHalls.length; i++) {
+    for (let h = 0; h < EM_DATA.halls.length; h++) {
+      let hall = EM_DATA.halls[h];
+      if (hall.hallNo === pickedHalls[i]) {
+        let seats = hall.rows * hall.cols;
+        let used  = bookings[hall.hallNo] || 0;
+        let open  = seats - used;
+        if (open > 0) { free += open; }   // only count seats still open
+        break;
+      }
+    }
+  }
+  return free;
+}
+
 
 /* -----------------------------------------------------------
    LOCK already-scheduled courses in the picker.
@@ -125,6 +185,59 @@ function renderHallPickers() {
       '<span><span class="pickMain">' + hall.hallNo + '</span> ' +
       '<span class="pickSub">' + hall.rows + '×' + hall.cols + '</span></span>' +
       '<span class="pickRight">' + seats + ' seats</span>' +
+      '</label>';
+  }
+  list.innerHTML = html;
+}
+/* when the exam's date or slot changes, hall availability changes too,
+   so re-render the hall picker and refresh the status bar */
+function onDateTimeChange() {
+  renderHallPickers();   // recompute booked/free for the new date+slot
+  onPickChange();        // hall picks may have been cleared → refresh totals
+}
+
+/* render the hall checkboxes from halls.json, factoring in
+   what's already booked for the currently selected date + slot */
+function renderHallPickers() {
+  let list = document.getElementById("hallList");
+
+  // what date + slot is the user currently building for?
+  let date = document.getElementById("examDate").value;
+  let slot = document.getElementById("examSlot").value;
+  let bookings = getHallBookings(date, slot);   // Commit 1's helper
+
+  let html = "";
+
+  for (let i = 0; i < EM_DATA.halls.length; i++) {
+    let hall = EM_DATA.halls[i];
+    let seats = hall.rows * hall.cols;
+
+    let used = bookings[hall.hallNo] || 0;       // already booked this slot
+    let free = seats - used;                     // seats still open
+    if (free < 0) { free = 0; }
+
+    let isFull = free <= 0;
+
+    // right-hand label: plain seats if untouched, else booked/free split
+    let rightText;
+    if (used === 0) {
+      rightText = seats + ' seats';
+    } else if (isFull) {
+      rightText = '🔒 full · ' + used + '/' + seats + ' booked';
+    } else {
+      rightText = used + '/' + seats + ' booked · ' + free + ' free';
+    }
+
+    let lockedClass = isFull ? ' locked' : '';
+    let rightClass  = isFull ? 'pickLock' : 'pickRight';
+    let disabledAttr = isFull ? ' disabled' : '';
+
+    html +=
+      '<label class="pickRow' + lockedClass + '" data-hall="' + hall.hallNo + '">' +
+      '<input type="checkbox" onchange="onPickChange()"' + disabledAttr + '>' +
+      '<span><span class="pickMain">' + hall.hallNo + '</span> ' +
+      '<span class="pickSub">' + hall.rows + '×' + hall.cols + '</span></span>' +
+      '<span class="' + rightClass + '">' + rightText + '</span>' +
       '</label>';
   }
   list.innerHTML = html;
@@ -399,16 +512,8 @@ function clearAllPicks() {
 
 function updateStatusBar() {
 
-  let totalSeats = 0;
-  for (let i = 0; i < pickedHalls.length; i++) {
-    for (let h = 0; h < EM_DATA.halls.length; h++) {
-      let hall = EM_DATA.halls[h];
-      if (hall.hallNo === pickedHalls[i]) {
-        totalSeats += hall.rows * hall.cols;
-        break;
-      }
-    }
-  }
+    let totalSeats = getAvailableSeats();   // free seats, not raw capacity
+
 
   let students = getMatchedStudents();
   let studentCount = students.length;
