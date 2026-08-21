@@ -1,0 +1,1303 @@
+/* =========================================================
+   TIMETABLE PAGE
+   ExamMatrix — Monthly Calendar View
+========================================================= */
+
+.timetableContainer {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px 50px;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.pageHead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.pageTitle {
+    margin: 0;
+    font-size: 32px;
+    font-family: Georgia, serif;
+    font-weight: 700;
+    color: #0b4f37;
+}
+
+.pageSub {
+    margin: 6px 0 0;
+    color: #7b8581;
+    font-size: 14px;
+}
+
+.ttActions {
+    display: flex;
+    gap: 8px;
+}
+
+.btnSecondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.btnSecondary:hover {
+    background: #f5f7f6;
+    border-color: #0b4f37;
+    color: #0b4f37;
+}
+
+.btnSecondary:active {
+    transform: scale(0.97);
+}
+
+
+/* =========================================================
+   CALENDAR CONTAINER
+========================================================= */
+
+.calendarContainer {
+    width: 100%;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    background: #fff;
+
+    overflow: visible;
+
+    margin-bottom: 20px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+
+/* =========================================================
+   MONTH HEADER
+========================================================= */
+
+.calendarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    background: #fff;
+
+    border-radius: 12px 12px 0 0;
+}
+
+.calendarMonthTitle {
+    margin: 0;
+
+    min-width: 210px;
+
+    text-align: center;
+
+    font-family: Georgia, serif;
+
+    font-size: 25px;
+    font-weight: 700;
+
+    color: #0b4f37;
+}
+
+
+/* =========================================================
+   MONTH NAVIGATION BUTTONS
+========================================================= */
+
+.monthBtn {
+    min-width: 38px;
+    height: 38px;
+
+    padding: 0 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+
+    background: #fff;
+    color: #0b4f37;
+
+    font-size: 20px;
+    font-weight: 700;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.monthBtn:hover {
+    background: #0b4f37;
+    color: #fff;
+    border-color: #0b4f37;
+}
+
+.monthBtn:active {
+    transform: scale(0.95);
+}
+
+
+/* =========================================================
+   TODAY BUTTON
+========================================================= */
+
+.todayBtn {
+    min-width: auto;
+
+    padding: 0 13px;
+
+    border-radius: 7px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   NEXT EXAM BUTTON
+========================================================= */
+
+.nextExamBtn {
+    min-width: auto;
+
+    padding: 0 13px;
+
+    border-radius: 7px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   MONTH CALENDAR GRID
+========================================================= */
+
+.monthCalendar {
+    display: grid;
+
+    grid-template-columns: repeat(7, 1fr);
+
+    width: 100%;
+
+    border-top: 1px solid #e5e7eb;
+    border-left: 1px solid #e5e7eb;
+
+    overflow: visible;
+}
+
+
+/* =========================================================
+   WEEKDAY HEADERS
+========================================================= */
+
+.calendarWeekDay {
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f1f4f1;
+
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+
+    color: #4b5563;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 0.4px;
+}
+
+
+/* =========================================================
+   INDIVIDUAL DATE CELL
+========================================================= */
+
+.calendarDate {
+    position: relative;
+
+    min-height: 135px;
+
+    padding: 8px;
+
+    background: #fff;
+
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+
+    overflow: visible;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.calendarDate:hover {
+    background: #fafcfb;
+}
+
+
+
+
+/* =========================================================
+   EMPTY DAYS
+========================================================= */
+
+.emptyDate {
+    background: #f8f9f8;
+
+    cursor: default;
+}
+
+.emptyDate:hover {
+    background: #f8f9f8;
+}
+
+
+/* =========================================================
+   DATE NUMBER
+========================================================= */
+
+.calendarDateNumber {
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-left: auto;
+    margin-bottom: 7px;
+
+    border-radius: 50%;
+
+    color: #374151;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+
+/* =========================================================
+   EXAM COUNT BADGE
+========================================================= */
+
+.examCountBadge {
+    position: absolute;
+
+    top: 8px;
+    left: 8px;
+
+    min-width: 21px;
+    height: 21px;
+
+    padding: 0 5px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    border-radius: 999px;
+
+    background: #0b4f37;
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    line-height: 1;
+
+    box-shadow:
+        0 2px 5px rgba(11, 79, 55, 0.2);
+}
+
+
+/* =========================================================
+   TODAY
+========================================================= */
+
+.calendarDate.today {
+    background: #f5faf7;
+}
+
+.calendarDate.today:hover {
+    background: #edf7f1;
+}
+
+.calendarDate.today .calendarDateNumber {
+    background: #0b4f37;
+    color: #fff;
+}
+
+.calendarDate.today .examCountBadge {
+    background: #0f7a5c;
+}
+
+
+/* =========================================================
+   EXAM DAY
+========================================================= */
+
+.calendarDate:has(.calendarExamCard) {
+    background: #fcfefd;
+}
+
+.calendarDate:has(.calendarExamCard):hover {
+    background: #f5faf7;
+}
+
+
+/* =========================================================
+   EXAM CARD
+========================================================= */
+
+
+
+
+
+
+
+/* =========================================================
+   HALL / ROOM
+========================================================= */
+
+.calendarExamHall {
+    font-size: 9.5px;
+
+    line-height: 1.35;
+
+    margin-top: 3px;
+
+    opacity: 0.92;
+
+    max-height: 16px;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    transition:
+        opacity 0.2s ease,
+        max-height 0.2s ease;
+}
+
+
+
+
+
+/* =========================================================
+   EXAM LABELS
+   Works if JS adds "Classes:" / "Room:"
+========================================================= */
+
+.examLabel {
+    display: inline-block;
+
+    margin-right: 3px;
+
+    font-weight: 800;
+
+    color: #d9efe7;
+}
+
+
+/* =========================================================
+   SELECTED DAY EXAM PANEL
+========================================================= */
+
+.dayExamPanel {
+    margin: 20px;
+
+    padding: 18px 20px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    background: #fafcfb;
+
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.dayExamPanel h3 {
+    margin: 0 0 5px;
+
+    color: #0b4f37;
+
+    font-family: Georgia, serif;
+
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.dayExamCount {
+    margin: 0 0 15px;
+
+    color: #7b8581;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   INDIVIDUAL DAY EXAM
+========================================================= */
+
+.dayExamItem {
+    padding: 12px 14px;
+
+    margin-top: 9px;
+
+    border-radius: 9px;
+
+    background: #fff;
+
+    border: 1px solid #e5e7eb;
+
+    border-left: 4px solid #0b4f37;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.dayExamItem:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.dayExamItem strong {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #0b4f37;
+
+    font-size: 14px;
+}
+
+.dayExamItem div {
+    margin-top: 4px;
+
+    color: #5f6965;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   NO EXAMS FOR SELECTED DAY
+========================================================= */
+
+.noDayExams {
+    margin: 8px 0 0;
+
+    color: #9ca3af;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   CLASH PANEL
+========================================================= */
+
+.clashPanel {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-top: 15px;
+}
+
+.clashItem {
+    padding: 12px 16px;
+
+    border-radius: 10px;
+
+    font-size: 13.5px;
+
+    border: 1px solid #e5e7eb;
+}
+
+.clashItem.bad {
+    background: #fbe9e7;
+
+    color: #8a2820;
+
+    border-color: #f3c9c9;
+}
+
+.clashItem.good {
+    background: #d9efe7;
+
+    color: #0f7a5c;
+
+    border-color: #b7e4d3;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.ttEmpty {
+    padding: 50px 20px;
+
+    text-align: center;
+
+    color: #9ca3af;
+
+    border: 1px dashed #d1d5db;
+
+    border-radius: 12px;
+
+    background: #fff;
+}
+
+.ttEmpty a {
+    color: #0b4f37;
+
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.ttEmpty a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   OLD CALENDAR CLASSES
+   Kept for compatibility
+========================================================= */
+
+.calGrid {
+    display: grid;
+
+    min-width: 600px;
+}
+
+.calCell {
+    border-right: 1px solid #eef0f3;
+
+    border-bottom: 1px solid #eef0f3;
+
+    min-height: 74px;
+
+    padding: 6px;
+}
+
+.calHead {
+    background: #f1f4f1;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    color: #4b5563;
+
+    text-align: center;
+
+    padding: 10px 6px;
+
+    min-height: 0;
+}
+
+.calTime {
+    background: #fafbfa;
+
+    font-family: monospace;
+
+    font-size: 11px;
+
+    color: #9ca3af;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+}
+
+.examBlock {
+    border-radius: 7px;
+
+    padding: 6px 8px;
+
+    margin-bottom: 4px;
+
+    color: #fff;
+
+    font-size: 11.5px;
+
+    cursor: pointer;
+}
+
+.examBlock .ebTitle {
+    font-weight: 700;
+
+    font-family: monospace;
+}
+
+.examBlock .ebMeta {
+    opacity: 0.9;
+
+    font-size: 10.5px;
+
+    margin-top: 1px;
+}
+
+.examBlock.clash {
+    outline: 2px solid #c0392b;
+
+    outline-offset: 1px;
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .timetableContainer {
+        padding: 25px 15px 40px;
+    }
+
+    .calendarDate {
+        min-height: 110px;
+    }
+
+    .calendarExamCard {
+        font-size: 9.5px;
+
+        padding: 6px;
+    }
+
+    .calendarExamName {
+        font-size: 10px;
+    }
+
+    .calendarExamCourses,
+    .calendarExamHall {
+        font-size: 8.5px;
+    }
+
+    .calendarHeader {
+        gap: 8px;
+    }
+
+    .calendarMonthTitle {
+        min-width: 180px;
+
+        font-size: 22px;
+    }
+
+    .calendarExamCard:hover {
+        transform: scale(1.06);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .timetableContainer {
+        padding: 20px 10px 35px;
+    }
+
+
+    /* Page header */
+
+    .pageHead {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 12px;
+    }
+
+    .pageTitle {
+        font-size: 27px;
+    }
+
+    .ttActions {
+        width: 100%;
+    }
+
+    .btnSecondary {
+        flex: 1;
+
+        justify-content: center;
+    }
+
+
+    /* Calendar header */
+
+    .calendarHeader {
+        flex-wrap: wrap;
+
+        padding: 13px 10px;
+
+        gap: 7px;
+    }
+
+    .calendarMonthTitle {
+        order: -1;
+
+        width: 100%;
+
+        min-width: 0;
+
+        margin-bottom: 5px;
+
+        font-size: 21px;
+    }
+
+    .monthBtn {
+        min-width: 34px;
+
+        height: 34px;
+
+        padding: 0 9px;
+
+        font-size: 18px;
+    }
+
+    .todayBtn,
+    .nextExamBtn {
+        font-size: 11px;
+
+        padding: 0 10px;
+    }
+
+
+    /* Weekdays */
+
+    .calendarWeekDay {
+        min-height: 35px;
+
+        font-size: 9px;
+    }
+
+
+    /* Date cells */
+
+    .calendarDate {
+        min-height: 90px;
+
+        padding: 4px;
+    }
+
+
+    /* Date number */
+
+    .calendarDateNumber {
+        width: 23px;
+        height: 23px;
+
+        font-size: 11px;
+
+        margin-bottom: 5px;
+    }
+
+
+    /* Badge */
+
+    .examCountBadge {
+        top: 5px;
+        left: 5px;
+
+        min-width: 18px;
+        height: 18px;
+
+        font-size: 8px;
+    }
+
+
+    /* Exam card */
+
+    .calendarExamCard {
+        padding: 5px;
+
+        border-radius: 5px;
+
+        margin-bottom: 3px;
+    }
+
+    .calendarExamSlot {
+        font-size: 8px;
+    }
+
+    .calendarExamName {
+        font-size: 8.5px;
+    }
+
+    .calendarExamCourses,
+    .calendarExamHall {
+        font-size: 7.5px;
+    }
+
+
+    /* Hover */
+
+    .calendarExamCard:hover {
+        transform: scale(1.04);
+
+        min-height: 90px;
+    }
+
+
+    /* Day panel */
+
+    .dayExamPanel {
+        margin: 12px;
+
+        padding: 14px;
+    }
+
+    .dayExamPanel h3 {
+        font-size: 17px;
+    }
+
+    .dayExamItem {
+        padding: 10px 11px;
+    }
+
+    .dayExamItem strong {
+        font-size: 13px;
+    }
+
+    .dayExamItem div {
+        font-size: 11px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL SCREENS
+========================================================= */
+
+@media (max-width: 420px) {
+
+    .calendarHeader {
+        gap: 5px;
+    }
+
+    .calendarMonthTitle {
+        font-size: 19px;
+    }
+
+    .monthBtn {
+        min-width: 31px;
+
+        height: 31px;
+
+        font-size: 16px;
+    }
+
+    .todayBtn,
+    .nextExamBtn {
+        padding: 0 7px;
+
+        font-size: 10px;
+    }
+
+    .calendarDate {
+        min-height: 75px;
+
+        padding: 3px;
+    }
+
+    .calendarDateNumber {
+        width: 20px;
+
+        height: 20px;
+
+        font-size: 10px;
+    }
+
+    .examCountBadge {
+        top: 3px;
+
+        left: 3px;
+
+        min-width: 17px;
+
+        height: 17px;
+
+        font-size: 8px;
+    }
+
+    .calendarExamCard {
+        padding: 4px;
+    }
+
+    .calendarExamSlot {
+        font-size: 7px;
+    }
+
+    .calendarExamName {
+        font-size: 7.5px;
+    }
+
+    .calendarExamCourses,
+    .calendarExamHall {
+        font-size: 6.5px;
+    }
+
+    .calendarExamCard:hover {
+        transform: scale(1.03);
+    }
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+@media print {
+
+    .navbar,
+    .app-header,
+    header,
+    .footer,
+    footer,
+    #exportBtn,
+    .ttButtons,
+    button {
+        display: none !important;
+    }
+
+    body {
+        margin: 0;
+
+        padding: 0;
+
+        background: #fff;
+    }
+
+    .timetableContainer {
+        width: 100%;
+
+        max-width: none;
+
+        padding: 0;
+    }
+
+    .calendarContainer {
+        width: 100%;
+
+        border: none;
+
+        box-shadow: none;
+
+        margin: 0;
+    }
+
+    .calendarHeader {
+        border-bottom: 1px solid #ddd;
+    }
+
+    #calendarContainer,
+    #clashPanel {
+        width: 100%;
+
+        page-break-inside: avoid;
+    }
+
+    .calendarDate {
+        min-height: 110px;
+
+        cursor: default;
+    }
+
+    .calendarExamCard,
+    .clashItem.bad,
+    .clashItem.good {
+        -webkit-print-color-adjust: exact;
+
+        print-color-adjust: exact;
+    }
+
+    .calendarExamCard {
+        -webkit-print-color-adjust: exact;
+
+        print-color-adjust: exact;
+    }
+
+    .dayExamPanel {
+        page-break-inside: avoid;
+    }
+}
+
+
+
+/* =========================================================
+   EXAM CARD INSIDE DATE
+========================================================= */
+
+.calendarExamCard {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+
+    /* Compact normal size */
+    padding: 7px 8px;
+    margin-bottom: 5px;
+
+    border-radius: 7px;
+
+    background: #0b4f37;
+    color: #fff;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    font-size: 10.5px;
+
+    /* Smooth hover */
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        min-height 0.2s ease;
+
+    /* Keep cards above calendar */
+    z-index: 2;
+}
+
+
+/* =========================================================
+   EXAM TIME
+========================================================= */
+
+.calendarExamSlot {
+    font-family: monospace;
+    font-size: 9px;
+    font-weight: 700;
+
+    line-height: 1.2;
+
+    margin-bottom: 3px;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   EXAM NAME
+========================================================= */
+
+.calendarExamName {
+    font-size: 10.5px;
+    font-weight: 700;
+
+    line-height: 1.3;
+
+    margin: 0;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   CLASSES + ROOM
+   ---------------------------------------------------------
+   HIDDEN BY DEFAULT
+========================================================= */
+
+.calendarExamCourses,
+.calendarExamHall {
+    max-height: 0;
+
+    margin: 0;
+
+    opacity: 0;
+
+    overflow: hidden;
+
+    font-size: 9px;
+    line-height: 1.35;
+
+    transition:
+        max-height 0.2s ease,
+        opacity 0.15s ease,
+        margin 0.2s ease;
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+.examLabel {
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   HOVER
+   ---------------------------------------------------------
+   The card becomes bigger and reveals details
+========================================================= */
+
+.calendarExamCard:hover {
+
+    /*
+       Make the card appear above the
+       other exam cards.
+    */
+    z-index: 100;
+
+    /*
+       Slightly enlarge it.
+    */
+    transform: scale(1.04);
+
+    /*
+       Shadow makes it look like
+       the card is floating.
+    */
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.20);
+
+    /*
+       Allow the card to grow.
+    */
+    overflow: visible;
+
+}
+
+
+/* =========================================================
+   SHOW CLASSES ON HOVER
+========================================================= */
+
+.calendarExamCard:hover .calendarExamCourses {
+
+    max-height: 60px;
+
+    margin-top: 5px;
+
+    opacity: 1;
+
+}
+
+
+/* =========================================================
+   SHOW ROOM ON HOVER
+========================================================= */
+
+.calendarExamCard:hover .calendarExamHall {
+
+    max-height: 40px;
+
+    margin-top: 3px;
+
+    opacity: 1;
+
+}
+
+
+/* =========================================================
+   HOVER EXAM NAME
+========================================================= */
+
+.calendarExamCard:hover .calendarExamName {
+
+    white-space: normal;
+
+}
+
+
+/* =========================================================
+   HOVER TIME
+========================================================= */
+
+.calendarExamCard:hover .calendarExamSlot {
+
+    white-space: normal;
+
+}
+
+
+/* =========================================================
+   OPTIONAL: SLIGHT HOVER EFFECT
+========================================================= */
+
+.calendarExamCard:hover {
+    background: #086047;
+}

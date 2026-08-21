@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timetable - ExamMatrix</title>
+
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/headerFooter.css">
+<link rel="stylesheet" href="css/timetable.css">
+</head>
+
+<body data-page="timetable">
+
+  <!-- shared logged-in navbar (loaded by app-shell.js) -->
+  <div id="navbarContainer"></div>
+
+  <main id="timetableMain" class="timetableContainer">
+
+    <!-- page header -->
+    <section class="pageHead">
+      <div>
+        <h1 class="pageTitle">Exam Timetable</h1>
+        <p class="pageSub" id="ttInfo">Loading exams…</p>
+      </div>
+      <div class="ttActions">
+        <!-- [MEMBER 3] print + export buttons live here -->
+        <button type="button" class="btnSecondary" id="printBtn" onclick="window.print()">🖨 Print</button>
+        <button type="button" class="btnSecondary" id="exportBtn">↓ Export CSV</button>
+      </div>
+    </section>
+
+    <!-- [MEMBER 2] the calendar grid renders into this container -->
+    <section id="calendarContainer" class="calendarContainer" aria-label="Exam calendar">
+      <!-- JS injects the calendar here -->
+    </section> 
+
+    <!-- [MEMBER 2] clash warnings render into this panel -->
+    <section id="clashPanel" class="clashPanel" aria-label="Clash detection results">
+      <!-- JS injects clash results here -->
+    </section>  
+
+  </main>
+
+  <!-- shared footer -->
+  <div id="footerContainer"></div>
+
+  <!-- logged-in navbar + footer + username + logout + auth gate -->
+  <script src="js/app-shell.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/timetable.js"></script>
+
+</body>
+</html>
