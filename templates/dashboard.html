@@ -1,203 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>ExamMatrix - Dashboard</title>
 
-    <!-- Google Fonts & Font Awesome Icons -->
+    <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- CSS Links -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/headerFooter.css">
-    <link rel="stylesheet" href="./css/dashboard.css">
+    <link rel="stylesheet" href="css/dashboard.css">
 </head>
+
 
 <body data-page="dashboard">
 
+    <!-- NAVBAR -->
     <div id="navbarContainer"></div>
 
+
+    <!-- MAIN PAGE -->
     <main id="page">
 
-        <!-- Clean Top Header (Removed 'after login') -->
+        <!-- TOP HEADER -->
         <header id="top-section">
+
             <div class="welcome-text">
+
                 <h1>Dashboard</h1>
-                <p>Overview of your active exam sessions and hall capacity.</p>
+
+                <p>
+                    Overview of your active exam sessions and hall capacity.
+                </p>
+
             </div>
+
+
             <div class="header-actions">
-                <button class="btn-secondary"><i class="fa-regular fa-calendar"></i> View Timetable</button>
-                <button id="new-exam-btn" onclick="window.location.href='createExam.html'">+ New exam</button>
+
+                <button
+                    class="btn-secondary"
+                    onclick="window.location.href='timetable.html'">
+
+                    <i class="fa-regular fa-calendar"></i>
+
+                    View Timetable
+
+                </button>
+
+
+                <button
+                    id="new-exam-btn"
+                    onclick="window.location.href='createExam.html'">
+
+                    + New Exam
+
+                </button>
+
             </div>
+
         </header>
 
-        <!-- Full-Width Statistics Cards Grid -->
+
+        <!-- STATISTICS -->
         <section id="stats">
-            <div class="stat-card">
-                <span class="stat-label">Exams Scheduled</span>
-                <div class="stat-number">3</div>
-            </div>
 
             <div class="stat-card">
-                <span class="stat-label">Students Seated</span>
-                <div class="stat-number">58</div>
+
+                <span class="stat-label">
+                    Exams Scheduled
+                </span>
+
+                <div class="stat-number">
+                    0
+                </div>
+
             </div>
 
-            <div class="stat-card">
-                <span class="stat-label">Halls Available</span>
-                <div class="stat-number">4</div>
-            </div>
 
             <div class="stat-card">
-                <span class="stat-label">Total Conflicts</span>
+
+                <span class="stat-label">
+                    Students Seated
+                </span>
+
+                <div class="stat-number">
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    Halls Available
+                </span>
+
+                <div class="stat-number">
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    Total Conflicts
+                </span>
+
                 <div class="stat-number success-text">
-                    <i class="fa-regular fa-circle-check"></i> 0
+
+                    <i class="fa-regular fa-circle-check"></i>
+
+                    0
+
                 </div>
+
             </div>
+
         </section>
 
-        <!-- Full-Width Section: Recent Exams Table -->
-        <section class="panel-card full-width">
+
+        <!-- =====================================================
+             EXAMS
+        ====================================================== -->
+
+        <section class="panel-card">
+
             <div class="section-title-bar">
+
                 <div>
-                    <h3>Recent Exams</h3>
-                    <p class="section-subtitle">Manage upcoming and ongoing exam sessions</p>
+
+                    <h3>
+                        Exams
+                    </h3>
+
+                    <p class="section-subtitle">
+                        View your upcoming and completed exam sessions
+                    </p>
+
                 </div>
-                <a href="#" class="view-all-btn">View All Exams <i class="fa-solid fa-arrow-right"></i></a>
+
             </div>
 
-            <div class="table-responsive">
-                <table id="exam-table">
-                    <thead>
-                        <tr>
-                            <th>EXAM NAME</th>
-                            <th>DATE & TIME</th>
-                            <th>STATUS</th>
-                            <th class="text-right">ACTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <strong>Data Structures</strong>
-                                <span class="sub-code">CS-201 · Slot 1</span>
-                            </td>
-                            <td>Today, 09:00 - 11:00 AM</td>
-                            <td><span class="status-badge ready"><i class="fa-solid fa-circle"></i> Seating Ready</span></td>
-                            <td class="text-right"><a href="#" class="action-link">View Details &rarr;</a></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Physics II</strong>
-                                <span class="sub-code">PHY-102 · Slot 2</span>
-                            </td>
-                            <td>22 Aug, 14:00 - 16:00 PM</td>
-                            <td><span class="status-badge ready"><i class="fa-solid fa-circle"></i> Seating Ready</span></td>
-                            <td class="text-right"><a href="#" class="action-link">View Details &rarr;</a></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Calculus II</strong>
-                                <span class="sub-code">MATH-201 · Slot 1</span>
-                            </td>
-                            <td>24 Aug, 09:00 - 11:00 AM</td>
-                            <td><span class="status-badge ready"><i class="fa-solid fa-circle"></i> Seating Ready</span></td>
-                            <td class="text-right"><a href="#" class="action-link">View Details &rarr;</a></td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <!-- EXAM TABS -->
+
+            <div class="exam-tabs">
+
+                <button
+                    id="upcoming-tab"
+                    class="exam-tab active"
+                    type="button">
+
+                    <i class="fa-regular fa-calendar"></i>
+
+                    Upcoming
+
+                    <span id="upcoming-count">
+                        0
+                    </span>
+
+                </button>
+
+
+                <button
+                    id="previous-tab"
+                    class="exam-tab"
+                    type="button">
+
+                    <i class="fa-regular fa-calendar-check"></i>
+
+                    Previous
+
+                    <span id="previous-count">
+                        0
+                    </span>
+
+                </button>
+
             </div>
+
+
+            <!-- EXAMS LIST -->
+
+            <div
+                id="exam-list"
+                class="exam-scroll">
+
+                <!-- JavaScript inserts exams -->
+
+            </div>
+
         </section>
 
-        <!-- Full-Width Section: Hall Capacity & Allocation Live Matrix (Graph shifted down to cover the page) -->
-        <section class="panel-card full-width">
+
+        <!-- =====================================================
+             SELECTED EXAM HALL CAPACITY
+        ====================================================== -->
+
+        <section class="panel-card">
+
             <div class="section-title-bar">
+
                 <div>
-                    <h3>Hall Capacity & Allocation Live Matrix</h3>
-                    <p class="section-subtitle">Real-time room occupancy and utilization status</p>
-                </div>
-            </div>
 
-            <div class="capacity-grid">
-                
-                <!-- Hall 3 -->
-                <div class="hall-card">
-                    <div class="hall-info-row">
-                        <span class="hall-title">Hall 3</span>
-                        <div class="hall-meta">
-                            <span class="capacity-count">50 / 50 Seats</span>
-                            <span class="hall-status-badge status-full"><i class="fa-solid fa-circle"></i> Filled</span>
-                        </div>
-                    </div>
-                    <div class="progress-bar-wrapper">
-                        <div class="progress-bar bar-full" style="width: 100%;">
-                            <span class="hall-percent">100%</span>
-                        </div>
-                    </div>
-                </div>
+                    <h3 id="hall-section-title">
+                        Hall Capacity & Allocation
+                    </h3>
 
-                <!-- Hall 7 -->
-                <div class="hall-card">
-                    <div class="hall-info-row">
-                        <span class="hall-title">Hall 7</span>
-                        <div class="hall-meta">
-                            <span class="capacity-count">45 / 50 Seats</span>
-                            <span class="hall-status-badge status-occupied"><i class="fa-solid fa-circle"></i> Occupied</span>
-                        </div>
-                    </div>
-                    <div class="progress-bar-wrapper">
-                        <div class="progress-bar bar-blue" style="width: 90%;">
-                            <span class="hall-percent">90%</span>
-                        </div>
-                    </div>
-                </div>
+                    <p
+                        id="hall-section-subtitle"
+                        class="section-subtitle">
 
-                <!-- Hall 1 -->
-                <div class="hall-card">
-                    <div class="hall-info-row">
-                        <span class="hall-title">Hall 1</span>
-                        <div class="hall-meta">
-                            <span class="capacity-count">20 / 60 Seats</span>
-                            <span class="hall-status-badge status-available"><i class="fa-solid fa-circle"></i> Available</span>
-                        </div>
-                    </div>
-                    <div class="progress-bar-wrapper">
-                        <div class="progress-bar bar-gold" style="width: 33%;">
-                            <span class="hall-percent">33%</span>
-                        </div>
-                    </div>
-                </div>
+                        Select an exam to view its hall allocation
 
-                <!-- Hall 4 -->
-                <div class="hall-card">
-                    <div class="hall-info-row">
-                        <span class="hall-title">Hall 4</span>
-                        <div class="hall-meta">
-                            <span class="capacity-count">0 / 40 Seats</span>
-                            <span class="hall-status-badge status-empty"><i class="fa-solid fa-circle"></i> Empty</span>
-                        </div>
-                    </div>
-                    <div class="progress-bar-wrapper">
-                        <div class="progress-bar bar-empty" style="width: 0%;">
-                            <span class="hall-percent empty-text">0%</span>
-                        </div>
-                    </div>
+                    </p>
+
                 </div>
 
             </div>
+
+
+            <div
+                id="selected-exam-info"
+                class="selected-exam-info">
+
+                <div class="selected-exam-icon">
+
+                    <i class="fa-solid fa-building-columns"></i>
+
+                </div>
+
+                <div>
+
+                    <strong id="selected-exam-name">
+                        No Exam Selected
+                    </strong>
+
+                    <span id="selected-exam-details">
+                        Select an exam above to view its hall capacity.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="capacity-grid"
+                class="capacity-grid">
+
+                <!-- JavaScript inserts selected exam halls -->
+
+            </div>
+
         </section>
 
 
     </main>
 
+
+    <!-- FOOTER -->
+
     <div id="footerContainer"></div>
 
+
+    <!-- JAVASCRIPT -->
+
     <script src="js/app-shell.js"></script>
+
     <script src="js/data.js"></script>
+
     <script src="js/dashboard.js"></script>
+
 </body>
+
 </html>

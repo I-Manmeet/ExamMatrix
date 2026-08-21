@@ -1,298 +1,1300 @@
-/* ============================================================
-   ExamMatrix — Dashboard JS  (Team Member 1)
-   Dynamic stat cards, recent-exams table, hall matrix,
-   View links, New Exam button. Session gate is handled by
-   app-shell.js (do not re-gate here).
-   ============================================================ */
+/* =========================================================
+   ExamMatrix — Dashboard JS
+   ========================================================= */
 
 (function () {
-  "use strict";
 
-  var EXAMS_KEY = "em_exams";        // list of saved exams
-  var CURRENT_KEY = "em_currentExam";  // single exam createExam.js writes
-  var SESSION_KEY = "em_session";      // sessionStorage, set by login.html
-  var SEATING_PAGE = "seating.html";
+    "use strict";
 
-  /* ---- Data access ---- */
-  function getExams() {
-    var list = [];
-    try {
-      var raw = localStorage.getItem(EXAMS_KEY);
-      if (raw) {
-        var parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) list = parsed;
-      }
-    } catch (e) { }
 
-    if (!list.length) {
-      try {
-        var cur = localStorage.getItem(CURRENT_KEY);
-        if (cur) {
-          var one = JSON.parse(cur);
-          if (one && one.examName) {
-            if (one.id == null) one.id = "current";
-            list = [one];
-          }
+    /* =====================================================
+       STORAGE KEYS
+    ===================================================== */
+
+    var EXAMS_KEY = "em_exams";
+
+    var CURRENT_KEY = "em_currentExam";
+
+    var SESSION_KEY = "em_session";
+
+    var SEATING_PAGE = "seating.html";
+
+
+    /* =====================================================
+       CURRENT TAB
+    ===================================================== */
+
+    var currentTab = "upcoming";
+
+    var selectedExamId = null;
+
+
+    /* =====================================================
+       GET EXAMS
+    ===================================================== */
+
+    function getExams() {
+
+        var list = [];
+
+        try {
+
+            var raw =
+                localStorage.getItem(EXAMS_KEY);
+
+            if (raw) {
+
+                var parsed =
+                    JSON.parse(raw);
+
+                if (Array.isArray(parsed)) {
+
+                    list = parsed;
+
+                }
+
+            }
+
+        } catch (e) {
+
         }
-      } catch (e) { }
-    }
-    return list;
-  }
 
-  function getUsername() {
-    try {
-      var s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
-      return s && s.username ? s.username : "";
-    } catch (e) { return ""; }
-  }
 
-  /* ---- Helpers ---- */
-  function escapeHtml(str) {
-    return String(str == null ? "" : str)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  }
-  function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
-  function studentCount(ex) { return Array.isArray(ex.students) ? ex.students.length : 0; }
-  function examHalls(ex) { return Array.isArray(ex.pickedHalls) ? ex.pickedHalls : []; }
-  function examConflicts(ex) {
-    if (Array.isArray(ex.conflicts)) return ex.conflicts.length;
-    return num(ex.conflicts);
-  }
+        /* Fallback to current exam */
 
-  /* ---- Occupancy: spread each exam's students across its halls ---- */
-  function computeOccupancy(exams) {
-    var occ = {};
-    exams.forEach(function (ex) {
-      var halls = examHalls(ex);
-      if (!halls.length) return;
-      var per = studentCount(ex) / halls.length;
-      halls.forEach(function (h) {
-        var key = String(h).trim();
-        occ[key] = (occ[key] || 0) + per;
-      });
-    });
-    return occ;
-  }
+        if (!list.length) {
 
-  /* ---- Stat cards ---- */
-  function renderStats(exams, occ) {
-    var numbers = document.querySelectorAll("#stats .stat-number");
-    if (!numbers.length) return;
+            try {
 
-    var examsScheduled = exams.length;
-    var studentsSeated = exams.reduce(function (s, ex) { return s + studentCount(ex); }, 0);
+                var cur =
+                    localStorage.getItem(CURRENT_KEY);
 
-    var allHalls = (typeof EM_DATA !== "undefined" && EM_DATA.halls) || [];
-    var hallsAvailable = allHalls.length
-      ? allHalls.filter(function (h) { return num(occ[h.hallNo]) <= 0; }).length
-      : 0;
+                if (cur) {
 
-    var totalConflicts = exams.reduce(function (s, ex) { return s + examConflicts(ex); }, 0);
+                    var one =
+                        JSON.parse(cur);
 
-    setStat(numbers[0], examsScheduled);
-    setStat(numbers[1], studentsSeated);
-    setStat(numbers[2], hallsAvailable);
-    setStat(numbers[3], totalConflicts, true);
-  }
+                    if (one && one.examName) {
 
-  function setStat(el, value, keepIcon) {
-    if (!el) return;
-    if (keepIcon) {
-      var icon = el.querySelector("i");
-      el.textContent = "";
-      if (icon) el.appendChild(icon);
-      el.appendChild(document.createTextNode(" " + value));
-    } else {
-      el.textContent = String(value);
-    }
-  }
+                        if (one.id == null) {
 
-  /* ---- Recent exams table ---- */
-  function renderExamsTable(exams) {
-    var tbody = document.querySelector("#exam-table tbody");
-    if (!tbody) return;
+                            one.id = "current";
 
-    if (!exams.length) {
-      tbody.innerHTML =
-        '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;">' +
-        'No exams yet. Click <strong>+ New exam</strong> to create one.</td></tr>';
-      return;
+                        }
+
+                        list = [one];
+
+                    }
+
+                }
+
+            } catch (e) {
+
+            }
+
+        }
+
+
+        return list;
+
     }
 
-    var rows = exams.slice().sort(function (a, b) {
-      return num(b.createdAt) - num(a.createdAt);
-    }).slice(0, 5);
 
-    tbody.innerHTML = rows.map(function (ex, i) {
-      var id = ex.id != null ? ex.id : i;
-      var name = escapeHtml(ex.examName || "Untitled Exam");
-      var courses = Array.isArray(ex.pickedCourses) ? ex.pickedCourses : [];
-      var subLine = escapeHtml(courses.length ? courses.join(", ") : "—");
-      var slot = escapeHtml(ex.slot || "");
-      var date = escapeHtml(ex.date || "TBD");
-      var dateTime = slot ? (date + " · " + slot) : date;
+    /* =====================================================
+       HELPERS
+    ===================================================== */
 
-      return (
-        '<tr>' +
-        '<td><strong>' + name + '</strong><span class="sub-code">' + subLine + '</span></td>' +
-        '<td>' + dateTime + '</td>' +
-        '<td><span class="status-badge ready"><i class="fa-solid fa-circle"></i> Seating Ready</span></td>' +
-        '<td class="text-right">' +
-        '<a href="#" class="action-link" data-exam-id="' + escapeHtml(id) + '">View Details &rarr;</a>' +
-        '<a href="#" class="delete-link" data-exam-id="' + escapeHtml(id) + '">Delete</a>' +
-        '</td>' +
-        '</tr>'
-      );
-    }).join("");
-  }
+    function num(value) {
 
-  /* ---- Hall Capacity live matrix ---- */
-  function hallState(pct) {
-    if (pct >= 100) return { badge: "status-full", bar: "bar-full", label: "Filled" };
-    if (pct >= 50) return { badge: "status-occupied", bar: "bar-blue", label: "Occupied" };
-    if (pct > 0) return { badge: "status-available", bar: "bar-gold", label: "Available" };
-    return { badge: "status-empty", bar: "bar-empty", label: "Empty" };
-  }
+        var n =
+            Number(value);
 
-  function renderHallMatrix(occ) {
-    var grid = document.querySelector(".capacity-grid");
-    if (!grid) return;
+        return isFinite(n) ? n : 0;
 
-    var halls = (typeof EM_DATA !== "undefined" && EM_DATA.halls) || [];
-    if (!halls.length) {
-      grid.innerHTML =
-        '<div class="hall-card"><div class="hall-info-row">' +
-        '<span class="hall-title">No halls loaded</span></div>' +
-        '<div class="progress-bar-wrapper"><span class="empty-text">' +
-        'Check that ../data/halls.json is reachable.</span></div></div>';
-      return;
     }
 
-    grid.innerHTML = halls.map(function (h) {
-      var name = escapeHtml(h.hallNo || "Hall");
-      var capacity = num(h.rows) * num(h.cols);
-      var seated = Math.round(num(occ[h.hallNo]));
-      if (seated > capacity) seated = capacity;
-      var pct = capacity > 0 ? Math.round((seated / capacity) * 100) : 0;
-      var s = hallState(pct);
-      var barInner = (pct === 0)
-        ? '<span class="hall-percent empty-text">0%</span>'
-        : '<span class="hall-percent">' + pct + '%</span>';
 
-      return (
-        '<div class="hall-card">' +
-        '<div class="hall-info-row">' +
-        '<span class="hall-title">' + name + '</span>' +
-        '<div class="hall-meta">' +
-        '<span class="capacity-count">' + seated + ' / ' + capacity + ' Seats</span>' +
-        '<span class="hall-status-badge ' + s.badge + '"><i class="fa-solid fa-circle"></i> ' + s.label + '</span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="progress-bar-wrapper">' +
-        '<div class="progress-bar ' + s.bar + '" style="width: ' + pct + '%;">' + barInner + '</div>' +
-        '</div>' +
-        '</div>'
-      );
-    }).join("");
-  }
+    function studentCount(exam) {
 
-  /* ---- View links (seating.html reads em_currentExam) ---- */
-  function wireViewLinks(exams) {
-    var table = document.getElementById("exam-table");
-    if (!table) return;
+        return Array.isArray(exam.students)
+            ? exam.students.length
+            : num(exam.studentCount || exam.studentsCount);
 
-    var byId = {};
-    exams.forEach(function (ex, i) { byId[String(ex.id != null ? ex.id : i)] = ex; });
-
-    table.addEventListener("click", function (e) {
-      var link = e.target.closest(".action-link");
-      if (!link) return;
-      e.preventDefault();
-      var id = link.getAttribute("data-exam-id");
-      if (id == null || id === "") return;
-      var exam = byId[id];
-      if (exam) {
-        try { localStorage.setItem(CURRENT_KEY, JSON.stringify(exam)); } catch (err) { }
-      }
-      window.location.href = SEATING_PAGE + "?examId=" + encodeURIComponent(id);
-    });
-  }
-
-    /* ---- Delete an exam (frees its halls + subjects automatically) ---- */
-  function deleteExam(id) {
-    // remove from the em_exams list
-    var list = getExams().filter(function (ex, i) {
-      var exId = String(ex.id != null ? ex.id : i);
-      return exId !== String(id);
-    });
-    try { localStorage.setItem(EXAMS_KEY, JSON.stringify(list)); } catch (e) {}
-
-    // if the deleted exam was the "current" one, clear it too
-    try {
-      var cur = JSON.parse(localStorage.getItem(CURRENT_KEY));
-      if (cur && String(cur.id) === String(id)) {
-        localStorage.removeItem(CURRENT_KEY);
-      }
-    } catch (e) {}
-
-    // re-render everything: stats, table, and hall matrix all recompute
-    // from the new list, so the freed halls + subjects update instantly
-    renderAll();
-  }
-
-  function wireDeleteLinks() {
-    var table = document.getElementById("exam-table");
-    if (!table) return;
-    table.addEventListener("click", function (e) {
-      var link = e.target.closest(".delete-link");
-      if (!link) return;
-      e.preventDefault();
-      var id = link.getAttribute("data-exam-id");
-      if (id == null || id === "") return;
-
-      // find the exam name for a clearer confirm message
-      var row = link.closest("tr");
-      var nameEl = row ? row.querySelector("strong") : null;
-      var name = nameEl ? nameEl.textContent : "this exam";
-
-      if (window.confirm('Delete "' + name + '"?\nIts halls and subjects will be freed.')) {
-        deleteExam(id);
-      }
-    });
-  }
-
-
-  /* ---- New Exam button (inline onclick already exists; fallback) ---- */
-  function wireNewExam() {
-    var btn = document.getElementById("new-exam-btn");
-    if (!btn || btn.getAttribute("onclick")) return;
-    btn.addEventListener("click", function () { window.location.href = "createExam.html"; });
-  }
-
-  /* ---- Render + init ---- */
-  function renderAll() {
-    var exams = getExams();
-    var occ = computeOccupancy(exams);
-    renderStats(exams, occ);
-    renderExamsTable(exams);
-    renderHallMatrix(occ);
-    wireViewLinks(exams);
-    wireDeleteLinks();
-    wireNewExam();
-  }
-
-  function init() {
-    if (typeof loadExamData === "function") {
-      loadExamData(renderAll);   // load halls.json first, then render
-    } else {
-      renderAll();
     }
-  }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
+
+    function examHalls(exam) {
+
+        return Array.isArray(exam.pickedHalls)
+            ? exam.pickedHalls
+            : [];
+
+    }
+
+
+    function examConflicts(exam) {
+
+        if (Array.isArray(exam.conflicts)) {
+
+            return exam.conflicts.length;
+
+        }
+
+        return num(exam.conflicts);
+
+    }
+
+
+    /* =====================================================
+       ESCAPE HTML
+    ===================================================== */
+
+    function escapeHtml(str) {
+
+        return String(
+            str == null ? "" : str
+        )
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+
+    }
+
+
+    /* =====================================================
+       DATE PARSER
+    ===================================================== */
+
+    function parseExamDate(dateValue) {
+
+        if (!dateValue) {
+
+            return null;
+
+        }
+
+
+        var value =
+            String(dateValue).trim();
+
+        var date = null;
+
+
+        /* YYYY-MM-DD */
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+
+            var parts =
+                value.split("-");
+
+            date =
+                new Date(
+                    Number(parts[0]),
+                    Number(parts[1]) - 1,
+                    Number(parts[2])
+                );
+
+        }
+
+
+        /* DD-MM-YYYY */
+
+        else if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
+
+            var parts2 =
+                value.split("-");
+
+            date =
+                new Date(
+                    Number(parts2[2]),
+                    Number(parts2[1]) - 1,
+                    Number(parts2[0])
+                );
+
+        }
+
+
+        /* DD/MM/YYYY */
+
+        else if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+
+            var parts3 =
+                value.split("/");
+
+            date =
+                new Date(
+                    Number(parts3[2]),
+                    Number(parts3[1]) - 1,
+                    Number(parts3[0])
+                );
+
+        }
+
+
+        /* Normal JS date */
+
+        else {
+
+            date =
+                new Date(value);
+
+        }
+
+
+        if (
+            !date ||
+            isNaN(date.getTime())
+        ) {
+
+            return null;
+
+        }
+
+
+        date.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+
+        return date;
+
+    }
+
+
+    /* =====================================================
+       TODAY
+    ===================================================== */
+
+    function getToday() {
+
+        var today =
+            new Date();
+
+        today.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        return today;
+
+    }
+
+
+    /* =====================================================
+       PREVIOUS EXAM
+    ===================================================== */
+
+    function isPreviousExam(exam) {
+
+        var date =
+            parseExamDate(exam.date);
+
+
+        if (!date) {
+
+            return false;
+
+        }
+
+
+        return date < getToday();
+
+    }
+
+
+    /* =====================================================
+       FORMAT DATE
+    ===================================================== */
+
+    function formatDate(dateValue) {
+
+        var date =
+            parseExamDate(dateValue);
+
+
+        if (!date) {
+
+            return "Date Not Available";
+
+        }
+
+
+        return date.toLocaleDateString(
+            "en-US",
+            {
+                month: "long",
+                day: "numeric",
+                year: "numeric"
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       SORT EXAMS
+    ===================================================== */
+
+    function sortByDate(exams, ascending) {
+
+        return exams.slice().sort(
+
+            function (a, b) {
+
+                var dateA =
+                    parseExamDate(a.date);
+
+                var dateB =
+                    parseExamDate(b.date);
+
+
+                if (!dateA && !dateB) {
+
+                    return 0;
+
+                }
+
+
+                if (!dateA) {
+
+                    return 1;
+
+                }
+
+
+                if (!dateB) {
+
+                    return -1;
+
+                }
+
+
+                if (ascending) {
+
+                    return dateA - dateB;
+
+                }
+
+
+                return dateB - dateA;
+
+            }
+
+        );
+
+    }
+
+
+    /* =====================================================
+       GROUP BY DATE
+    ===================================================== */
+
+    function groupExamsByDate(exams) {
+
+        var groups = {};
+
+
+        exams.forEach(
+
+            function (exam) {
+
+                var date =
+                    parseExamDate(exam.date);
+
+                var key;
+
+
+                if (date) {
+
+                    key =
+                        date.getFullYear() +
+                        "-" +
+                        String(
+                            date.getMonth() + 1
+                        ).padStart(2, "0") +
+                        "-" +
+                        String(
+                            date.getDate()
+                        ).padStart(2, "0");
+
+                } else {
+
+                    key = "unknown";
+
+                }
+
+
+                if (!groups[key]) {
+
+                    groups[key] = [];
+
+                }
+
+
+                groups[key].push(exam);
+
+            }
+
+        );
+
+
+        return groups;
+
+    }
+
+
+    /* =====================================================
+       STATUS
+    ===================================================== */
+
+    function getExamStatus(exam) {
+
+        var date =
+            parseExamDate(exam.date);
+
+
+        if (!date) {
+
+            return {
+
+                text: "Upcoming",
+
+                className: "upcoming"
+
+            };
+
+        }
+
+
+        var today =
+            getToday();
+
+
+        if (date < today) {
+
+            return {
+
+                text: "Completed",
+
+                className: "completed"
+
+            };
+
+        }
+
+
+        if (
+            date.getTime() ===
+            today.getTime()
+        ) {
+
+            return {
+
+                text: "Today",
+
+                className: "today"
+
+            };
+
+        }
+
+
+        return {
+
+            text: "Upcoming",
+
+            className: "upcoming"
+
+        };
+
+    }
+
+
+    /* =====================================================
+       TIME
+    ===================================================== */
+
+    function getExamTime(exam) {
+
+        if (exam.slot) {
+
+            return escapeHtml(
+                exam.slot
+            );
+
+        }
+
+
+        if (exam.time) {
+
+            return escapeHtml(
+                exam.time
+            );
+
+        }
+
+
+        return "Time not specified";
+
+    }
+
+
+    /* =====================================================
+       CREATE EXAM CARD
+    ===================================================== */
+
+    function createExamCard(exam, index) {
+
+        var id =
+            exam.id != null
+                ? exam.id
+                : index;
+
+
+        var name =
+            escapeHtml(
+                exam.examName ||
+                "Untitled Exam"
+            );
+
+
+        var courses =
+            Array.isArray(
+                exam.pickedCourses
+            )
+                ? exam.pickedCourses
+                : [];
+
+
+        var subject =
+            escapeHtml(
+                courses.length
+                    ? courses.join(", ")
+                    : "No subject specified"
+            );
+
+
+        var status =
+            getExamStatus(exam);
+
+
+        var selectedClass =
+            String(id) === String(selectedExamId)
+                ? " selected"
+                : "";
+
+
+        return (
+
+            '<div class="exam-item' +
+                selectedClass +
+                '" data-exam-id="' +
+                escapeHtml(id) +
+            '">' +
+
+
+                '<div class="exam-information">' +
+
+                    '<strong>' +
+                        name +
+                    '</strong>' +
+
+                    '<span class="exam-subject">' +
+                        subject +
+                    '</span>' +
+
+                    '<span class="exam-time">' +
+
+                        '<i class="fa-regular fa-clock"></i>' +
+
+                        getExamTime(exam) +
+
+                    '</span>' +
+
+                '</div>' +
+
+
+                '<div class="exam-actions">' +
+
+                    '<span class="exam-status ' +
+                        status.className +
+                    '">' +
+
+                        status.text +
+
+                    '</span>' +
+
+
+                    '<button ' +
+
+                        'class="matrix-btn" ' +
+
+                        'data-exam-id="' +
+                            escapeHtml(id) +
+                        '"' +
+
+                    '>' +
+
+                        'Matrix' +
+
+                        '<i class="fa-solid fa-arrow-right"></i>' +
+
+                    '</button>' +
+
+
+                    '<button ' +
+
+                        'class="delete-exam-btn" ' +
+
+                        'data-exam-id="' +
+                            escapeHtml(id) +
+                        '"' +
+
+                    '>' +
+
+                        'Delete' +
+
+                    '</button>' +
+
+                '</div>' +
+
+            '</div>'
+
+        );
+
+    }
+
+
+    /* =====================================================
+       CREATE DATE GROUP
+    ===================================================== */
+
+    function createDateGroup(dateKey, exams, indexStart) {
+
+        var firstExam =
+            exams[0];
+
+
+        var dateText =
+            formatDate(
+                firstExam.date
+            );
+
+
+        var html =
+
+            '<div class="exam-date-group">' +
+
+                '<div class="exam-date-heading">' +
+
+                    '<i class="fa-regular fa-calendar"></i>' +
+
+                    '<span>' +
+
+                        escapeHtml(dateText) +
+
+                    '</span>' +
+
+                '</div>' +
+
+
+                '<div class="exam-date-line"></div>';
+
+
+        exams.forEach(
+
+            function (exam, index) {
+
+                html +=
+                    createExamCard(
+                        exam,
+                        indexStart + index
+                    );
+
+            }
+
+        );
+
+
+        html +=
+            '</div>';
+
+
+        return html;
+
+    }
+
+
+    /* =====================================================
+       RENDER EXAM LIST
+    ===================================================== */
+
+    function renderExamList(
+
+        container,
+
+        exams,
+
+        emptyMessage,
+
+        ascending
+
+    ) {
+
+        if (!container) {
+
+            return;
+
+        }
+
+
+        if (!exams.length) {
+
+            container.innerHTML =
+
+                '<div class="no-exams">' +
+
+                    '<i class="fa-regular fa-calendar-xmark"></i>' +
+
+                    '<span>' +
+
+                        emptyMessage +
+
+                    '</span>' +
+
+                '</div>';
+
+            return;
+
+        }
+
+
+        var sorted =
+            sortByDate(
+                exams,
+                ascending
+            );
+
+
+        var groups =
+            groupExamsByDate(
+                sorted
+            );
+
+
+        var html = "";
+
+        var counter = 0;
+
+
+        Object.keys(groups)
+
+            .sort(
+
+                function (a, b) {
+
+                    if (a === "unknown") {
+
+                        return 1;
+
+                    }
+
+
+                    if (b === "unknown") {
+
+                        return -1;
+
+                    }
+
+
+                    if (ascending) {
+
+                        return a.localeCompare(b);
+
+                    }
+
+
+                    return b.localeCompare(a);
+
+                }
+
+            )
+
+            .forEach(
+
+                function (key) {
+
+                    html +=
+                        createDateGroup(
+                            key,
+                            groups[key],
+                            counter
+                        );
+
+
+                    counter +=
+                        groups[key].length;
+
+                }
+
+            );
+
+
+        container.innerHTML =
+            html;
+
+    }
+
+
+    /* =====================================================
+       FIND EXAM
+    ===================================================== */
+
+    function findExam(examId) {
+
+        var exams =
+            getExams();
+
+
+        for (
+            var i = 0;
+            i < exams.length;
+            i++
+        ) {
+
+            var id =
+                exams[i].id != null
+                    ? exams[i].id
+                    : i;
+
+
+            if (
+                String(id) ===
+                String(examId)
+            ) {
+
+                return exams[i];
+
+            }
+
+        }
+
+
+        return null;
+
+    }
+
+
+    /* =====================================================
+       SELECT EXAM
+    ===================================================== */
+
+    function selectExam(examId) {
+
+        var exam =
+            findExam(examId);
+
+
+        if (!exam) {
+
+            return;
+
+        }
+
+
+        selectedExamId =
+            exam.id != null
+                ? exam.id
+                : examId;
+
+
+        renderCurrentTab();
+
+
+        renderSelectedExamHall(exam);
+
+    }
+
+
+    /* =====================================================
+       SELECTED EXAM HALL CAPACITY
+    ===================================================== */
+
+    function renderSelectedExamHall(exam) {
+
+        var grid =
+            document.getElementById(
+                "capacity-grid"
+            );
+
+
+        var title =
+            document.getElementById(
+                "hall-section-title"
+            );
+
+
+        var subtitle =
+            document.getElementById(
+                "hall-section-subtitle"
+            );
+
+
+        var examName =
+            document.getElementById(
+                "selected-exam-name"
+            );
+
+
+        var examDetails =
+            document.getElementById(
+                "selected-exam-details"
+            );
+
+
+        if (!grid) {
+
+            return;
+
+        }
+
+
+        var name =
+            exam.examName ||
+            "Selected Exam";
+
+
+        var students =
+            studentCount(exam);
+
+
+        var halls =
+            examHalls(exam);
+
+
+        if (title) {
+
+            title.textContent =
+                "Hall Capacity & Allocation — " +
+                name;
+
+        }
+
+
+        if (subtitle) {
+
+            subtitle.textContent =
+                "Hall allocation for this particular exam";
+
+        }
+
+
+        if (examName) {
+
+            examName.textContent =
+                name;
+
+        }
+
+
+        if (examDetails) {
+
+            examDetails.textContent =
+                students +
+                " Students • " +
+                halls.length +
+                " Halls Assigned";
+
+        }
+
+
+        if (!halls.length) {
+
+            grid.innerHTML =
+
+                '<div class="hall-card">' +
+
+                    '<div class="hall-info-row">' +
+
+                        '<span class="hall-title">' +
+
+                            'No halls assigned' +
+
+                        '</span>' +
+
+                    '</div>' +
+
+                    '<div class="progress-bar-wrapper">' +
+
+                        '<span class="empty-text">' +
+
+                            'No hall allocation available for this exam.' +
+
+                        '</span>' +
+
+                    '</div>' +
+
+                '</div>';
+
+            return;
+
+        }
+
+
+        var allHalls =
+
+            (
+                typeof EM_DATA !== "undefined" &&
+                EM_DATA.halls
+            ) || [];
+
+
+        var studentsPerHall =
+            halls.length > 0
+                ? Math.ceil(
+                    students / halls.length
+                )
+                : 0;
+
+
+        var html = "";
+
+
+        halls.forEach(
+
+            function (hallValue) {
+
+                var hallName =
+                    String(hallValue).trim();
+
+
+                var hallData = null;
+
+
+                for (
+                    var i = 0;
+                    i < allHalls.length;
+                    i++
+                ) {
+
+                    if (
+                        String(
+                            allHalls[i].hallNo
+                        ).trim() === hallName
+                    ) {
+
+                        hallData =
+                            allHalls[i];
+
+                        break;
+
+                    }
+
+                }
+
+
+                var capacity =
+                    hallData
+                        ? num(hallData.rows) *
+                          num(hallData.cols)
+                        : 0;
+
+
+                var seated =
+                    studentsPerHall;
+
+
+                if (
+                    capacity > 0 &&
+                    seated > capacity
+                ) {
+
+                    seated =
+                        capacity;
+
+                }
+
+
+                var percent =
+                    capacity > 0
+                        ? Math.round(
+                            (
+                                seated /
+                                capacity
+                            ) * 100
+                        )
+                        : 0;
+
+
+                if (percent > 100) {
+
+                    percent = 100;
+
+                }
+
+
+                var state =
+                    hallState(percent);
+
+
+                var percentageText =
+                    percent === 0
+                        ? '<span class="empty-text">0%</span>'
+                        : '<span>' +
+                            percent +
+                            '%' +
+                          '</span>';
+
+
+                html +=
+
+                    '<div class="hall-card">' +
+
+                        '<div class="hall-info-row">' +
+
+                            '<span class="hall-title">' +
+
+                                escapeHtml(
+                                    hallName
+                                ) +
+
+                            '</span>' +
+
+
+                            '<div class="hall-meta">' +
+
+                                '<span class="capacity-count">' +
+
+                                    seated +
+                                    ' / ' +
+                                    capacity +
+                                    ' Seats' +
+
+                                '</span>' +
+
+
+                                '<span class="hall-status-badge ' +
+                                    state.badge +
+                                '">' +
+
+                                    '<i class="fa-solid fa-circle"></i>' +
+
+                                    state.label +
+
+                                '</span>' +
+
+                            '</div>' +
+
+                        '</div>' +
+
+
+                        '<div class="progress-bar-wrapper">' +
+
+                            '<div ' +
+
+                                'class="progress-bar ' +
+                                    state.bar +
+                                '"' +
+
+                                'style="width:' +
+                                    percent +
+                                '%;"' +
+
+                            '>' +
+
+                                percentageText +
+
+                            '</div>' +
+
+                        '</div>' +
+
+                    '</div>';
+
+            }
+
+        );
+
+
+        grid.innerHTML =
+            html;
+
+    }
+
+
+    /* =====================================================
+       HALL STATE
+    ===================================================== */
+
+    function hallState(percent) {
+
+        if (percent >= 100) {
+
+            return {
+
+                badge: "status-full",
+
+                bar: "bar-full",
+
+                label: "Filled"
+
+            };
+
+        }
+
+
+        if (percent >= 50) {
+
+            return {
+
+                badge: "status-occupied",
+
+                bar: "bar-blue",
+
+                label: "Occupied"
+
+            };
+
+        }
+
+
+        if (percent > 0) {
+
+            return {
+
+                badge: "status-available",
+
+                bar: "bar-gold",
+
+                label: "Available"
+
+            };
+
+        }
+
+
+        return {
+
+            badge: "status-empty",
+
+            bar: "bar-empty",
+
+            label: "Empty"
+
+        };
+
+    }
+
+
+    /* =====================================================
+       STATISTICS
+    ===================================================== */
+
+/* =====================================================
+   STATISTICS
