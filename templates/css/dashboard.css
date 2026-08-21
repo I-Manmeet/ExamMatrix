@@ -1369,6 +1369,17 @@ body {
         var(--text-muted);
 }
 
+.delete-link {
+    color: #e11d48;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 13px;
+    margin-left: 14px;
+}
+.delete-link:hover {
+    text-decoration: underline;
+}
+
 
 /* =========================================================
    RESPONSIVE

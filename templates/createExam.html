@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create Exam - ExamMatrix</title>
 
-<link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/headerFooter.css">
-<link rel="stylesheet" href="css/createExam.css">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Exam - ExamMatrix</title>
+
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/headerFooter.css">
+  <link rel="stylesheet" href="css/createExam.css">
 </head>
 
 <body data-page="create">
@@ -34,11 +35,11 @@
         </div>
         <div class="field">
           <label>Date</label>
-          <input type="date" id="examDate" value="2026-08-20">
+          <input type="date" id="examDate" value="2026-08-20" onchange="onDateTimeChange()">
         </div>
         <div class="field">
           <label>Slot</label>
-          <select id="examSlot">
+          <select id="examSlot" onchange="onDateTimeChange()">
             <option>09:00–11:00</option>
             <option>11:30–13:30</option>
             <option>14:00–16:00</option>
@@ -71,7 +72,13 @@
       </div>
       <div class="previewWrap">
         <table>
-          <thead><tr><th>Roll</th><th>Name</th><th>Subject</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Roll</th>
+              <th>Name</th>
+              <th>Subject</th>
+            </tr>
+          </thead>
           <tbody id="matchBody"></tbody>
         </table>
       </div>
@@ -98,4 +105,5 @@
   <script src="js/createExam.js"></script>
 
 </body>
+
 </html>
