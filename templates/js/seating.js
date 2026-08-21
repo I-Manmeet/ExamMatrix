@@ -73,6 +73,7 @@ function buildQueue(students) {
 
 
 /* ---- solve: place queue across picked halls, overflow allowed ---- */
+/* ---- solve: place queue across picked halls, fits() is a HARD rule ---- */
 function solveSeating(exam) {
   var grids = [];
   for (var i = 0; i < exam.pickedHalls.length; i++) {
@@ -93,68 +94,41 @@ function solveSeating(exam) {
   var queue = buildQueue(exam.students);
   var backtracks = 0, unplaced = [];
 
-  function relocate(stu) {
-    for (var g = 0; g < grids.length; g++) {
-      var gr = grids[g].grid;
-      for (var r = 0; r < gr.length; r++)
-        for (var c = 0; c < gr[0].length; c++)
-          if (gr[r][c] === stu) { gr[r][c] = null; }
-    }
-    for (var g2 = 0; g2 < grids.length; g2++) {
-      var gr2 = grids[g2].grid;
-      for (var r2 = 0; r2 < gr2.length; r2++)
-        for (var c2 = 0; c2 < gr2[0].length; c2++)
-          if (gr2[r2][c2] === null && fits(gr2, r2, c2, stu)) { gr2[r2][c2] = stu; return true; }
-    }
-    return false;
-  }
-
+  // place each student ONLY in a seat that passes fits(); never force a clash
   for (var qi = 0; qi < queue.length; qi++) {
     var student = queue[qi], placed = false;
 
     for (var g = 0; g < grids.length && !placed; g++) {
       var gr = grids[g].grid;
-      for (var r = 0; r < gr.length && !placed; r++)
-        for (var c = 0; c < gr[0].length && !placed; c++)
-          if (gr[r][c] === null && fits(gr, r, c, student)) { gr[r][c] = student; placed = true; }
-    }
-
-    if (!placed) {
-      for (var g3 = 0; g3 < grids.length && !placed; g3++) {
-        var gr3 = grids[g3].grid;
-        for (var r3 = 0; r3 < gr3.length && !placed; r3++)
-          for (var c3 = 0; c3 < gr3[0].length && !placed; c3++)
-            if (gr3[r3][c3] === null) {
-              var conflict = null, nb = [[r3-1,c3],[r3+1,c3],[r3,c3-1],[r3,c3+1]];
-              for (var n = 0; n < nb.length; n++) {
-                var rr = nb[n][0], cc = nb[n][1];
-                if (rr>=0 && rr<gr3.length && cc>=0 && cc<gr3[0].length) {
-                  var occ = gr3[rr][cc];
-                  if (occ !== null && occ.examCode === student.examCode) { conflict = occ; break; }
-                }
-              }
-              if (conflict !== null) { backtracks++; if (relocate(conflict)) { gr3[r3][c3] = student; placed = true; } }
-            }
+      for (var r = 0; r < gr.length && !placed; r++) {
+        for (var c = 0; c < gr[0].length && !placed; c++) {
+          if (gr[r][c] === null && fits(gr, r, c, student)) {
+            gr[r][c] = student;
+            placed = true;
+          }
+        }
       }
     }
+
+    // no safe seat anywhere -> leave unplaced (prompts "add another hall")
     if (!placed) { unplaced.push(student); }
   }
 
   // verify + measure
   var conflicts = 0, totalSeats = 0, filled = 0, hallsUsed = 0;
   for (var gi = 0; gi < grids.length; gi++) {
-    var g = grids[gi].grid, used = false;
-    for (var r = 0; r < g.length; r++)
-      for (var c = 0; c < g[0].length; c++) {
+    var g2 = grids[gi].grid, used = false;
+    for (var r = 0; r < g2.length; r++)
+      for (var c = 0; c < g2[0].length; c++) {
         totalSeats++;
-        var cell = g[r][c];
+        var cell = g2[r][c];
         if (cell) {
           filled++; used = true;
           var nb2 = [[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
           for (var n2 = 0; n2 < nb2.length; n2++) {
             var r4 = nb2[n2][0], c4 = nb2[n2][1];
-            if (r4>=0 && r4<g.length && c4>=0 && c4<g[0].length) {
-              var other = g[r4][c4];
+            if (r4>=0 && r4<g2.length && c4>=0 && c4<g2[0].length) {
+              var other = g2[r4][c4];
               if (other && other.examCode === cell.examCode) { conflicts++; }
             }
           }
@@ -237,12 +211,15 @@ function renderSeating() {
   }
   container.innerHTML = hallsHtml;
 
-  if (stats.unplaced && stats.unplaced.length > 0) {
+    if (stats.unplaced && stats.unplaced.length > 0) {
     var rolls = stats.unplaced.map(function (s) { return s.roll; }).join(", ");
     container.innerHTML +=
-      '<div class="hallCard" style="border-color:#e8c39a;background:#fff8ef;color:#9a6a12">' +
-      '⚠ ' + stats.unplaced.length + ' student(s) could not be placed: ' + rolls + '</div>';
+      '<div class="hallCard" style="border-color:#dc2626;background:#fef2f2;color:#b91c1c">' +
+      '⚠ ' + stats.unplaced.length + ' student(s) could not be seated safely. ' +
+      'Please go back to <a href="createExam.html">Create Exam</a> and select more halls.' +
+      '<br><span style="opacity:.8">Unseated: ' + rolls + '</span></div>';
   }
+
 }
 
 
