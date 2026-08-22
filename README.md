@@ -66,20 +66,14 @@ ExamMatrix follows a structured workflow that manages the examination process fr
 └────────────┬────────────┘
              │
              ▼
-┌─────────────────────────┐
-│   📅 EXAM GENERATION    │
-│                         │
-│ Subject • Students      │
-│ Date • Time • Semester  │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│   🏫 HALL ALLOCATION    │
-│                         │
-│ Allocate Students Based │
-│ on Hall Capacity        │
-└────────────┬────────────┘
+┌─────────────────────────────────┐
+│  📅 EXAM CREATION &             │
+│     HALL ALLOCATION             │
+│                                 │
+│  Subject • Students             │
+│  Date • Time • Semester         │
+│  Hall Capacity • Allocation     │
+└────────────┬────────────────────┘
              │
              ▼
 ┌─────────────────────────┐
@@ -172,6 +166,12 @@ This separates the two major student requirements:
 ### 📊 Dashboard
 
 <img src="assets/screenshots/dashboard.png" width="600" height="500">
+
+---
+
+### 📊 Find My Seat
+
+<img src="assets/screenshots/findMySeat.png" width="600" height="500">
 
 ---
 
