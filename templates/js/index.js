@@ -182,3 +182,33 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 });
+
+
+
+/* scroll reveal — landing page, replays on scroll */
+(function () {
+  var SEL = ".hero-content, .section-header, .feature-card, .workflow-step-card, .lookup-card, .showcase-box, .dev-card, .cta-banner";
+  function start() {
+    var els = document.querySelectorAll(SEL);
+    if (!els.length) return;
+    if (!("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("reveal", "in"); });
+      return;
+    }
+    els.forEach(function (el) {
+      el.classList.add("reveal");
+      var i = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+      el.style.transitionDelay = Math.min(i, 6) * 80 + "ms";
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("in"); }
+        else { e.target.classList.remove("in"); }   // replays on scroll away/back
+      });
+    }, { threshold: 0.12 });
+    els.forEach(function (el) { io.observe(el); });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();
+

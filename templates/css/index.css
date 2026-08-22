@@ -142,3 +142,7 @@ h1,h2,h3,h4,.font-serif{font-family:var(--font-serif);font-weight:600;letter-spa
   .footer-links-group{grid-template-columns:1fr 1fr}
 }
 @media(max-width:480px){.features-grid,.workflow-steps-grid{grid-template-columns:1fr}.footer-links-group{grid-template-columns:1fr}.hero-metrics{flex-wrap:wrap;gap:14px}.metric-divider{display:none}}
+
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; will-change: opacity, transform; }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal, .reveal.in { opacity: 1; transform: none; transition: none; } }
