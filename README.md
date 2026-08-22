@@ -150,7 +150,7 @@ This separates the two major student requirements:
 
 ### 🏠 Home Page
 
-<img src="assets/screenshots/index.png" width="800" height="500">
+<img src="assets/screenshots/index.png" width="600" height="500">
 
 ---
 
@@ -171,25 +171,25 @@ This separates the two major student requirements:
 
 ### 📊 Dashboard
 
-<img src="assets/screenshots/dashboard.png" width="800" height="500">
+<img src="assets/screenshots/dashboard.png" width="600" height="500">
 
 ---
 
 ### 📅 Generated Exams & Hall Allocation
 
-<img src="assets/screenshots/createExam.png" width="800" height="500">
+<img src="assets/screenshots/createExam.png" width="600" height="500">
 
 ---
 
 ### 🪑 Seating Arrangement
 
-<img src="assets/screenshots/Seating.png" width="800" height="500">
+<img src="assets/screenshots/Seating.png" width="600" height="500">
 
 ---
 
 ### 📅 Timetable
 
-<img src="assets/screenshots/Timetable.png" width="800" height="500">
+<img src="assets/screenshots/Timetable.png" width="600" height="500">
 
 ---
 
