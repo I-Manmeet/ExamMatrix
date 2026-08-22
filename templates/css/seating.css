@@ -227,6 +227,8 @@
     text-align: center;
     min-height: 58px;
     transition: transform .12s ease, box-shadow .12s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .seat:hover {
@@ -438,3 +440,48 @@
     .hallCard,
     .legendCard { break-inside: avoid; }
 }
+
+.seat.booked {
+  background: #f1f4f3;
+  border: 1px solid var(--line);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+.seat.booked strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+  opacity: .6;
+  text-shadow: none;
+}
+.seat.booked span {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  opacity: .6;
+  text-shadow: none;
+}
+.seat.booked::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-width: 0 16px 16px 0;
+  border-style: solid;
+  border-color: transparent var(--emerald) transparent transparent;
+}
+.seat.booked:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+
+.hallUtil {
+  margin-left: auto; font-size: 11px; font-weight: 800;
+  color: var(--emerald); background: var(--emerald-tint);
+  border: 1px solid rgba(15,122,92,.22);
+  padding: 3px 11px; border-radius: 999px; white-space: nowrap;
+}
+.hallUtilBar { height: 6px; margin: 12px 0 2px; background: rgba(15,122,92,.12); border-radius: 999px; overflow: hidden; }
+.hallUtilBar span { display: block; height: 100%; background: var(--emerald); border-radius: 999px; transition: width .3s ease; }

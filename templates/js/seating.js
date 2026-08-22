@@ -18,6 +18,107 @@ var hallResults = [];     // [ { hall, grid:[[cell|null,...],...] }, ... ]
 var stats = { conflicts: 0, hallsUsed: 0, utilization: 0, backtracks: 0, unplaced: [] };
 
 
+/* ---- BOOKED SEATS from earlier overlapping exams ---- */
+var FREE_FINISHED_EXAMS = true;  // set false while testing with past dates
+
+function getSavedExams() {
+  try {
+    var list = JSON.parse(localStorage.getItem("em_exams")) || [];
+    return Array.isArray(list) ? list : [];
+  } catch (e) { return []; }
+}
+
+function isExamOver(exam) {
+  try {
+    var end = String(exam.slot || "").split(/[–-]/)[1];
+    if (!end || !exam.date) return false;
+    var endAt = new Date(exam.date + "T" + end.trim() + ":00");
+    if (isNaN(endAt.getTime())) return false;
+    return Date.now() > endAt.getTime();
+  } catch (e) { return false; }
+}
+
+function getReservedSeats(exam) {
+  var reserved = {};
+  var saved = getSavedExams();
+  var myCreated = Number(exam.createdAt) || 0;
+
+  for (var e = 0; e < saved.length; e++) {
+    var other = saved[e];
+    if (!other || other.id === exam.id) continue;
+    if ((Number(other.createdAt) || 0) >= myCreated) continue;
+    if (other.date !== exam.date || other.slot !== exam.slot) continue;
+    if (FREE_FINISHED_EXAMS && isExamOver(other)) continue;
+    if (!other.seatMap) continue;
+
+    for (var hi = 0; hi < exam.pickedHalls.length; hi++) {
+      var hallNo = exam.pickedHalls[hi];
+      var hallMap = other.seatMap[hallNo];
+      if (!hallMap) continue;
+      if (!reserved[hallNo]) reserved[hallNo] = {};
+      for (var r = 0; r < hallMap.length; r++) {
+        for (var c = 0; c < hallMap[r].length; c++) {
+          var cell = hallMap[r][c];
+          if (cell) {
+            reserved[hallNo][r + "_" + c] =
+              { examName: other.examName, examCode: cell.examCode, roll: cell.roll };
+          }
+        }
+      }
+    }
+  }
+  return reserved;
+}
+
+function applyReservedSeats(exam, grids) {
+  var reserved = getReservedSeats(exam);
+  for (var g = 0; g < grids.length; g++) {
+    var hallNo = grids[g].hall.hallNo;
+    var rmap = reserved[hallNo];
+    if (!rmap) continue;
+    var grid = grids[g].grid;
+    for (var key in rmap) {
+      if (!rmap.hasOwnProperty(key)) continue;
+      var parts = key.split("_");
+      var r = +parts[0], c = +parts[1];
+      if (grid[r] && c < grid[r].length) {
+        grid[r][c] = {
+          booked: true,
+          examCode: rmap[key].examCode,
+          examName: rmap[key].examName,
+          roll: rmap[key].roll
+        };
+      }
+    }
+  }
+}
+
+function persistSeatMap(exam, grids) {
+  var map = {};
+  for (var g = 0; g < grids.length; g++) {
+    var grid = grids[g].grid, arr = [];
+    for (var r = 0; r < grid.length; r++) {
+      var row = [];
+      for (var c = 0; c < grid[0].length; c++) {
+        var cell = grid[r][c];
+        row.push((cell && !cell.booked) ? { roll: cell.roll, examCode: cell.examCode } : null);
+      }
+      arr.push(row);
+    }
+    map[grids[g].hall.hallNo] = arr;
+  }
+  exam.seatMap = map;
+  try {
+    var saved = getSavedExams();
+    for (var i = 0; i < saved.length; i++) {
+      if (saved[i].id === exam.id) { saved[i].seatMap = map; break; }
+    }
+    localStorage.setItem("em_exams", JSON.stringify(saved));
+  } catch (e) { }
+  try { localStorage.setItem("em_currentExam", JSON.stringify(exam)); } catch (e) { }
+}
+
+
 /* ---- colour: use Anupam's branch classes, fallback inline for others ---- */
 /* ---- colour: a distinct, readable colour generated PER course code ---- */
 // No fixed list — colours are generated with the golden-angle so any number
@@ -39,7 +140,7 @@ function styleForCourse(courseCode) {
 /* ---- anti-cheat neighbour check (no same course code adjacent) ---- */
 function fits(grid, row, col, student) {
   var rows = grid.length, cols = grid[0].length;
-  var nb = [[row-1,col],[row+1,col],[row,col-1],[row,col+1]];
+  var nb = [[row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]];
   for (var i = 0; i < nb.length; i++) {
     var r = nb[i][0], c = nb[i][1];
     if (r < 0 || r >= rows || c < 0 || c >= cols) { continue; }
@@ -91,13 +192,14 @@ function solveSeating(exam) {
     grids.push({ hall: hall, grid: cells });
   }
 
+  // NEW: mark seats already taken by an earlier overlapping exam
+  applyReservedSeats(exam, grids);
+
   var queue = buildQueue(exam.students);
   var backtracks = 0, unplaced = [];
 
-  // place each student ONLY in a seat that passes fits(); never force a clash
   for (var qi = 0; qi < queue.length; qi++) {
     var student = queue[qi], placed = false;
-
     for (var g = 0; g < grids.length && !placed; g++) {
       var gr = grids[g].grid;
       for (var r = 0; r < gr.length && !placed; r++) {
@@ -109,44 +211,48 @@ function solveSeating(exam) {
         }
       }
     }
-
-    // no safe seat anywhere -> leave unplaced (prompts "add another hall")
     if (!placed) { unplaced.push(student); }
   }
 
-  // verify + measure
-  var conflicts = 0, totalSeats = 0, filled = 0, hallsUsed = 0;
+  var conflicts = 0, hallsUsed = 0;
+  var utilList = [];
   for (var gi = 0; gi < grids.length; gi++) {
     var g2 = grids[gi].grid, used = false;
+    var hallFilled = 0, hallAvail = 0;
     for (var r = 0; r < g2.length; r++)
       for (var c = 0; c < g2[0].length; c++) {
-        totalSeats++;
         var cell = g2[r][c];
+        if (cell && cell.booked) { continue; }
+        hallAvail++;
         if (cell) {
-          filled++; used = true;
-          var nb2 = [[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
+          hallFilled++; used = true;
+          var nb2 = [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]];
           for (var n2 = 0; n2 < nb2.length; n2++) {
             var r4 = nb2[n2][0], c4 = nb2[n2][1];
-            if (r4>=0 && r4<g2.length && c4>=0 && c4<g2[0].length) {
+            if (r4 >= 0 && r4 < g2.length && c4 >= 0 && c4 < g2[0].length) {
               var other = g2[r4][c4];
-              if (other && other.examCode === cell.examCode) { conflicts++; }
+              if (other && !other.booked && other.examCode === cell.examCode) { conflicts++; }
             }
           }
         }
       }
+    var hallUtil = hallAvail ? Math.round((hallFilled / hallAvail) * 100) : 0;
+    grids[gi].util = hallUtil;
+    if (hallAvail > 0) { utilList.push(hallUtil); }
     if (used) { hallsUsed++; }
   }
   conflicts = Math.floor(conflicts / 2);
-
+  var avgUtil = 0;
+  for (var u = 0; u < utilList.length; u++) { avgUtil += utilList[u]; }
+  avgUtil = utilList.length ? Math.round(avgUtil / utilList.length) : 0;
   hallResults = grids;
-  stats = {
-    conflicts: conflicts,
-    hallsUsed: hallsUsed,
-    utilization: totalSeats ? Math.round((filled / totalSeats) * 100) : 0,
-    backtracks: backtracks,
-    unplaced: unplaced
-  };
+  stats = { conflicts: conflicts, hallsUsed: hallsUsed, utilization: avgUtil, backtracks: backtracks, unplaced: unplaced };
+
+
+  // NEW: remember this exam's own layout for the next exam
+  persistSeatMap(exam, grids);
 }
+
 
 
 /* ---- render everything into the page ---- */
@@ -165,7 +271,7 @@ function renderSeating() {
     for (var i = 0; i < currentExam.pickedCourses.length; i++) {
       var code = currentExam.pickedCourses[i], st = styleForCourse(code);
       var dot = st.cls ? '<span class="legendDot ' + st.cls + '"></span>'
-                       : '<span class="legendDot" style="background:' + st.color + '"></span>';
+        : '<span class="legendDot" style="background:' + st.color + '"></span>';
       lh += '<span class="legendItem">' + dot + code + '</span>';
     }
     legendEl.innerHTML = lh;
@@ -190,7 +296,12 @@ function renderSeating() {
     for (var r2 = 0; r2 < hall.rows; r2++)
       for (var c2 = 0; c2 < hall.cols; c2++) {
         var s = grid[r2][c2];
-        if (s) {
+        if (s && s.booked) {
+          var code = (s.examCode || "").replace(/"/g, "&quot;");
+          var by = (s.examName || "another exam").replace(/"/g, "&quot;");
+          seatsHtml += '<div class="seat booked" title="Held by ' + by + '">' +
+            '<strong>' + code + '</strong><span>in use</span></div>';
+        } else if (s) {
           var st2 = styleForCourse(s.examCode);
           var clsAttr = st2.cls ? (" " + st2.cls) : "";
           var styleAttr = st2.color ? (' style="background:' + st2.color + '"') : "";
@@ -199,19 +310,25 @@ function renderSeating() {
         } else {
           seatsHtml += '<div class="seat empty"></div>';
         }
+
       }
 
+    var util = hallResults[g].util || 0;
     hallsHtml +=
       '<div class="hallCard"><div class="hallHeader">' +
-        '<h3 class="hallTitle">' + hall.hallNo + '</h3>' +
-        '<span class="hallInfo">' + hall.rows + 'x' + hall.cols + ' · ' + (hall.rows*hall.cols) + ' seats</span>' +
-      '</div><div class="hallDirection">↑ FRONT ↑</div>' +
+      '<h3 class="hallTitle">' + hall.hallNo + '</h3>' +
+      '<span class="hallInfo">' + hall.rows + 'x' + hall.cols + ' · ' + (hall.rows * hall.cols) + ' seats</span>' +
+      '<span class="hallUtil">' + util + '% used</span>' +
+      '</div>' +
+      '<div class="hallUtilBar"><span style="width:' + util + '%"></span></div>' +
+      '<div class="hallDirection">↑ FRONT ↑</div>' +
       '<div class="seatingGrid" style="grid-template-columns:repeat(' + hall.cols + ',minmax(65px,1fr))">' +
-        seatsHtml + '</div></div>';
+      seatsHtml + '</div></div>';
+
   }
   container.innerHTML = hallsHtml;
 
-    if (stats.unplaced && stats.unplaced.length > 0) {
+  if (stats.unplaced && stats.unplaced.length > 0) {
     var rolls = stats.unplaced.map(function (s) { return s.roll; }).join(", ");
     container.innerHTML +=
       '<div class="hallCard" style="border-color:#dc2626;background:#fef2f2;color:#b91c1c">' +
@@ -251,7 +368,7 @@ function setupExport() {
       for (var r = 0; r < grid.length; r++)
         for (var c = 0; c < grid[0].length; c++) {
           var s = grid[r][c];
-          if (s) { rows.push([hall.hallNo, r+1, c+1, s.roll, s.examCode]); }
+          if (s) { rows.push([hall.hallNo, r + 1, c + 1, s.roll, s.examCode]); }
         }
     }
     var csv = rows.map(function (row) {
@@ -268,7 +385,7 @@ function setupExport() {
 /* ---- utils ---- */
 function setText(id, v) { var el = document.getElementById(id); if (el) { el.textContent = v; } }
 function fmtDate(d) {
-  try { return new Date(d).toLocaleDateString("en", { day:"numeric", month:"short", year:"numeric" }); }
+  try { return new Date(d).toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" }); }
   catch (e) { return d; }
 }
 
