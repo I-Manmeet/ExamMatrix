@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ===== Hero seating preview grid (JIYA) =====
+
   var previewSeats = [
     {roll:'24AI1001',sub:'cs',name:'Aarav Sharma'},{roll:'24CS2001',sub:'ma',name:'Vihaan Das'},
     {roll:'24AI1002',sub:'cs',name:'Diya Patel'},{roll:'24CS2002',sub:'ma',name:'Aadhya Bose'},
@@ -39,7 +39,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var list = [];
     try {
       var raw = JSON.parse(localStorage.getItem('em_exams'));
-      if (Array.isArray(raw)) { list = raw; }
+            if (Array.isArray(raw)) { list = (typeof getMyExams === "function") ? getMyExams() : raw; }
+
     } catch (e) { list = []; }
 
     // the seating page renders from em_currentExam — include it too
@@ -73,6 +74,47 @@ document.addEventListener('DOMContentLoaded', function () {
     return true;
   }
 
+    // is an exam already finished? (slot end time passed) — mirrors seating.js
+  function isExamOver(ex) {
+    try {
+      var end = String(ex.slot || "").split(/[–-]/)[1];
+      if (!end || !ex.date) return false;
+      var endAt = new Date(ex.date + "T" + end.trim() + ":00");
+      if (isNaN(endAt.getTime())) return false;
+      return Date.now() > endAt.getTime();
+    } catch (e) { return false; }
+  }
+
+  // seats reserved by earlier, not-finished exams sharing this date+slot+hall
+  function getReservedSeats(exam) {
+    var reserved = {};
+    var saved = getExams();
+    var myCreated = Number(exam.createdAt) || 0;
+    for (var e = 0; e < saved.length; e++) {
+      var other = saved[e];
+      if (!other || other.id === exam.id) continue;
+      if ((Number(other.createdAt) || 0) >= myCreated) continue;   // earlier only
+      if (other.date !== exam.date || other.slot !== exam.slot) continue;
+      if (isExamOver(other)) continue;
+      if (!other.seatMap) continue;
+      for (var hi = 0; hi < exam.pickedHalls.length; hi++) {
+        var hallNo = exam.pickedHalls[hi];
+        var hallMap = other.seatMap[hallNo];
+        if (!hallMap) continue;
+        if (!reserved[hallNo]) reserved[hallNo] = {};
+        for (var r = 0; r < hallMap.length; r++) {
+          for (var c = 0; c < hallMap[r].length; c++) {
+            if (hallMap[r][c]) {
+              reserved[hallNo][r + "_" + c] = hallMap[r][c].examCode || "__booked__";
+            }
+          }
+        }
+      }
+    }
+    return reserved;
+  }
+
+
   // re-solve seating for one exam, return { hallNo, row, col } for a roll
   function findDesk(exam, roll) {
     if (typeof EM_DATA === 'undefined' || !EM_DATA.halls.length) { return null; }
@@ -91,6 +133,20 @@ document.addEventListener('DOMContentLoaded', function () {
         cells.push(rowArr);
       }
       grids.push({ hall: hall, grid: cells });
+    }
+        // mark seats already taken by an earlier overlapping exam (match seating.js)
+    var reserved = getReservedSeats(exam);
+    for (var gi2 = 0; gi2 < grids.length; gi2++) {
+      var rmap = reserved[grids[gi2].hall.hallNo];
+      if (!rmap) continue;
+      for (var key in rmap) {
+        if (!rmap.hasOwnProperty(key)) continue;
+        var pr = key.split("_");
+        var rr0 = +pr[0], cc0 = +pr[1];
+        if (grids[gi2].grid[rr0] && cc0 < grids[gi2].grid[rr0].length) {
+          grids[gi2].grid[rr0][cc0] = { booked: true, examCode: rmap[key] };
+        }
+      }
     }
 
     // same "biggest course first, interleaved" queue as seating.js
@@ -182,3 +238,33 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 });
+
+
+
+/* scroll reveal — landing page, replays on scroll */
+(function () {
+  var SEL = ".hero-content, .section-header, .feature-card, .workflow-step-card, .lookup-card, .showcase-box, .dev-card, .cta-banner";
+  function start() {
+    var els = document.querySelectorAll(SEL);
+    if (!els.length) return;
+    if (!("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("reveal", "in"); });
+      return;
+    }
+    els.forEach(function (el) {
+      el.classList.add("reveal");
+      var i = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+      el.style.transitionDelay = Math.min(i, 6) * 80 + "ms";
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("in"); }
+        else { e.target.classList.remove("in"); }   // replays on scroll away/back
+      });
+    }, { threshold: 0.12 });
+    els.forEach(function (el) { io.observe(el); });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();
+
