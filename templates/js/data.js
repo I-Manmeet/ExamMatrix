@@ -4,6 +4,25 @@
    Pages are in /templates, so the path goes UP one level: ../data/
    Must be run via Live Server (not file://).
 ========================================================= */
+/* current logged-in username from the session */
+function getSessionUser() {
+  try {
+    var s = JSON.parse(sessionStorage.getItem("em_session"));
+    return s && s.username ? s.username : "";
+  } catch (e) { return ""; }
+}
+
+/* every saved exam that belongs to the logged-in user */
+function getMyExams() {
+  var list = [];
+  try {
+    var raw = JSON.parse(localStorage.getItem("em_exams"));
+    if (Array.isArray(raw)) { list = raw; }
+  } catch (e) { list = []; }
+  var me = getSessionUser();
+  return list.filter(function (ex) { return ex.owner === me; });
+}
+
 
 let EM_DATA = {
   subjects: [],
