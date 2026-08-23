@@ -392,25 +392,55 @@ function fmtDate(d) {
 
 /* ---- startup ---- */
 (function init() {
-   try { currentExam = JSON.parse(localStorage.getItem("em_currentExam")); }
+  try { currentExam = JSON.parse(localStorage.getItem("em_currentExam")); }
   catch (e) { currentExam = null; }
 
   // only show the exam if it belongs to the logged-in user
   if (currentExam && typeof getSessionUser === "function" &&
-      currentExam.owner !== getSessionUser()) {
+    currentExam.owner !== getSessionUser()) {
     currentExam = null;
   }
 
- 
+  // NEW: only show it if it STILL exists in the saved exams list
+  var savedExams = getSavedExams();
+  var stillExists = currentExam && savedExams.some(function (ex) {
+    return String(ex.id) === String(currentExam.id);
+  });
+  if (!savedExams.length || !stillExists) {
+    currentExam = null;
+    try { localStorage.removeItem("em_currentExam"); } catch (e) { }
+  }
 
-    if (!currentExam) {
+  if (!currentExam) {
     var container = document.getElementById("hallsContainer");
     if (container) {
-      container.innerHTML = '<div class="hallCard">No exam has been generated yet. ' +
-        'Go to <a href="createExam.html">Create Exam</a> to build one.</div>';
+      container.innerHTML =
+        '<div class="hallCard" style="text-align:center;padding:56px 24px;border-style:dashed">' +
+        '<div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;' +
+        'background:rgba(15,122,92,.10);display:flex;align-items:center;justify-content:center">' +
+        '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" ' +
+        'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="3" y="4" width="18" height="17" rx="2"></rect>' +
+        '<line x1="3" y1="9" x2="21" y2="9"></line>' +
+        '<line x1="8" y1="2" x2="8" y2="6"></line>' +
+        '<line x1="16" y1="2" x2="16" y2="6"></line>' +
+        '</svg>' +
+        '</div>' +
+
+        '<h2 class="examTitle" style="margin:0 0 8px">No exams scheduled yet</h2>' +
+        '<p class="examSub" style="max-width:380px;margin:0 auto 24px">' +
+        'Create an exam to generate its seating plan and view hall allocation here.' +
+        '</p>' +
+        '<a href="createExam.html" style="display:inline-flex;align-items:center;gap:8px;' +
+        'background:var(--emerald);color:#fff;font-family:var(--ui);font-size:13.5px;' +
+        'font-weight:700;padding:11px 22px;border-radius:8px;text-decoration:none;' +
+        'box-shadow:0 4px 12px rgba(15,122,92,.2)">+ Create Exam</a>' +
+
+        '</div>';
     }
+
     // clear stale placeholder header so it doesn't look like an exam exists
-    setText("examTitle", "No exam selected");
+    setText("examTitle", "No exams scheduled");
     setText("examSub", "");
     var legend = document.getElementById("legendSwatches");
     if (legend) { legend.innerHTML = ""; }
@@ -420,7 +450,6 @@ function fmtDate(d) {
     setText("metricBacktracks", "0");
     return;
   }
-
 
   loadExamData(function () {
     solveSeating(currentExam);
