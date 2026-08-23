@@ -49,7 +49,8 @@
 
                 if (Array.isArray(parsed)) {
 
-                    list = parsed;
+                    list = (typeof getMyExams === "function") ? getMyExams() : parsed;
+
 
                 }
 
@@ -74,7 +75,7 @@
                     var one =
                         JSON.parse(cur);
 
-                    if (one && one.examName) {
+                    if (one && one.examName && one.owner === getSessionUser()) {
 
                         if (one.id == null) {
 

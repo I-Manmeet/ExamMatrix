@@ -10,12 +10,12 @@
 </head>
 <body>
 
-  <!-- header.html loads into this slot (JIYA) -->
+ 
   <div id="site-header-slot"></div>
 
   <main>
 
-    <!-- ===================== HERO (JIYA) ===================== -->
+   
     <section class="hero-section" id="hero">
       <div class="container hero-container">
         <div class="hero-content">
@@ -60,22 +60,7 @@
       </div>
     </section>
 
-    <!-- ============================================================================
-         FIND MY SEAT — OWNER: MANMEET
-         ----------------------------------------------------------------------------
-         WHAT TO BUILD: a public roll-number lookup card. A student types their roll
-         number, clicks "Find Seat", and sees their exam, hall, row and desk.
-         PUT INSIDE .container:
-           1. A section header (tag + title "Find your exam seat instantly" + subtitle).
-           2. A .lookup-card containing:
-              - a text input  (id="rollSearchInput")  + a "Find Seat" button (id="btnSearchSeat")
-              - optional sample roll-number pills (class="pill-sample" data-roll="...")
-              - a result area with fields for: name (id="resStudentName"),
-                subject (id="resSubject"), date/time (id="resTime"),
-                hall (id="resHall"), desk (id="resDesk")
-         JS: on click, search the roster for the roll number → fill the result fields,
-             or show "not seated in the current exam" if not found.
-         ============================================================================ -->
+    
     <section class="section lookup-section" id="lookup">
       <div class="container">
         <div class="section-header text-center">
@@ -147,7 +132,7 @@
       </div>
     </section>
 
-    <!-- ===================== HOW IT WORKS (JIYA) ===================== -->
+   
     <section class="section workflow-section" id="workflow">
       <div class="container">
         <div class="section-header text-center">
@@ -180,21 +165,7 @@
       </div>
     </section>
 
-    <!-- ============================================================================
-         ADMIN SHOWCASE / STATS BANNER — OWNER: OTHER MEMBER
-         ----------------------------------------------------------------------------
-         WHAT TO BUILD: a dark rounded banner split into two halves.
-           LEFT half:  a small eyebrow label, a heading like
-                       "Complete visibility over multi-hall exam sessions", a short
-                       paragraph, and two buttons ("Launch console", "View documentation").
-           RIGHT half: a 2x2 grid of stat cards, each = a big number + a label:
-                       - "3  Active exam sessions"
-                       - "58 Students currently in hall"
-                       - "4  Staff members currently active"
-                       - "0  Student clashes detected"  (highlight this green)
-         SUGGESTED CLASSES: .showcase-section > .container > .showcase-box
-                            (left: .showcase-content, right: .showcase-stats-panel > .stat-card)
-         ============================================================================ -->
+  
 <!-- ============================================================================ 
      ADMIN SHOWCASE / STATS BANNER
      ============================================================================ -->
@@ -264,22 +235,7 @@
       </div>
     </section>
 
-    <!-- ============================================================================
-         TEAM / DEVELOPERS — OWNER: OTHER MEMBER
-         ----------------------------------------------------------------------------
-         WHAT TO BUILD: a centered section header (tag "OUR TECHNICAL STACK" +
-         heading "Built with precision by developers" + short subtitle), then a row
-         of THREE cards, one per team member. Each card has:
-           - a round avatar with the member's initial (A / B / C)
-           - the member's name  (e.g. "Member A")
-           - their role         (e.g. "Backend Developer")
-           - a short skills line (e.g. "Laravel, PHP, MySQL")
-           - two small tags at the bottom (e.g. "Dockerization", "Database Design")
-         SUGGESTED CLASSES: .developers-section > .container >
-                            .section-header + .developers-grid > .dev-card
-                            (inside card: .dev-avatar, .dev-name, .dev-role, .dev-bio, .dev-skills > .skill-tag)
-         ============================================================================ -->
-        <section class="section developers-section" id="developers">
+    
           <div class="container">
             
             <!-- Section Header -->
@@ -343,16 +299,7 @@
 
           </div>
         </section>
-    <!-- ============================================================================
-         CALL TO ACTION (CTA) — OWNER: OTHER MEMBER
-         ----------------------------------------------------------------------------
-         WHAT TO BUILD: a smaller dark rounded banner, centered text:
-           - a heading: "Experience calm, clash-free examinations."
-           - a short one-line description
-           - two buttons ("Launch console", "View Student Guides")
-         SUGGESTED CLASSES: .cta-section > .container > .cta-banner > .cta-inner
-                            (.cta-title, .cta-desc, .cta-button-row with two .btn)
-         ============================================================================ -->
+    
 <section class="section cta-section" id="demo">
   <div class="container">
     <div class="cta-banner">
@@ -372,7 +319,7 @@
 
   </main>
 
-  <!-- footer.html loads into this slot (JIYA) -->
+  
   <div id="site-footer-slot"></div>
 
   <script src="./js/data.js"></script>

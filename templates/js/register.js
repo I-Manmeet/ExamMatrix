@@ -1,7 +1,3 @@
-/* =========================================================
-   [MEMBER 1] REGISTER SUBMIT  +  [MEMBER 3] VALIDATION
-   Username-only (no email). Uses showMessage() from auth-shared.js.
-========================================================= */
 
 
 let registerForm = document.getElementById("registerForm");
@@ -11,7 +7,6 @@ let passwordInput = document.getElementById("password");
 let confirmPasswordInput = document.getElementById("confirmPassword");
 
 
-/* ---- [MEMBER 3] password strength check ---- */
 function getPasswordError(password) {
   let missing = [];
 
@@ -29,7 +24,6 @@ function getPasswordError(password) {
 }
 
 
-/* ---- [MEMBER 3] full registration validation (username-only) ---- */
 function validateRegistration(username, password, confirmPassword) {
 
   if (username === "" || password === "" || confirmPassword === "") {
@@ -64,7 +58,7 @@ function validateRegistration(username, password, confirmPassword) {
 }
 
 
-/* ---- [MEMBER 1] submit handler ---- */
+
 registerForm.addEventListener("submit", function (event) {
   event.preventDefault();
 

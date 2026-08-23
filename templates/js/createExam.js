@@ -1,11 +1,4 @@
-/* =========================================================
-   ExamMatrix — CREATE EXAM LOGIC  (single file, 3 sections)
-   ---------------------------------------------------------
-   [MEMBER A] Load, render pickers, detect busy students,
-              + anti-cheat neighbour-check (fits)  -> DONE
-   [MEMBER B] Selection + apply clash prevention   -> TODO
-   [MEMBER C] Validate + save                      -> TODO
-========================================================= */
+
 
 /* shared picked-state (all sections read/write these) */
 let pickedCourses = [];
@@ -18,11 +11,8 @@ let pickedHalls = [];
 ----------------------------------------------------------- */
 function getUsedCourses() {
   let used = {};
-  let emExams = [];
-  try {
-    emExams = JSON.parse(localStorage.getItem("em_exams")) || [];
-    if (!Array.isArray(emExams)) { emExams = []; }
-  } catch (e) { emExams = []; }
+  let emExams = (typeof getMyExams === "function") ? getMyExams() : [];
+
 
   for (let i = 0; i < emExams.length; i++) {
     let courses = emExams[i].pickedCourses || [];
@@ -44,11 +34,8 @@ function getUsedCourses() {
 ----------------------------------------------------------- */
 function getHallBookings(date, slot) {
   let bookings = {};                 // hallNo -> seats already used
-  let emExams = [];
-  try {
-    emExams = JSON.parse(localStorage.getItem("em_exams")) || [];
-    if (!Array.isArray(emExams)) { emExams = []; }
-  } catch (e) { emExams = []; }
+    let emExams = (typeof getMyExams === "function") ? getMyExams() : [];
+
 
   for (let i = 0; i < emExams.length; i++) {
     let ex = emExams[i];
@@ -125,10 +112,6 @@ function lockUsedCourses() {
 
 
 
-/* =========================================================
-   ===========  [MEMBER A] LOAD + RENDER + DETECT  ========
-   Status: DONE
-========================================================= */
 
 /* colour per course (simple palette) */
 let COURSE_PALETTE = ["#0f7a5c", "#2b6cb0", "#b7791f", "#c026d3", "#0891b2", "#65a30d", "#c0392b", "#7c3aed", "#0e7490", "#a16207", "#be123c", "#4338ca"];
@@ -170,25 +153,7 @@ function renderSubjectPickers() {
   list.innerHTML = html;
 }
 
-/* render the hall checkboxes from halls.json */
-function renderHallPickers() {
-  let list = document.getElementById("hallList");
-  let html = "";
 
-  for (let i = 0; i < EM_DATA.halls.length; i++) {
-    let hall = EM_DATA.halls[i];
-    let seats = hall.rows * hall.cols;
-
-    html +=
-      '<label class="pickRow" data-hall="' + hall.hallNo + '">' +
-      '<input type="checkbox" onchange="onPickChange()">' +
-      '<span><span class="pickMain">' + hall.hallNo + '</span> ' +
-      '<span class="pickSub">' + hall.rows + '×' + hall.cols + '</span></span>' +
-      '<span class="pickRight">' + seats + ' seats</span>' +
-      '</label>';
-  }
-  list.innerHTML = html;
-}
 /* when the exam's date or slot changes, hall availability changes too,
    so re-render the hall picker and refresh the status bar */
 function onDateTimeChange() {
@@ -243,10 +208,9 @@ function renderHallPickers() {
   list.innerHTML = html;
 }
 
-/* CLASH DETECTION (A's half):
-   given the currently picked courses, return the set of roll numbers
-   of students who are ALREADY assigned to one of those courses.
-   Member B uses this to grey out any OTHER course that shares a student. */
+
+  /* given the currently picked courses, return the set of roll numbers
+   of students who are ALREADY assigned to one of those courses.. */
 function getBusyStudents(coursesToCheck) {
   let busy = {};   // roll -> true
   for (let i = 0; i < EM_DATA.students.length; i++) {
@@ -261,7 +225,7 @@ function getBusyStudents(coursesToCheck) {
 }
 
 /* -----------------------------------------------------------
-   ANTI-CHEAT NEIGHBOUR CHECK  (my algorithm piece)
+   ANTI-CHEAT NEIGHBOUR CHECK 
    -----------------------------------------------------------
    The core seating rule: a seat is only safe for a student if
    NONE of its 4 orthogonal neighbours (up/down/left/right)
@@ -306,27 +270,6 @@ function fits(grid, row, col, student) {
 }
 
 
-/* =========================================================
-   ========  [MEMBER B] SELECTION + CLASH PREVENTION  =====
-   Status: TODO
-
-   WRITE:
-     onPickChange()          - runs whenever a checkbox changes.
-                               Rebuild pickedCourses/pickedHalls from
-                               the checked boxes, then call
-                               getMatchedStudents(), refresh the table,
-                               call applyClashPrevention(), and
-                               updateStatusBar().
-     getMatchedStudents()    - return students enrolled in pickedCourses.
-     applyClashPrevention()  - use getBusyStudents(pickedCourses) from
-                               Member A to disable/grey any UNpicked course
-                               that shares a busy student (add .locked +
-                               a "locked · students busy" label, disable its checkbox).
-
-   HINT: read checked boxes like:
-     document.querySelectorAll('#subjectList input:checked')
-     and get the course from its parent's dataset.course
-========================================================= */
 
 /* runs whenever any subject/hall checkbox changes */
 function onPickChange() {
@@ -397,10 +340,7 @@ function refreshMatchedTable() {
   body.innerHTML = html;
 }
 
-/* grey out courses/halls that would clash with the current picks.
-   Uses Member A's getBusyStudents(). */
-/* grey out courses that clash + wire the clash info bar (Member B) */
-/* grey out courses that clash + wire the clash info bar (Member B) */
+
 function applyClashPrevention() {
   var busy = getBusyStudents(pickedCourses);      // Member A's function
   var rows = document.querySelectorAll('#subjectList .pickRow');
@@ -505,10 +445,7 @@ function clearAllPicks() {
 }
 
 
-/* =========================================================
-   ============  [MEMBER C] VALIDATE + SAVE  ==============
-   Status: DONE
-========================================================= */
+
 
 function updateStatusBar() {
 
@@ -571,8 +508,69 @@ function updateStatusBar() {
     generateBtn.disabled = true;
   }
 }
+/* dry-run the real seating rule on the current picks.
+   Returns how many students CAN'T be placed without a same-code neighbour.
+   Mirrors seating.js so the check matches the actual result. */
+function countUnplaceable() {
+  var students = getMatchedStudents();
+
+  // empty grids for each picked hall
+  var grids = [];
+  for (var i = 0; i < pickedHalls.length; i++) {
+    var hall = null;
+    for (var h = 0; h < EM_DATA.halls.length; h++) {
+      if (EM_DATA.halls[h].hallNo === pickedHalls[i]) { hall = EM_DATA.halls[h]; break; }
+    }
+    if (!hall) { continue; }
+    var cells = [];
+    for (var r = 0; r < hall.rows; r++) {
+      var rowArr = [];
+      for (var c = 0; c < hall.cols; c++) { rowArr.push(null); }
+      cells.push(rowArr);
+    }
+    grids.push(cells);
+  }
+
+  // biggest course first, interleaved (same order as seating.js)
+  var groups = {};
+  for (var s = 0; s < students.length; s++) {
+    var st = students[s];
+    if (!groups[st.examCode]) { groups[st.examCode] = []; }
+    groups[st.examCode].push(st);
+  }
+  var groupList = Object.keys(groups).map(function (k) { return groups[k]; });
+  groupList.sort(function (a, b) { return b.length - a.length; });
+  var queue = [], more = true;
+  while (more) {
+    more = false;
+    for (var g = 0; g < groupList.length; g++) {
+      if (groupList[g].length > 0) { queue.push(groupList[g].shift()); more = true; }
+    }
+  }
+
+  // greedy placement with fits() as a hard rule
+  var unplaced = 0;
+  for (var qi = 0; qi < queue.length; qi++) {
+    var stu = queue[qi], placed = false;
+    for (var gg = 0; gg < grids.length && !placed; gg++) {
+      var gr = grids[gg];
+      for (var rr = 0; rr < gr.length && !placed; rr++) {
+        for (var cc = 0; cc < gr[0].length && !placed; cc++) {
+          if (gr[rr][cc] === null && fits(gr, rr, cc, stu)) {
+            gr[rr][cc] = stu;
+            placed = true;
+          }
+        }
+      }
+    }
+    if (!placed) { unplaced++; }
+  }
+  return unplaced;
+}
+
 
 function generateAndSave() {
+   
 
   let examName = document.getElementById("examName").value.trim();
   let date = document.getElementById("examDate").value;
@@ -631,6 +629,16 @@ function generateAndSave() {
     );
     return;
   }
+    // constraint check — can everyone actually be seated without a clash?
+  var cantSeat = countUnplaceable();
+  if (cantSeat > 0) {
+    alert(
+      "Cannot generate seating.\n\n" +
+      cantSeat + " student(s) can't be seated without sitting next to the same exam.\n" +
+      "Select more halls, then try again."
+    );
+    return;   // do NOT save — selections stay so you can add halls
+  }
 
   let exam = {
     examName: examName,
@@ -644,6 +652,9 @@ function generateAndSave() {
   // give each exam a stable id + timestamp (dashboard uses these)
   exam.id = "exam_" + Date.now();
   exam.createdAt = Date.now();
+    // stamp the logged-in user so exams are per-account
+  exam.owner = getSessionUser();
+
 
   // keep the single "current exam" seating.html relies on
   localStorage.setItem("em_currentExam", JSON.stringify(exam));

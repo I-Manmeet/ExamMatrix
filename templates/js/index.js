@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ===== Hero seating preview grid (JIYA) =====
+
   var previewSeats = [
     {roll:'24AI1001',sub:'cs',name:'Aarav Sharma'},{roll:'24CS2001',sub:'ma',name:'Vihaan Das'},
     {roll:'24AI1002',sub:'cs',name:'Diya Patel'},{roll:'24CS2002',sub:'ma',name:'Aadhya Bose'},
@@ -39,7 +39,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var list = [];
     try {
       var raw = JSON.parse(localStorage.getItem('em_exams'));
-      if (Array.isArray(raw)) { list = raw; }
+            if (Array.isArray(raw)) { list = (typeof getMyExams === "function") ? getMyExams() : raw; }
+
     } catch (e) { list = []; }
 
     // the seating page renders from em_currentExam — include it too

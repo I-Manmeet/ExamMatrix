@@ -39,7 +39,8 @@ function getTimetableExams() {
             var parsed = JSON.parse(raw);
 
             if (Array.isArray(parsed)) {
-                exams = parsed;
+                exams = (typeof getMyExams === "function") ? getMyExams() : parsed;
+
             }
 
         }
