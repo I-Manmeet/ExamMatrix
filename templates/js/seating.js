@@ -392,17 +392,35 @@ function fmtDate(d) {
 
 /* ---- startup ---- */
 (function init() {
-  try { currentExam = JSON.parse(localStorage.getItem("em_currentExam")); }
+   try { currentExam = JSON.parse(localStorage.getItem("em_currentExam")); }
   catch (e) { currentExam = null; }
 
-  if (!currentExam) {
+  // only show the exam if it belongs to the logged-in user
+  if (currentExam && typeof getSessionUser === "function" &&
+      currentExam.owner !== getSessionUser()) {
+    currentExam = null;
+  }
+
+ 
+
+    if (!currentExam) {
     var container = document.getElementById("hallsContainer");
     if (container) {
       container.innerHTML = '<div class="hallCard">No exam has been generated yet. ' +
         'Go to <a href="createExam.html">Create Exam</a> to build one.</div>';
     }
+    // clear stale placeholder header so it doesn't look like an exam exists
+    setText("examTitle", "No exam selected");
+    setText("examSub", "");
+    var legend = document.getElementById("legendSwatches");
+    if (legend) { legend.innerHTML = ""; }
+    setText("metricConflicts", "0");
+    setText("metricHalls", "0");
+    setText("metricUtilization", "0%");
+    setText("metricBacktracks", "0");
     return;
   }
+
 
   loadExamData(function () {
     solveSeating(currentExam);
