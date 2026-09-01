@@ -5,6 +5,7 @@
 The system uses examination, student, subject, hall, date, and time-slot information to automatically organize examinations and seating arrangements while detecting scheduling conflicts and preventing students taking the same examination from being seated next to each other.
 
 ---
+# Click on the link for the demo: https://exammatrix-ws6g.onrender.com
 
 ## ✨ Features
 
