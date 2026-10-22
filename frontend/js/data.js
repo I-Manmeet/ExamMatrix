@@ -1,7 +1,7 @@
 /* =========================================================
    DATA LOADER — js/data.js
    Loads the 3 JSON files from the repo-root /data folder.
-   Pages are in /templates, so the path goes UP one level: ../data/
+   Pages are in /templates, so the path goes UP one level: ../backend/sample-data/
    Must be run via Live Server (not file://).
 ========================================================= */
 /* current logged-in username from the session */
@@ -33,9 +33,9 @@ let EM_DATA = {
 function loadExamData(onReady) {
 
   Promise.all([
-    fetch("../data/subjects.json").then(function (r) { return r.json(); }),
-    fetch("../data/halls.json").then(function (r) { return r.json(); }),
-    fetch("../data/students.json").then(function (r) { return r.json(); })
+    fetch("../backend/sample-data/subjects.json").then(function (r) { return r.json(); }),
+    fetch("../backend/sample-data/halls.json").then(function (r) { return r.json(); }),
+    fetch("../backend/sample-data/students.json").then(function (r) { return r.json(); })
   ])
   .then(function (results) {
     EM_DATA.subjects = results[0];
