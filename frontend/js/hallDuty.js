@@ -175,8 +175,9 @@ function renderChart() {
       if (!cell) { seats += '<div class="seat empty"></div>'; continue; }
 
       const status = hallData.attendance[cell.roll] || "";
-      const classes = ["seat", status, canEdit ? "tap" : "locked", searchRoll && cell.roll === searchRoll ? "hl" : ""].join(" ");
-      seats +=
+      const isMatch = searchRoll && cell.roll.indexOf(searchRoll) !== -1;
+      const isDim = searchRoll && !isMatch;
+      const classes = ["seat", status, canEdit ? "tap" : "locked", isMatch ? "hl" : "", isDim ? "dim" : ""].join(" ");      seats +=
         '<div class="' + classes + '" style="background:' + colorFor(cell.code) + '" data-roll="' + escapeHtml(cell.roll) + '"' +
         ' title="' + escapeHtml(cell.roll) + " · seat " + (r * hall.cols + c + 1) + '">' +
         "<strong>" + escapeHtml(cell.roll) + "</strong><span>" + escapeHtml(cell.code) + "</span></div>";
@@ -252,8 +253,13 @@ function onReset() {
 function onSearch(event) {
   searchRoll = event.target.value.trim().toUpperCase();
   renderChart();
-  const hit = document.querySelector(".seat.hl");
-  if (hit) hit.scrollIntoView({ block: "nearest", behavior: "smooth" });
+
+  const result = document.getElementById("search-result");
+  if (!searchRoll) { result.textContent = ""; return; }
+
+  const hits = document.querySelectorAll(".seat.hl");
+  result.textContent = hits.length ? hits.length + " found" : "No seat found";
+  if (hits.length) hits[0].scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 /* ---------------- incidents ---------------- */

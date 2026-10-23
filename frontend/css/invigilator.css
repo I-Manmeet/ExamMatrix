@@ -451,3 +451,5 @@ body {
 @media (max-width: 860px) {
   .duty-grid { grid-template-columns: minmax(0, 1fr); }
 }
+.seat.dim { opacity: 0.25; }
+.seat.hl  { transform: translateY(-2px) scale(1.04); z-index: 1; }
