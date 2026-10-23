@@ -1,12 +1,12 @@
+
 const mongoose = require("mongoose");
 
 const studentSchema = new mongoose.Schema(
   {
-    universityId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "University",
+    university: {
+      type: String,
       required: true,
-      index: true
+      index: true // e.g. "UNI-0001"
     },
     roll: {
       type: String,
@@ -35,7 +35,7 @@ const studentSchema = new mongoose.Schema(
 
 // Roll number unique within each university
 studentSchema.index(
-  { universityId: 1, roll: 1 },
+  { university: 1, roll: 1 },
   { unique: true }
 );
 

@@ -1,12 +1,12 @@
+
 const mongoose = require("mongoose");
 
 const hallSchema = new mongoose.Schema(
   {
-    universityId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "University",
+    university: {
+      type: String,
       required: true,
-      index: true
+      index: true // e.g. "UNI-0001"
     },
     hallNo: {
       type: String,
@@ -16,12 +16,14 @@ const hallSchema = new mongoose.Schema(
     rows: {
       type: Number,
       required: true,
-      min: [1, "Rows must be at least 1"]
+      min: [1, "Rows must be at least 1"],
+      max: [30, "Rows can be at most 30"]
     },
     cols: {
       type: Number,
       required: true,
-      min: [1, "Columns must be at least 1"]
+      min: [1, "Columns must be at least 1"],
+      max: [30, "Columns can be at most 30"]
     }
   },
   { timestamps: true }
@@ -29,7 +31,7 @@ const hallSchema = new mongoose.Schema(
 
 // Hall number unique within each university
 hallSchema.index(
-  { universityId: 1, hallNo: 1 },
+  { university: 1, hallNo: 1 },
   { unique: true }
 );
 
