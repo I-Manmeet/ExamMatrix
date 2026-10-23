@@ -1,0 +1,216 @@
+
+{
+  "students": [
+    {
+      "studentId": "STU001",
+      "name": "Aarav Sharma",
+      "rollNumber": "24CSE001",
+      "semester": 5,
+      "subjectCode": "CSE301"
+    },
+    {
+      "studentId": "STU002",
+      "name": "Diya Verma",
+      "rollNumber": "24CSE002",
+      "semester": 5,
+      "subjectCode": "CSE301"
+    },
+    {
+      "studentId": "STU003",
+      "name": "Rohan Singh",
+      "rollNumber": "24CSE003",
+      "semester": 5,
+      "subjectCode": "CSE302"
+    },
+    {
+      "studentId": "STU001",
+      "name": "Duplicate ID Student",
+      "rollNumber": "24CSE004",
+      "semester": 5,
+      "subjectCode": "CSE301"
+    },
+    {
+      "studentId": "STU005",
+      "name": "Duplicate Roll Student",
+      "rollNumber": "24CSE002",
+      "semester": 5,
+      "subjectCode": "CSE302"
+    },
+    {
+      "studentId": "",
+      "name": "Missing ID Student",
+      "rollNumber": "24CSE006",
+      "semester": 5,
+      "subjectCode": "CSE301"
+    },
+    {
+      "studentId": "STU007",
+      "name": "",
+      "rollNumber": "24CSE007",
+      "semester": 5,
+      "subjectCode": "CSE301"
+    },
+    {
+      "studentId": "STU008",
+      "name": "Invalid Semester Student",
+      "rollNumber": "24CSE008",
+      "semester": "abc",
+      "subjectCode": "CSE301"
+    },
+    {
+      "studentId": "STU009",
+      "name": "Unknown Subject Student",
+      "rollNumber": "24CSE009",
+      "semester": 5,
+      "subjectCode": "CSE999"
+    },
+    {
+      "studentId": "STU010",
+      "name": "Negative Semester Student",
+      "rollNumber": "24CSE010",
+      "semester": -1,
+      "subjectCode": "CSE302"
+    }
+  ],
+  "subjects": [
+    {
+      "subjectCode": "CSE301",
+      "subjectName": "Data Structures",
+      "semester": 5
+    },
+    {
+      "subjectCode": "CSE302",
+      "subjectName": "Database Management Systems",
+      "semester": 5
+    },
+    {
+      "subjectCode": "CSE301",
+      "subjectName": "Duplicate Subject Code",
+      "semester": 5
+    },
+    {
+      "subjectCode": "",
+      "subjectName": "Missing Subject Code",
+      "semester": 5
+    }
+  ],
+  "halls": [
+    {
+      "hallId": "H001",
+      "hallName": "Hall A",
+      "capacity": 20,
+      "rows": 4,
+      "columns": 5
+    },
+    {
+      "hallId": "H002",
+      "hallName": "Hall B",
+      "capacity": 4,
+      "rows": 2,
+      "columns": 2
+    },
+    {
+      "hallId": "H001",
+      "hallName": "Duplicate Hall ID",
+      "capacity": 10,
+      "rows": 2,
+      "columns": 5
+    },
+    {
+      "hallId": "H004",
+      "hallName": "Zero Capacity Hall",
+      "capacity": 0,
+      "rows": 0,
+      "columns": 5
+    },
+    {
+      "hallId": "H005",
+      "hallName": "Negative Capacity Hall",
+      "capacity": -5,
+      "rows": 2,
+      "columns": 2
+    }
+  ],
+  "invigilators": [
+    {
+      "invigilatorId": "INV001",
+      "name": "Priya Sharma"
+    },
+    {
+      "invigilatorId": "INV002",
+      "name": "Rahul Mehta"
+    },
+    {
+      "invigilatorId": "INV001",
+      "name": "Duplicate Invigilator"
+    },
+    {
+      "invigilatorId": "",
+      "name": "Missing Invigilator ID"
+    }
+  ],
+  "exams": [
+    {
+      "examId": "EXM001",
+      "subjectCode": "CSE301",
+      "date": "2026-11-10",
+      "startTime": "09:00",
+      "endTime": "12:00",
+      "hallId": "H001"
+    },
+    {
+      "examId": "EXM002",
+      "subjectCode": "CSE302",
+      "date": "2026-11-10",
+      "startTime": "09:00",
+      "endTime": "12:00",
+      "hallId": "H001"
+    },
+    {
+      "examId": "EXM001",
+      "subjectCode": "CSE302",
+      "date": "2026-11-11",
+      "startTime": "14:00",
+      "endTime": "16:00",
+      "hallId": "H002"
+    },
+    {
+      "examId": "EXM004",
+      "subjectCode": "CSE999",
+      "date": "2026-11-12",
+      "startTime": "09:00",
+      "endTime": "12:00",
+      "hallId": "H999"
+    },
+    {
+      "examId": "EXM005",
+      "subjectCode": "CSE301",
+      "date": "2026-11-13",
+      "startTime": "15:00",
+      "endTime": "12:00",
+      "hallId": "H001"
+    }
+  ],
+  "attendance": [
+    {
+      "studentId": "STU001",
+      "examId": "EXM001",
+      "status": "present"
+    },
+    {
+      "studentId": "STU001",
+      "examId": "EXM001",
+      "status": "absent"
+    },
+    {
+      "studentId": "STU999",
+      "examId": "EXM001",
+      "status": "present"
+    },
+    {
+      "studentId": "STU002",
+      "examId": "EXM002",
+      "status": "unknown"
+    }
+  ]
+}
