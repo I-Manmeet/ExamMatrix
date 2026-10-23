@@ -313,3 +313,141 @@ body {
 @media (max-width: 520px) {
   #stats { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* =========================================================
+   HALL DUTY PAGE — attendance + incidents
+   (seat grid itself comes from seating.css)
+   ========================================================= */
+
+/* back link above the title */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.back-link:hover { color: var(--primary); }
+
+/* toolbar above the chart */
+.att-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.att-toolbar .spacer { flex: 1; }
+
+.roll-search {
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  width: 200px;
+  max-width: 100%;
+  outline: none;
+}
+.roll-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 132, 103, 0.1); }
+
+.btn-danger-soft {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  color: var(--danger);
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-danger-soft:hover { background: var(--danger-light); border-color: #fecdd3; }
+
+.lock-note {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--warning-light);
+  color: var(--warning);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* attendance states on seats */
+.seat.tap { cursor: pointer; }
+.seat.present { box-shadow: inset 0 0 0 3px #fff, 0 0 0 2px var(--primary); }
+.seat.present::before {
+  content: "✓";
+  position: absolute;
+  top: 3px;
+  right: 6px;
+  font-size: 12px;
+  font-weight: 900;
+}
+.seat.absent { filter: grayscale(0.85) brightness(1.15); opacity: 0.7; }
+.seat.absent::before {
+  content: "✕";
+  position: absolute;
+  top: 3px;
+  right: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+}
+.seat.hl { outline: 3px solid #b78a3c; outline-offset: 2px; }
+.seat.locked { cursor: default; }
+
+/* two-column area under the chart */
+.duty-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+/* incident form */
+.form-field { margin-bottom: 14px; }
+.form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: var(--text-dark);
+  outline: none;
+}
+.form-field textarea { min-height: 90px; resize: vertical; }
+.form-field select:focus,
+.form-field textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 132, 103, 0.1); }
+
+.form-msg { font-size: 13px; padding: 9px 12px; border-radius: 9px; margin-bottom: 12px; }
+.form-msg.ok  { background: var(--primary-light); color: var(--primary); }
+.form-msg.err { background: var(--danger-light); color: var(--danger); }
+
+/* incident list */
+.incident-item {
+  border-left: 3px solid var(--danger);
+  background: #fffafa;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.incident-item strong { display: block; margin-bottom: 2px; }
+.incident-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+@media (max-width: 860px) {
+  .duty-grid { grid-template-columns: minmax(0, 1fr); }
+}
