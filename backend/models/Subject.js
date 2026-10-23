@@ -1,12 +1,12 @@
+
 const mongoose = require("mongoose");
 
 const subjectSchema = new mongoose.Schema(
   {
-    universityId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "University",
+    university: {
+      type: String,
       required: true,
-      index: true
+      index: true // e.g. "UNI-0001"
     },
     code: {
       type: String,
@@ -30,7 +30,7 @@ const subjectSchema = new mongoose.Schema(
 
 // Subject code unique within each university
 subjectSchema.index(
-  { universityId: 1, code: 1 },
+  { university: 1, code: 1 },
   { unique: true }
 );
 
