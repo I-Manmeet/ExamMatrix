@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExamMatrix - My Duties</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/headerFooter.css">
+  <link rel="stylesheet" href="css/invigilator.css">
+</head>
+
+<body data-page="inv-dashboard">
+
+  <!-- NAVBAR -->
+  <div id="navbarContainer"></div>
+
+  <!-- MAIN PAGE -->
+  <main id="page">
+
+    <!-- TOP HEADER -->
+    <header id="top-section">
+      <div class="welcome-text">
+        <h1 id="welcome-title">My Duties</h1>
+        <p>Your assigned halls and time slots. Open a hall to see the seating chart and mark attendance.</p>
+        <span class="id-pill" id="inv-id-pill">INV-0000-0000</span>
+      </div>
+    </header>
+
+    <!-- STATISTICS -->
+    <section id="stats">
+      <div class="stat-card">
+        <span class="stat-label">Total Duties</span>
+        <div class="stat-number" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Upcoming</span>
+        <div class="stat-number success-text" id="stat-upcoming">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Exam Days</span>
+        <div class="stat-number" id="stat-days">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Students to Supervise</span>
+        <div class="stat-number" id="stat-students">0</div>
+      </div>
+    </section>
+
+    <!-- DUTIES -->
+    <section class="panel-card">
+      <div class="section-title-bar">
+        <div>
+          <h3>Assigned Duties</h3>
+          <p class="section-subtitle">Grouped by date. Today's duties are highlighted.</p>
+        </div>
+      </div>
+
+      <div class="exam-tabs">
+        <button id="upcoming-tab" class="exam-tab active" type="button">
+          <i class="fa-regular fa-calendar"></i> Upcoming <span id="upcoming-count">0</span>
+        </button>
+        <button id="past-tab" class="exam-tab" type="button">
+          <i class="fa-regular fa-calendar-check"></i> Completed <span id="past-count">0</span>
+        </button>
+      </div>
+
+      <div id="duty-list">
+        <!-- JavaScript inserts duties -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <div id="footerContainer"></div>
+
+  <!-- JAVASCRIPT -->
+  <script src="js/inv-shell.js"></script>
+  <script src="js/invigilatorDashboard.js"></script>
+</body>
+</html>
