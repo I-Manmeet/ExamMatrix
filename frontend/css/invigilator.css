@@ -539,3 +539,110 @@ body {
 @media (max-width: 960px) {
   .assign-layout { grid-template-columns: minmax(0, 1fr); }
 }
+/* =========================================================
+   REPORTS PAGE (admin) — attendance + incidents per exam
+   (layout, tables, incident cards reuse the classes above)
+   ========================================================= */
+
+/* stacked bar: present | absent | unmarked */
+.att-bar {
+  display: flex;
+  height: 8px;
+  min-width: 120px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+.att-bar span { display: block; height: 100%; }
+.att-bar .bar-present { background: var(--primary); }
+.att-bar .bar-absent  { background: var(--danger); }
+
+.att-numbers { font-size: 11.5px; color: var(--text-muted); margin-top: 5px; white-space: nowrap; }
+.att-numbers b { color: var(--text-dark); }
+
+.att-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.att-legend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.att-legend .dot-present  { background: var(--primary); }
+.att-legend .dot-absent   { background: var(--danger); }
+.att-legend .dot-unmarked { background: #cbd5e1; }
+
+.inv-names { font-size: 12px; color: var(--text-muted); }
+
+/* absent students */
+.absent-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.absent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--danger-light);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+}
+.absent-chip span {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 600;
+  color: #9f1239;
+  opacity: 0.8;
+}
+
+/* incident type filter */
+.filter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.filter-chip:hover { color: var(--primary); border-color: var(--primary); }
+.filter-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.filter-chip b {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: var(--text-dark);
+  font-size: 10px;
+  text-align: center;
+}
+.filter-chip.active b { background: rgba(255, 255, 255, 0.25); color: #fff; }
+
+.incident-item .incident-type {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--danger);
+}
+
+.report-stack { display: flex; flex-direction: column; gap: 24px; }
+
+@media print {
+  #navbarContainer, #footerContainer, .page-actions, .filter-chips, .roll-search { display: none !important; }
+  .panel-card, .stat-card { box-shadow: none; break-inside: avoid; }
+}
