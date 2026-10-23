@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExamMatrix - Hall Duty</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/headerFooter.css">
+  <link rel="stylesheet" href="css/seating.css">
+  <link rel="stylesheet" href="css/invigilator.css">
+</head>
+
+<body data-page="inv-dashboard">
+
+  <!-- NAVBAR -->
+  <div id="navbarContainer"></div>
+
+  <!-- MAIN PAGE -->
+  <main id="page">
+
+    <!-- TOP HEADER -->
+    <header id="top-section">
+      <div class="welcome-text">
+        <a class="back-link" href="invigilatorDashboard.html"><i class="fa-solid fa-arrow-left"></i> My Duties</a>
+        <h1 id="hall-title">Hall</h1>
+        <p id="hall-sub">Loading…</p>
+        <span class="id-pill" id="exam-id-pill">EXM-0000-0000</span>
+      </div>
+    </header>
+
+    <!-- STATISTICS -->
+    <section id="stats">
+      <div class="stat-card">
+        <span class="stat-label">Students</span>
+        <div class="stat-number" id="stat-students">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Present</span>
+        <div class="stat-number success-text" id="stat-present">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Absent</span>
+        <div class="stat-number danger-text" id="stat-absent">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Unmarked</span>
+        <div class="stat-number" id="stat-unmarked">0</div>
+      </div>
+    </section>
+
+    <!-- SEATING + ATTENDANCE -->
+    <section class="panel-card">
+      <div class="section-title-bar">
+        <div>
+          <h3>Seating Chart &amp; Attendance</h3>
+          <p class="section-subtitle">Tap a seat to mark it: present → absent → unmarked.</p>
+        </div>
+        <div class="att-toolbar">
+          <input id="roll-search" class="roll-search" placeholder="Find roll number…" autocomplete="off">
+          <button id="mark-all-btn" class="btn-primary-em" type="button"><i class="fa-solid fa-check-double"></i> Mark all present</button>
+          <button id="reset-btn" class="btn-danger-soft" type="button">Reset</button>
+        </div>
+      </div>
+
+      <div id="legend" class="legendCard"></div>
+      <div id="hall-chart"><!-- JavaScript inserts the hall grid --></div>
+      <div id="lock-note" class="lock-note" style="display:none"></div>
+    </section>
+
+    <!-- INCIDENTS -->
+    <section class="duty-grid">
+      <div class="panel-card">
+        <div class="section-title-bar">
+          <div>
+            <h3>Report an Incident</h3>
+            <p class="section-subtitle">Sent straight to the exam cell's Reports page.</p>
+          </div>
+        </div>
+
+        <div id="incident-msg"></div>
+
+        <form id="incident-form">
+          <div class="form-field">
+            <label for="incident-roll">Student (optional)</label>
+            <select id="incident-roll"><option value="">— Not about one student —</option></select>
+          </div>
+          <div class="form-field">
+            <label for="incident-type">Type</label>
+            <select id="incident-type" required></select>
+          </div>
+          <div class="form-field">
+            <label for="incident-desc">What happened</label>
+            <textarea id="incident-desc" maxlength="1000" placeholder="Short description" required></textarea>
+          </div>
+          <button class="btn-primary-em" type="submit"><i class="fa-solid fa-paper-plane"></i> Send report</button>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <div class="section-title-bar">
+          <div>
+            <h3>Incidents in this Hall</h3>
+            <p class="section-subtitle" id="incident-count">0 reported</p>
+          </div>
+        </div>
+        <div id="incident-list"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <div id="footerContainer"></div>
+
+  <!-- JAVASCRIPT -->
+  <script src="js/inv-shell.js"></script>
+  <script src="js/hallDuty.js"></script>
+</body>
+</html>
