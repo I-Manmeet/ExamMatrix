@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExamMatrix - Reports</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/headerFooter.css">
+  <link rel="stylesheet" href="css/invigilator.css">
+</head>
+
+<body data-page="reports">
+
+  <!-- NAVBAR (admin) -->
+  <div id="navbarContainer"></div>
+
+  <!-- MAIN PAGE -->
+  <main id="page">
+
+    <!-- TOP HEADER -->
+    <header id="top-section">
+      <div class="welcome-text">
+        <h1>Exam Reports</h1>
+        <p id="exam-sub">Attendance and incidents reported by invigilators.</p>
+      </div>
+      <div class="page-actions">
+        <select id="exam-picker" class="exam-picker"></select>
+        <button id="print-btn" class="btn-secondary" type="button"><i class="fa-solid fa-print"></i> Print</button>
+        <button id="export-btn" class="btn-primary-em" type="button"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+      </div>
+    </header>
+
+    <!-- STATISTICS -->
+    <section id="stats">
+      <div class="stat-card">
+        <span class="stat-label">Attendance</span>
+        <div class="stat-number success-text" id="stat-rate">—</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Present</span>
+        <div class="stat-number" id="stat-present">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Absent</span>
+        <div class="stat-number" id="stat-absent">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Incidents</span>
+        <div class="stat-number" id="stat-incidents">0</div>
+      </div>
+    </section>
+
+    <div id="report-msg"></div>
+
+    <section class="assign-layout">
+
+      <!-- LEFT: attendance -->
+      <div class="report-stack">
+
+        <div class="panel-card">
+          <div class="section-title-bar">
+            <div>
+              <h3>Attendance by Hall</h3>
+              <p class="section-subtitle">Marked by the invigilator on duty in each hall.</p>
+            </div>
+            <div class="att-legend">
+              <span><i class="dot-present"></i>Present</span>
+              <span><i class="dot-absent"></i>Absent</span>
+              <span><i class="dot-unmarked"></i>Unmarked</span>
+            </div>
+          </div>
+          <div id="hall-table"><!-- JavaScript inserts the table --></div>
+        </div>
+
+        <div class="panel-card">
+          <div class="section-title-bar">
+            <div>
+              <h3>Absent Students</h3>
+              <p class="section-subtitle" id="absent-sub">Everyone marked absent in this exam.</p>
+            </div>
+            <input id="absent-search" class="roll-search" type="text" placeholder="Search roll no.">
+          </div>
+          <div id="absent-list" class="absent-list"><!-- JavaScript inserts the chips --></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: incidents -->
+      <div class="panel-card">
+        <div class="section-title-bar">
+          <div>
+            <h3>Incidents</h3>
+            <p class="section-subtitle">Newest first. Filter by type.</p>
+          </div>
+        </div>
+        <div id="incident-filters" class="filter-chips"><!-- JavaScript inserts the chips --></div>
+        <div id="incident-list"><!-- JavaScript inserts the incidents --></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <div id="footerContainer"></div>
+
+  <!-- JAVASCRIPT -->
+  <script src="js/app-shell.js"></script>
+  <script src="js/reports.js"></script>
+</body>
+</html>
