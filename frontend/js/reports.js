@@ -158,6 +158,7 @@ function renderStats() {
   document.getElementById("stat-rate").textContent = marked ? percent(t.present, marked) + "%" : "—";
   document.getElementById("stat-present").textContent = t.present;
   document.getElementById("stat-absent").textContent = t.absent;
+    document.getElementById("stat-absent").classList.toggle("danger-text", t.absent > 0);
 
   const incidentsEl = document.getElementById("stat-incidents");
   incidentsEl.textContent = report.incidents.length;
