@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExamMatrix - Assign Invigilators</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/headerFooter.css">
+  <link rel="stylesheet" href="css/invigilator.css">
+</head>
+
+<body data-page="assign">
+
+  <!-- NAVBAR (admin) -->
+  <div id="navbarContainer"></div>
+
+  <!-- MAIN PAGE -->
+  <main id="page">
+
+    <!-- TOP HEADER -->
+    <header id="top-section">
+      <div class="welcome-text">
+        <h1>Assign Invigilators</h1>
+        <p id="exam-sub">Pick an exam, auto-assign, then swap anyone with the dropdowns.</p>
+      </div>
+      <div class="page-actions">
+        <select id="exam-picker" class="exam-picker"></select>
+        <button id="clear-btn" class="btn-danger-soft" type="button">Clear</button>
+        <button id="auto-btn" class="btn-primary-em" type="button"><i class="fa-solid fa-bolt"></i> Auto-assign</button>
+      </div>
+    </header>
+
+    <!-- STATISTICS -->
+    <section id="stats">
+      <div class="stat-card">
+        <span class="stat-label">Positions Needed</span>
+        <div class="stat-number" id="stat-positions">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Filled</span>
+        <div class="stat-number success-text" id="stat-filled">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Unfilled</span>
+        <div class="stat-number" id="stat-unfilled">0</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Duty Spread (min–max)</span>
+        <div class="stat-number" id="stat-spread">—</div>
+      </div>
+    </section>
+
+    <section class="assign-layout">
+
+      <!-- POSITIONS -->
+      <div class="panel-card">
+        <div class="section-title-bar">
+          <div>
+            <h3>Halls &amp; Positions</h3>
+            <p class="section-subtitle">People who break a rule are greyed out with the reason.</p>
+          </div>
+        </div>
+        <div id="assign-msg"></div>
+        <div id="positions-table"><!-- JavaScript inserts the table --></div>
+      </div>
+
+      <!-- RULES + HOW IT WORKS -->
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div class="panel-card">
+          <div class="section-title-bar">
+            <div>
+              <h3>Rules</h3>
+              <p class="section-subtitle">Checked by the server for every person and position.</p>
+            </div>
+          </div>
+          <ul class="rules-list" id="rules-list"></ul>
+        </div>
+
+        <div class="algo-card">
+          <h3>How auto-assign works</h3>
+          <ol>
+            <li>Each hall needs <code>ceil(students ÷ 30)</code> invigilators, at least 1.</li>
+            <li>After every pick, the position with the <b>fewest eligible people</b> is filled next.</li>
+            <li><code>canInvigilate()</code> checks: available that day, free in this slot, not teaching a subject in the hall, under the daily limit.</li>
+            <li>From those who pass, the person with the <b>fewest duties so far</b> is chosen; ties are random.</li>
+            <li>If nobody passes, the position is left unfilled with a reason. A rule is never broken to fill it.</li>
+          </ol>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <div id="footerContainer"></div>
+
+  <!-- JAVASCRIPT -->
+  <script src="js/app-shell.js"></script>
+  <script src="js/assign.js"></script>
+</body>
+</html>
