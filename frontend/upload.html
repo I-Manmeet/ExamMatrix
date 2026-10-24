@@ -22,7 +22,7 @@
     <div class="pageHead">
       <div>
         <h1 class="pageTitle">Upload data</h1>
-        <p class="pageSub">Choose one file per row (or only the ones you want to replace), check them, then save. Nothing is saved until you click Save all.</p>
+        <p class="pageSub">Choose one file per row (or only the ones you want to change), check them, then save. Nothing is saved until you click Save all.</p>
       </div>
     </div>
 
@@ -31,6 +31,7 @@
       <div class="cardLabel">1 · Choose your files</div>
 
       <div class="slotList">
+
         <div class="slot" data-type="halls">
           <span class="slotStep">1</span>
           <div class="slotInfo">
@@ -42,6 +43,7 @@
           <div class="slotActions">
             <label class="btnGhostSmall">Choose<input type="file" accept=".csv,.xlsx,.xls,.json" hidden></label>
             <button type="button" class="btnLink" data-template>Template</button>
+            <button type="button" class="btnLink" data-export>Download saved</button>
             <button type="button" class="btnLink danger" data-remove hidden>Remove</button>
           </div>
         </div>
@@ -57,6 +59,7 @@
           <div class="slotActions">
             <label class="btnGhostSmall">Choose<input type="file" accept=".csv,.xlsx,.xls,.json" hidden></label>
             <button type="button" class="btnLink" data-template>Template</button>
+            <button type="button" class="btnLink" data-export>Download saved</button>
             <button type="button" class="btnLink danger" data-remove hidden>Remove</button>
           </div>
         </div>
@@ -71,7 +74,8 @@
           <span class="slotFile">No file chosen</span>
           <div class="slotActions">
             <label class="btnGhostSmall">Choose<input type="file" accept=".csv,.xlsx,.xls,.json" hidden></label>
-            <a class="btnLink" data-template>Template</a>
+            <button type="button" class="btnLink" data-template>Template</button>
+            <button type="button" class="btnLink" data-export>Download saved</button>
             <button type="button" class="btnLink danger" data-remove hidden>Remove</button>
           </div>
         </div>
@@ -87,12 +91,17 @@
           <div class="slotActions">
             <label class="btnGhostSmall">Choose<input type="file" accept=".csv,.xlsx,.xls,.json" hidden></label>
             <button type="button" class="btnLink" data-template>Template</button>
+            <button type="button" class="btnLink" data-export>Download saved</button>
             <button type="button" class="btnLink danger" data-remove hidden>Remove</button>
           </div>
         </div>
+
       </div>
 
-      <p class="slotHint">CSV, Excel or JSON · max 5 MB each · the first line must be the column names · you can also drop a file onto its row.</p>
+      <p class="slotHint">
+        CSV, Excel or JSON · max 5 MB each · the first line must be the column names.
+        <strong>Template</strong> = empty file with the columns. <strong>Download saved</strong> = what's already saved, so you can edit it and upload it again.
+      </p>
 
       <div id="uploadMessage" class="uploadMsg" role="status" aria-live="polite" hidden></div>
 

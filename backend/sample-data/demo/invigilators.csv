@@ -1,13 +1,6 @@
 name,email,department,subjects,unavailable
-Dr. Anjali Mehta,anjali.mehta@exammatrix-demo.edu,Computer Science,CS301;CS302,
-Prof. Suresh Iyer,suresh.iyer@exammatrix-demo.edu,Computer Science,CS303,2026-10-28
-Dr. Priya Sharma,priya.sharma@exammatrix-demo.edu,Information Technology,IT201;IT202,
-Prof. Rahul Verma,rahul.verma@exammatrix-demo.edu,Mathematics,MA201,2026-10-27
-Dr. Arnab Bose,arnab.bose@exammatrix-demo.edu,Physics,,
-Dr. Neha Gupta,neha.gupta@exammatrix-demo.edu,Electronics,EC201;EC202,
-Prof. Vikram Singh,vikram.singh@exammatrix-demo.edu,Mechanical,ME201,2026-10-27;2026-10-28
-Dr. Kavya Nair,kavya.nair@exammatrix-demo.edu,Computer Science,CS302;CS303,
-Prof. Lakshmi Rao,lakshmi.rao@exammatrix-demo.edu,Humanities,HS101,
-Dr. Gurpreet Singh,gurpreet.singh@exammatrix-demo.edu,Information Technology,IT202,2026-10-29
-Prof. Meenakshi Pillai,meenakshi.pillai@exammatrix-demo.edu,Electronics,EC202,
-Dr. Farhan Ali,farhan.ali@exammatrix-demo.edu,Computer Science,CS301,
+Dr. Harpreet Kaur,harpreet.kaur@fresh-demo.edu,Applied Sciences,PY101;ST201,
+Prof. Aman Chawla,aman.chawla@fresh-demo.edu,Applied Sciences,CH201,2026-10-28
+Dr. Simran Ahuja,simran.ahuja@fresh-demo.edu,Biotechnology,BI101,
+Prof. Nikhil Sethi,nikhil.sethi@fresh-demo.edu,Humanities,EN101,2026-10-27
+Dr. Pallavi Rao,pallavi.rao@fresh-demo.edu,Applied Sciences,ST201;PY101,

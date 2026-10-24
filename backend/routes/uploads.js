@@ -59,6 +59,7 @@ router.use(requireLogin, requireRole("admin"));
 
 // how much of each dataset this university has saved (dashboard + upload page)
 router.get("/status", async (req, res) => {
+
   const university = req.user.university;
   const [halls, subjects, students, invigilators] = await Promise.all([
     Hall.countDocuments({ university }),
@@ -67,6 +68,27 @@ router.get("/status", async (req, res) => {
     Invigilator.countDocuments({ university })
   ]);
   res.json({ data: { halls, subjects, students, invigilators } });
+});
+function csvCell(value) {
+  let text = Array.isArray(value) ? value.join(";") : String(value == null ? "" : value);
+  if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+// saved records as a CSV in the same format as the upload, so it can be edited and uploaded again
+router.get("/:type/export", async (req, res) => {
+  const type = getType(req);
+  const { Model, key, headers } = TYPES[type];
+  const fields = headers.split(",");
+  const docs = await Model.find({ university: req.user.university })
+    .select(fields.join(" "))           // only these columns; invigilator passwords are never included
+    .sort({ [key]: 1 })
+    .lean();
+
+  const lines = [fields.join(",")].concat(docs.map((doc) => fields.map((f) => csvCell(doc[f])).join(",")));
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="' + type + '-saved.csv"');
+  res.send(lines.join("\n") + "\n");
 });
 
 // multer errors (too big, wrong type, wrong field) → a clear 400 instead of a 500

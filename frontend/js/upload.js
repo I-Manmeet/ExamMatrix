@@ -63,7 +63,7 @@ function downloadBlob(blob, filename) {
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(url);
+   setTimeout(() => URL.revokeObjectURL(url), 1000);   // give the browser time to start the download
 }
 
 /* ---------- choosing files ---------- */
@@ -115,6 +115,7 @@ DATASETS.forEach((type) => {
   });
   row.querySelector("[data-remove]").addEventListener("click", () => setFile(type, null));
   row.querySelector("[data-template]").addEventListener("click", (event) => downloadTemplate(type, event.currentTarget));
+    row.querySelector("[data-export]").addEventListener("click", (event) => downloadSaved(type, event.currentTarget));
 
   row.addEventListener("dragover", (event) => {
     event.preventDefault();
@@ -443,6 +444,35 @@ async function downloadTemplate(type, button) {
       throw new Error(result.error || `Template request failed (${response.status}).`);
     }
     downloadBlob(await response.blob(), `${type}-template.csv`);
+  } catch (error) {
+    showMessage(error.message, "bad");
+  } finally {
+    button.disabled = false;
+  }
+}
+/* ---------- download what's already saved (needs the login token) ---------- */
+
+async function downloadSaved(type, button) {
+  button.disabled = true;
+  try {
+    let response;
+    try {
+      response = await fetch(`${UPLOADS}/${encodeURIComponent(type)}/export`, {
+        headers: { Authorization: "Bearer " + getAuthToken() }
+      });
+    } catch {
+      throw new Error("Can't reach the server. Make sure the backend is running.");
+    }
+    if (response.status === 401) {
+      clearAuthToken();
+      window.location.href = "login.html?expired=1";
+      return;
+    }
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.error || `Download failed (${response.status}).`);
+    }
+    downloadBlob(await response.blob(), `${type}-saved.csv`);
   } catch (error) {
     showMessage(error.message, "bad");
   } finally {
