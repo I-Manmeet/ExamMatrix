@@ -1,100 +1,62 @@
-
 const express = require("express");
-const router = express.Router();
-
+const mongoose = require("mongoose");
 const Hall = require("../models/Hall");
 const { AppError } = require("../middleware/errorHandler");
 
-// TODO(after-jiya): replace with req.user.university + router.use(requireLogin, requireRole("admin"))
-const uni = (req) => "UNI-0001";
+const router = express.Router();
 
-// CREATE a hall
-router.post("/", async (req, res) => {
-  const { hallNo, rows, cols } = req.body;
+// TODO(after-jiya): delete uni() and add:
+//   router.use(requireLogin, requireRole("admin"));
+// then use req.user.university everywhere instead of uni(req)
+function uni(req) { return "UNI-0001"; }
 
-  const hall = await Hall.create({
-    university: uni(req),
-    hallNo,
-    rows,
-    cols
-  });
+// only these fields can be set from the request
+const FIELDS = ["hallNo", "rows", "cols"];
+function pick(body) {
+  const out = {};
+  FIELDS.forEach(function (f) { if (body && body[f] !== undefined) out[f] = body[f]; });
+  return out;
+}
 
-  res.status(201).json({
-    data: hall.toJSON({ virtuals: true })
-  });
-});
+// a bad id like "abc" should be a 404, not a crash
+function checkId(id) {
+  if (!mongoose.isValidObjectId(id)) throw new AppError(404, "Hall not found");
+}
 
-// READ all halls for this university
 router.get("/", async (req, res) => {
-  const halls = await Hall.find({
-    university: uni(req)
-  }).sort({ createdAt: -1 });
-
-  res.json({
-    data: halls.map((hall) => hall.toJSON({ virtuals: true }))
-  });
+  const halls = await Hall.find({ university: uni(req) }).sort({ hallNo: 1 });
+  res.json({ data: halls });
 });
 
-// READ one hall by ID
 router.get("/:id", async (req, res) => {
-  const hall = await Hall.findOne({
-    _id: req.params.id,
-    university: uni(req)
-  });
-
-  if (!hall) {
-    throw new AppError(404, "Hall not found");
-  }
-
-  res.json({
-    data: hall.toJSON({ virtuals: true })
-  });
+  checkId(req.params.id);
+  const hall = await Hall.findOne({ _id: req.params.id, university: uni(req) });
+  if (!hall) throw new AppError(404, "Hall not found");
+  res.json({ data: hall });
 });
 
-// UPDATE a hall
+router.post("/", async (req, res) => {
+  const hall = await Hall.create({ ...pick(req.body), university: uni(req) });
+  res.status(201).json({ data: hall });
+});
+
 router.put("/:id", async (req, res) => {
-  const { hallNo, rows, cols } = req.body;
-  const updates = {};
-
-  if (hallNo !== undefined) updates.hallNo = hallNo;
-  if (rows !== undefined) updates.rows = rows;
-  if (cols !== undefined) updates.cols = cols;
-
+  checkId(req.params.id);
   const hall = await Hall.findOneAndUpdate(
-    {
-      _id: req.params.id,
-      university: uni(req)
-    },
-    { $set: updates },
-    {
-      new: true,
-      runValidators: true
-    }
+    { _id: req.params.id, university: uni(req) },
+    { $set: pick(req.body) },
+    { new: true, runValidators: true }
   );
-
-  if (!hall) {
-    throw new AppError(404, "Hall not found");
-  }
-
-  res.json({
-    data: hall.toJSON({ virtuals: true })
-  });
+  if (!hall) throw new AppError(404, "Hall not found");
+  res.json({ data: hall });
 });
 
-// DELETE a hall
 router.delete("/:id", async (req, res) => {
-  const hall = await Hall.findOneAndDelete({
-    _id: req.params.id,
-    university: uni(req)
-  });
-
-  if (!hall) {
-    throw new AppError(404, "Hall not found");
-  }
-
-  res.json({
-    data: hall.toJSON({ virtuals: true })
-  });
+  checkId(req.params.id);
+  const hall = await Hall.findOneAndDelete({ _id: req.params.id, university: uni(req) });
+  if (!hall) throw new AppError(404, "Hall not found");
+  res.json({ data: hall });
 });
 
 module.exports = router;
+
