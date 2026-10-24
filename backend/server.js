@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const http = require("http");
@@ -25,7 +24,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Hall routes
-app.use("/api/Hall", require("./routes/Hall"));
+app.use("/api/halls", require("./routes/halls"));
 
 // Unknown API routes
 app.use("/api", (req, res, next) => {
