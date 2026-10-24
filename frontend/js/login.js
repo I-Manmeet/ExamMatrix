@@ -1,3 +1,10 @@
+/* =========================================================
+   LOGIN — js/login.js
+   Needs config.js, api.js and login-role.js loaded first.
+   Logs in on the server, keeps only the token in the browser,
+   then opens the right dashboard for the role.
+========================================================= */
+
 document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.getElementById("loginForm");
   const loginBtn = document.getElementById("loginButton");
@@ -5,11 +12,30 @@ document.addEventListener("DOMContentLoaded", function () {
   const messageBox = document.getElementById("message");
   const pwToggle = document.getElementById("pwToggle");
   const pwInput = document.getElementById("password");
+  const usernameInput = document.getElementById("username");
+  const roleInput = document.getElementById("loginRole");
 
   function showMessage(text, isOk) {
     if (!messageBox) return;
     messageBox.textContent = text;
     messageBox.className = isOk ? "msg-ok" : "msg-error";
+  }
+
+  function setLoading(on) {
+    loginBtn.disabled = on;
+    loginBtn.classList.toggle("loading", on);
+    if (btnText) btnText.textContent = on ? "Verifying..." : "Log in";
+  }
+
+  function goToDashboard(user) {
+    // phase-1 pages (data.js) still read em_session until they move to the server
+    sessionStorage.setItem("em_session", JSON.stringify({
+      username: user.university,
+      name: user.name,
+      role: user.role,
+      university: user.university
+    }));
+    window.location.href = user.role === "admin" ? "dashboard.html" : "invigilatorDashboard.html";
   }
 
   // Toggle show/hide password
@@ -22,45 +48,57 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (loginForm) {
-    loginForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      const username = document.getElementById("username").value.trim();
-      const password = pwInput.value;
-
-      if (!username || !password) {
-        showMessage("Please enter both username and password.", false);
-        return;
-      }
-
-      // Button loading state
-      loginBtn.classList.add("loading");
-      if (btnText) btnText.textContent = "Verifying...";
-      loginBtn.disabled = true;
-
-      setTimeout(function () {
-        const users = JSON.parse(localStorage.getItem("em_users")) || [];
-        
-        // Demo fallback if no users are in localStorage yet
-        const foundUser = users.find(u => u.username === username && u.password === password) ||
-                          (username === "admin" && password === "admin123");
-
-        if (!foundUser) {
-          loginBtn.classList.remove("loading");
-          if (btnText) btnText.textContent = "Log in";
-          loginBtn.disabled = false;
-          showMessage("Invalid staff username or password.", false);
-          return;
-        }
-
-        sessionStorage.setItem("em_session", JSON.stringify({ username: username }));
-        showMessage("✓ Credentials verified. Redirecting to dashboard...", true);
-
-        setTimeout(function () {
-          window.location.href = "dashboard.html";
-        }, 800);
-      }, 500);
-    });
+  // sent here because the session ran out?
+  if (new URLSearchParams(window.location.search).get("expired")) {
+    showMessage("Your session has expired. Please log in again.", false);
   }
+
+  // already logged in? skip the form
+  if (getAuthToken()) {
+    api("GET", "/auth/me")
+      .then(goToDashboard)
+      .catch(function () { clearAuthToken(); });
+  }
+
+  if (!loginForm) return;
+
+  loginForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    if (loginBtn.disabled) return;   // ignore double clicks
+
+    const role = roleInput.value;
+    let identifier = usernameInput.value.trim();
+    if (role === "invigilator") { identifier = identifier.toUpperCase(); }   // inv-0001-0001 → INV-0001-0001
+    const password = pwInput.value;
+
+    if (!identifier || !password) {
+      showMessage(role === "admin"
+        ? "Please enter your email and password."
+        : "Please enter your Invigilator ID and password.", false);
+      return;
+    }
+    if (role === "admin" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(identifier)) {
+      showMessage("Enter a valid email.", false);
+      return;
+    }
+    if (role === "invigilator" && !/^INV-\d{4}-\d{4}$/i.test(identifier)) {
+      showMessage("Invigilator IDs look like INV-0001-0007.", false);
+      return;
+    }
+
+    setLoading(true);
+
+    api("POST", "/auth/login", { role: role, identifier: identifier, password: password })
+      .then(function (data) {
+        saveAuthToken(data.token);
+        showMessage("✓ Logged in. Opening your dashboard...", true);
+        setTimeout(function () { goToDashboard(data.user); }, 600);
+      })
+      .catch(function (err) {
+        showMessage(err.message, false);
+        setLoading(false);
+        pwInput.focus();
+        pwInput.select();
+      });
+  });
 });

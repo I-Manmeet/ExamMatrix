@@ -250,3 +250,16 @@
 
 #loginRedirect a:hover { text-decoration: underline; }
 .separator { margin: 0 8px; color: #ccd5d0; }
+
+/* ---- Forgot password link ---- */
+.forgotRow{ text-align:right; margin:-8px 0 16px; font-size:12.5px; }
+.forgotRow a{ color:var(--emerald, #0f7a5c); font-weight:600; text-decoration:none; }
+.forgotRow a:hover{ text-decoration:underline; }
+
+/* ---- Role tabs: University admin / Invigilator ---- */
+.roleTabs{ display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; margin-bottom:20px; background:var(--bg, #f6f7f5); border:1px solid var(--border, #e2e6e3); border-radius:10px; }
+.roleTab{ border:none; background:transparent; padding:9px 10px; border-radius:7px; font-size:13px; font-weight:600; color:#6a7973; cursor:pointer; transition:background .15s ease, color .15s ease, box-shadow .15s ease; }
+.roleTab:hover{ color:var(--ink, #212b28); }
+.roleTab.active{ background:#fff; color:var(--emerald, #0f7a5c); box-shadow:0 1px 3px rgba(33,43,40,.10); }
+.roleTab:focus-visible{ outline:2px solid var(--emerald, #0f7a5c); outline-offset:1px; }
+.forgotNote{ color:#6a7973; font-weight:500; }

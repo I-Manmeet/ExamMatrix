@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register - ExamMatrix</title>
 
-<link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/register.css">
-<link rel="stylesheet" href="css/headerFooter.css">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - ExamMatrix</title>
+
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/register.css">
+  <link rel="stylesheet" href="css/headerFooter.css">
 </head>
 
 <body>
@@ -19,38 +20,103 @@
 
       <div id="cardHero">
         <div class="logoMark">EM</div>
-        <h2>Create account</h2>
-        <p>Set up your ExamMatrix admin login</p>
+        <h2>Register your university</h2>
+        <p>Set up your ExamMatrix admin account</p>
       </div>
 
       <div id="cardBody">
         <p id="message"></p>
 
-        <form id="registerForm">
+        <form id="registerForm" novalidate>
+          <p class="formSection">University details</p>
 
           <div class="formField">
-            <label for="username">Username</label>
-            <input type="text" id="username" placeholder="Choose a username" autocomplete="username">
+            <label for="name">University name</label>
+            <input type="text" id="name" placeholder="e.g. Chitkara University" maxlength="100">
           </div>
+
+          <div class="formRow">
+            <div class="formField">
+              <label for="city">City</label>
+              <input type="text" id="city" placeholder="e.g. Chandigarh" maxlength="60">
+            </div>
+            <div class="formField">
+              <label for="contact">Contact number</label>
+              <input type="tel" id="contact" placeholder="e.g. 9876543210" maxlength="16" inputmode="tel">
+            </div>
+          </div>
+
+          <p class="formSection formSectionGap">Admin login</p>
 
           <div class="formField">
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Choose a password" autocomplete="new-password">
+            <label for="email">Admin email</label>
+            <input type="email" id="email" placeholder="admin@university.edu" autocomplete="email" maxlength="254">
           </div>
 
-          <div class="formField">
-            <label for="confirmPassword">Confirm password</label>
-            <input type="password" id="confirmPassword" placeholder="Repeat your password" autocomplete="new-password">
+          <div class="formRow">
+            <div class="formField">
+              <label for="password">Password</label>
+              <div class="pwWrap">
+                <input type="password" id="password" placeholder="Choose a password" autocomplete="new-password"
+                  maxlength="64">
+                <button type="button" class="pwToggle" data-target="password" aria-label="Show password">👁</button>
+              </div>
+            </div>
+            <div class="formField">
+              <label for="confirmPassword">Confirm password</label>
+              <div class="pwWrap">
+                <input type="password" id="confirmPassword" placeholder="Repeat it" autocomplete="new-password"
+                  maxlength="64">
+                <button type="button" class="pwToggle" data-target="confirmPassword"
+                  aria-label="Show password">👁</button>
+              </div>
+            </div>
           </div>
 
-          <button type="submit" id="registerButton" class="btnPrimary">Create account</button>
+          <ul id="passwordRules" class="pwRules">
+            <li data-rule="length">6+ characters</li>
+            <li data-rule="upper">Capital letter</li>
+            <li data-rule="lower">Small letter</li>
+            <li data-rule="number">Number</li>
+            <li data-rule="special">Special character</li>
+          </ul>
 
+          <button type="submit" id="registerButton" class="btnPrimary">Register university</button>
         </form>
+
+        <div id="successPanel" hidden>
+          <div class="successIcon">✉</div>
+          <h3>Check your inbox</h3>
+          <p class="successNote">
+            We've sent a verification link to <strong id="sentTo"></strong>.
+            Open it within 24 hours to finish registering. Your University ID appears after that.
+          </p>
+          <p class="helpText centerText">Didn't get it? Check spam, or</p>
+          <button type="button" id="resendBtn" class="btnPrimary">Send the link again</button>
+          <p class="helpText centerText smallGap">Wrong email? <a href="register.html">Start again</a></p>
+        </div>
 
         <p id="loginRedirect">
           Already have an account?
           <a href="login.html">Log in</a>
         </p>
+
+        <div id="roleLinks" class="roleLinks">
+          <a href="index.html#lookup" class="roleLink">
+            <span class="roleIcon">🎓</span>
+            <span>
+              <strong>Student?</strong>
+              <small>Find your exam seat. No account needed.</small>
+            </span>
+          </a>
+          <a href="login.html?role=invigilator" class="roleLink">
+            <span class="roleIcon">🧑‍🏫</span>
+            <span>
+              <strong>Invigilator?</strong>
+              <small>Your admin creates your account. Log in here.</small>
+            </span>
+          </a>
+        </div>
       </div>
 
     </div>
@@ -59,8 +125,10 @@
   <div id="site-footer-slot"></div>
 
   <script src="js/auth-shared.js"></script>
+  <script src="js/pw-toggle.js"></script>
   <script src="js/register.js"></script>
   <script src="js/theme.js"></script>
 
 </body>
+
 </html>
