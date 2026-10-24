@@ -78,6 +78,15 @@ async function planExam(university, body) {
     }) + ". A subject can only be examined once.");
   }
 
+
+  // the same student can't sit two picked subjects at once
+  const twice = clash.doubleBooked(studentDocs, value.subjects);
+  if (twice.length) {
+    throw new AppError(409, twice.length + " student(s) take more than one of the picked subjects, " +
+      "so these subjects can't share a slot: " +
+      clash.listSome(twice, function (s) { return s.roll + " (" + s.subjects.join(", ") + ")"; }));
+  }
+
   // each student sits once, for the picked subject they take
   const students = studentDocs.map(function (s) {
     return { roll: s.roll, code: value.subjects.find(function (code) { return s.subjects.includes(code); }) };
