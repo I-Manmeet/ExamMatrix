@@ -1,911 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data Import | ExamMatrix</title>
+  <meta name="description" content="Upload halls, subjects, students and invigilators to ExamMatrix.">
+  <title>Upload Data - ExamMatrix</title>
 
-  <style>
-    :root {
-      --navy: #101a35;
-      --blue: #4263eb;
-      --blue-light: #eef2ff;
-      --bg: #f6f8fc;
-      --text: #172033;
-      --muted: #748096;
-      --border: #e4e9f2;
-      --white: #fff;
-      --green: #14804a;
-      --red: #c03945;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    button, input, select { font: inherit; }
-
-    button, a { -webkit-tap-highlight-color: transparent; }
-
-    .navbar {
-      height: 72px;
-      padding: 0 6%;
-      background: var(--navy);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      color: white;
-    }
-
-    .brand {
-      font-size: 23px;
-      font-weight: 800;
-      letter-spacing: -.7px;
-      color: white;
-      text-decoration: none;
-    }
-
-    .brand span { color: #82a3ff; }
-
-    .nav-label {
-      font-size: 13px;
-      color: #c8d3ec;
-    }
-
-    .nav-label a {
-      color: white;
-      text-decoration: none;
-      margin-left: 18px;
-    }
-
-    .container {
-      width: min(1120px, 92%);
-      margin: 36px auto 60px;
-    }
-
-    .breadcrumb {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 22px;
-    }
-
-    .breadcrumb a {
-      color: var(--blue);
-      text-decoration: none;
-    }
-
-    .hero {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-    }
-
-    .eyebrow {
-      color: var(--blue);
-      text-transform: uppercase;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.8px;
-      margin-bottom: 12px;
-    }
-
-    h1 {
-      font-size: clamp(29px, 4vw, 40px);
-      letter-spacing: -1.3px;
-      margin-bottom: 12px;
-    }
-
-    .description {
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.8;
-      max-width: 640px;
-    }
-
-    .secure-label {
-      border: 1px solid #cce8d8;
-      background: #f0faf4;
-      color: var(--green);
-      border-radius: 30px;
-      padding: 10px 14px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-      margin-bottom: 26px;
-    }
-
-    .stat {
-      background: white;
-      padding: 21px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-    }
-
-    .stat-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .stat-label {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .stat-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
-      display: grid;
-      place-items: center;
-      background: var(--blue-light);
-      color: var(--blue);
-      font-size: 19px;
-    }
-
-    .stat-number {
-      font-size: 28px;
-      font-weight: 750;
-      margin-top: 15px;
-    }
-
-    .stat-note {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 6px;
-    }
-
-    .panel {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      margin-bottom: 22px;
-      overflow: hidden;
-    }
-
-    .panel-heading {
-      padding: 24px 26px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .panel-heading h2 {
-      font-size: 19px;
-      margin-bottom: 8px;
-    }
-
-    .panel-heading p {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .panel-content { padding: 26px; }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .field label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .field input, .field select {
-      width: 100%;
-      height: 46px;
-      border: 1px solid #dce2ed;
-      border-radius: 9px;
-      padding: 0 13px;
-      background: white;
-      color: var(--text);
-      outline: none;
-    }
-
-    .field input:focus, .field select:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px #4263eb19;
-    }
-
-    .drop-zone {
-      margin-top: 24px;
-      border: 1.5px dashed #aabcf7;
-      border-radius: 13px;
-      background: #f8faff;
-      padding: 34px 18px;
-      text-align: center;
-      cursor: pointer;
-      transition: .2s;
-    }
-
-    .drop-zone:hover, .drop-zone.dragover {
-      background: #eff3ff;
-      border-color: var(--blue);
-    }
-
-    .upload-icon {
-      display: grid;
-      place-items: center;
-      width: 55px;
-      height: 55px;
-      background: #e6ecff;
-      color: var(--blue);
-      border-radius: 15px;
-      margin: 0 auto 15px;
-      font-size: 26px;
-    }
-
-    .drop-zone h3 { font-size: 15px; margin-bottom: 9px; }
-
-    .drop-zone p {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-
-    .choose {
-      display: inline-block;
-      color: var(--blue);
-      font-weight: 700;
-    }
-
-    #fileInput { display: none; }
-
-    #fileName {
-      margin-top: 13px;
-      color: var(--blue);
-      font-weight: 600;
-      overflow-wrap: anywhere;
-    }
-
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 22px;
-    }
-
-    .btn {
-      min-height: 43px;
-      padding: 0 18px;
-      border-radius: 9px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 700;
-      transition: .2s;
-    }
-
-    .btn-primary { background: var(--blue); color: white; }
-    .btn-primary:hover { background: #304ed0; }
-
-    .btn-secondary {
-      background: white;
-      border-color: #dce2ed;
-      color: var(--text);
-    }
-
-    .btn-secondary:hover { background: #f8faff; }
-
-    .btn:disabled { opacity: .55; cursor: not-allowed; }
-
-    .hint {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.7;
-      margin-top: 17px;
-    }
-
-    .message {
-      display: none;
-      border-radius: 9px;
-      padding: 14px;
-      margin-top: 18px;
-      font-size: 13px;
-      line-height: 1.7;
-      overflow-wrap: anywhere;
-    }
-
-    .message.error {
-      display: block;
-      background: #fff1f1;
-      color: var(--red);
-    }
-
-    .message.success {
-      display: block;
-      background: #effaf3;
-      color: var(--green);
-    }
-
-    .table-wrap { overflow-x: auto; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 480px;
-    }
-
-    th, td {
-      padding: 14px 18px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-
-    th {
-      color: #58657c;
-      background: #f8faff;
-      font-size: 12px;
-    }
-
-    td { overflow-wrap: anywhere; }
-
-    .preview-footer {
-      padding: 20px 26px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .hidden { display: none !important; }
-
-    footer {
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      padding: 24px;
-      border-top: 1px solid var(--border);
-      line-height: 1.8;
-    }
-
-    @media (max-width: 650px) {
-      .navbar { height: 64px; padding: 0 5%; }
-      .nav-label { font-size: 11px; }
-      .nav-label a { margin-left: 8px; }
-      .container { margin-top: 25px; }
-      .stats { grid-template-columns: 1fr; gap: 12px; }
-      .field-grid { grid-template-columns: 1fr; gap: 17px; }
-      .panel-heading, .panel-content { padding: 20px; }
-      .preview-footer { padding: 20px; }
-      .secure-label { margin-top: 0; }
-      .btn { flex: 1; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/headerFooter.css">
+  <link rel="stylesheet" href="css/upload.css">
 </head>
 
-<body>
-  <header class="navbar">
-    <a href="index.html" class="brand">Exam<span>Matrix</span></a>
-    <div class="nav-label">
-      University Portal
-      <a href="index.html">Home ↗</a>
-    </div>
-  </header>
+<body data-page="upload">
 
-  <main class="container">
-    <div class="breadcrumb">
-      <a href="index.html">Home</a> / University Admin / Data Import
-    </div>
+  <!-- Shared logged-in navbar -->
+  <div id="navbarContainer"></div>
 
-    <section class="hero">
+  <main id="uploadMain">
+
+    <div class="pageHead">
       <div>
-        <div class="eyebrow">Admin Console · Data Management</div>
-        <h1>Import your exam data.</h1>
-        <p class="description">
-          Upload student rosters, subjects, examination halls and invigilators.
-          Validate every record before it enters your seating system.
-        </p>
+        <h1 class="pageTitle">Upload data</h1>
+        <p class="pageSub">Upload halls and subjects first, then students and invigilators. Nothing is saved until you confirm.</p>
       </div>
-      <div class="secure-label">✓ Preview before saving</div>
-    </section>
+    </div>
 
-    <section class="stats">
-      <div class="stat">
-        <div class="stat-top">
-          <span class="stat-label">Selected dataset</span>
-          <span class="stat-icon">▤</span>
+    <!-- STEP 1: dataset + file -->
+    <form id="uploadForm" class="card" novalidate>
+      <div class="cardLabel">1 · Choose data and file</div>
+
+      <div class="detailRow">
+        <div class="field">
+          <label for="dataType">Dataset</label>
+          <select id="dataType">
+            <option value="halls">Halls</option>
+            <option value="subjects">Subjects</option>
+            <option value="students">Student roster</option>
+            <option value="invigilators">Invigilators</option>
+          </select>
         </div>
-        <div class="stat-number" id="selectedType">Students</div>
-        <p class="stat-note">Choose what you want to import</p>
-      </div>
-
-      <div class="stat">
-        <div class="stat-top">
-          <span class="stat-label">Records found</span>
-          <span class="stat-icon">↗</span>
+        <div class="field fieldAction">
+          <button type="button" id="templateBtn" class="btnGhostSmall">↓ Download template</button>
         </div>
-        <div class="stat-number" id="previewCount">0</div>
-        <p class="stat-note">Rows returned by preview</p>
       </div>
 
-      <div class="stat">
-        <div class="stat-top">
-          <span class="stat-label">Validation issues</span>
-          <span class="stat-icon">✓</span>
-        </div>
-        <div class="stat-number" id="errorCount">0</div>
-        <p class="stat-note">Issues reported by the server</p>
+      <label id="dropZone" class="dropZone" for="fileInput">
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.json" hidden>
+        <span class="dropTitle">Drop a file here or click to browse</span>
+        <span class="dropSub">CSV, Excel or JSON · max 5 MB</span>
+        <span id="fileName" class="fileName">No file selected</span>
+      </label>
+
+      <div id="uploadMessage" class="uploadMsg" role="status" aria-live="polite" hidden></div>
+
+      <div class="panelActions">
+        <button type="submit" id="previewBtn" class="btnPrimary btnSmall">Preview records →</button>
       </div>
-    </section>
+    </form>
 
-    <section class="panel">
-      <div class="panel-heading">
-        <h2>Upload examination records</h2>
-        <p>Step 1 — Select a dataset and choose your file.</p>
+    <!-- STEP 2: preview (upload.js fills this) -->
+    <section id="previewPanel" class="card" hidden>
+      <div class="cardLabel">
+        2 · Check the rows
+        <span class="cardLabelRight">
+          <span id="selectedType">Halls</span> ·
+          <span id="previewCount">0</span> rows ·
+          <span id="errorCount">0</span> with problems
+        </span>
       </div>
+      <p id="previewDescription" class="pageSub"></p>
 
-      <div class="panel-content">
-        <form id="uploadForm">
-          <div class="field-grid">
-            <div class="field">
-              <label for="university">University ID</label>
-              <input id="university" name="university"
-                placeholder="e.g. UNI-0001" required>
-            </div>
-
-            <div class="field">
-              <label for="dataType">Dataset type</label>
-              <select id="dataType" name="type" required>
-                <option value="students">Student roster</option>
-                <option value="subjects">Subjects</option>
-                <option value="halls">Examination halls</option>
-                <option value="invigilators">Invigilators</option>
-              </select>
-            </div>
-          </div>
-
-          <label class="drop-zone" id="dropZone" for="fileInput">
-            <span class="upload-icon">↑</span>
-            <h3>Drop your file here or <span class="choose">browse files</span></h3>
-            <p>CSV · Excel (.xlsx, .xls) · JSON</p>
-            <p>Maximum file size: 5 MB</p>
-            <p id="fileName">No file selected</p>
-          </label>
-
-          <input id="fileInput" type="file"
-            accept=".csv,.xlsx,.xls,.json" required>
-
-          <div class="actions">
-            <button type="button" id="templateBtn" class="btn btn-secondary">
-              ↓ Download template
-            </button>
-            <button type="submit" id="previewBtn" class="btn btn-primary">
-              Preview records →
-            </button>
-          </div>
-
-          <p class="hint">
-            Your records will not be saved during preview. Check the data and
-            validation results before confirming the import.
-          </p>
-
-          <div id="uploadMessage" class="message" role="status"
-            aria-live="polite"></div>
-        </form>
-      </div>
-    </section>
-
-    <section id="previewPanel" class="panel hidden">
-      <div class="panel-heading">
-        <h2>Review imported records</h2>
-        <p id="previewDescription">Check the preview before confirming.</p>
-      </div>
-
-      <div class="table-wrap">
+      <div class="previewWrap">
         <table>
           <thead id="previewHead"></thead>
           <tbody id="previewBody"></tbody>
         </table>
       </div>
 
-      <div style="padding: 0 26px">
-        <div id="validationErrors" class="message"></div>
-      </div>
+      <div id="validationErrors" class="errorList" hidden></div>
 
-      <div class="preview-footer">
-        <button type="button" id="cancelBtn" class="btn btn-secondary">
-          Cancel
-        </button>
-        <button type="button" id="confirmBtn" class="btn btn-primary" disabled>
-          Confirm & Save →
-        </button>
+      <div class="panelActions">
+        <button type="button" id="cancelBtn" class="btnGhostSmall">Cancel</button>
+        <button type="button" id="confirmBtn" class="btnPrimary btnSmall" disabled>Confirm &amp; save →</button>
       </div>
     </section>
+
+    <!-- STEP 3: new invigilator passwords, shown once -->
+    <section id="credentialsPanel" class="card" hidden>
+      <div class="cardLabel">3 · New invigilator logins</div>
+      <p class="credWarning">
+        <strong>These passwords are shown only once.</strong>
+        Download them now and give each invigilator their own login privately.
+        Only a scrambled version is saved, so nobody can see them again.
+      </p>
+
+      <div class="previewWrap">
+        <table>
+          <thead>
+            <tr><th>INV ID</th><th>Name</th><th>Email</th><th>Temporary password</th></tr>
+          </thead>
+          <tbody id="credentialsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="panelActions">
+        <button type="button" id="credentialsDone" class="btnGhostSmall">I've saved them</button>
+        <button type="button" id="credentialsDownload" class="btnPrimary btnSmall">↓ Download CSV</button>
+      </div>
+    </section>
+
   </main>
 
-  <footer>
-    ExamMatrix · Smart Seating. Zero Conflicts.<br>
-    Examination data management and validation
-  </footer>
+  <!-- Shared footer -->
+  <div id="footerContainer"></div>
+
+  <!-- server address + api() helper, then navbar/auth gate, then this page -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app-shell.js"></script>
+  <script src="js/upload.js"></script>
 
-  <script>
-    /*
-      LOCAL DEVELOPMENT:
-      Frontend Live Server: http://127.0.0.1:5500
-      Backend:              http://localhost:5000
-
-      If deployed, change API_BASE to your ACTUAL backend URL.
-      Use "/api/uploads" only when frontend and backend share the
-      same origin and the backend serves this path.
-    */
-    const API_BASE = "http://localhost:5000/api/uploads";
-
-    const $ = id => document.getElementById(id);
-
-    const form = $("uploadForm");
-    const fileInput = $("fileInput");
-    const dropZone = $("dropZone");
-    const uploadMessage = $("uploadMessage");
-    const previewPanel = $("previewPanel");
-    const confirmBtn = $("confirmBtn");
-
-    let previewToken = null;
-    let previewType = null;
-    let previewUniversity = null;
-    let previewFile = null;
-
-    function message(element, text, type) {
-      element.textContent = text;
-      element.className = "message " + type;
-    }
-
-    function clearMessage(element) {
-      element.textContent = "";
-      element.className = "message";
-    }
-
-    function resetPreview() {
-      previewToken = null;
-      previewType = null;
-      previewUniversity = null;
-      previewFile = null;
-      confirmBtn.disabled = true;
-      previewPanel.classList.add("hidden");
-      clearMessage($("validationErrors"));
-    }
-
-    $("dataType").addEventListener("change", () => {
-      const select = $("dataType");
-      $("selectedType").textContent =
-        select.options[select.selectedIndex].text;
-      resetPreview();
-      clearMessage(uploadMessage);
-    });
-
-    function selectFile(file) {
-      if (!file) return;
-
-      const allowed = [".csv", ".xlsx", ".xls", ".json"];
-      const dot = file.name.lastIndexOf(".");
-      const extension = dot >= 0 ? file.name.slice(dot).toLowerCase() : "";
-
-      if (!allowed.includes(extension)) {
-        fileInput.value = "";
-        $("fileName").textContent = "No file selected";
-        resetPreview();
-        message(uploadMessage, "Choose a CSV, Excel or JSON file.", "error");
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        fileInput.value = "";
-        $("fileName").textContent = "No file selected";
-        resetPreview();
-        message(uploadMessage, "The maximum file size is 5 MB.", "error");
-        return;
-      }
-
-      $("fileName").textContent = file.name;
-      resetPreview();
-      clearMessage(uploadMessage);
-    }
-
-    fileInput.addEventListener("change", () => selectFile(fileInput.files[0]));
-
-    dropZone.addEventListener("dragover", event => {
-      event.preventDefault();
-      dropZone.classList.add("dragover");
-    });
-
-    dropZone.addEventListener("dragleave", () => {
-      dropZone.classList.remove("dragover");
-    });
-
-    dropZone.addEventListener("drop", event => {
-      event.preventDefault();
-      dropZone.classList.remove("dragover");
-
-      const file = event.dataTransfer.files[0];
-      if (!file) return;
-
-      try {
-        const transfer = new DataTransfer();
-        transfer.items.add(file);
-        fileInput.files = transfer.files;
-        selectFile(file);
-      } catch {
-        message(uploadMessage,
-          "Please use Browse Files to select your file.", "error");
-      }
-    });
-
-    async function requestJSON(url, options) {
-      let response;
-
-      try {
-        response = await fetch(url, options);
-      } catch {
-        throw new Error(
-          "Cannot reach the backend. Check that your backend is running, " +
-          "the API URL is correct, and CORS allows your frontend origin."
-        );
-      }
-
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(result.message || `Server error (${response.status}).`);
-      }
-
-      return result;
-    }
-
-    form.addEventListener("submit", async event => {
-      event.preventDefault();
-      resetPreview();
-      clearMessage(uploadMessage);
-
-      const file = fileInput.files[0];
-      const universityId = $("university").value.trim();
-      const type = $("dataType").value;
-
-      if (!universityId || !file) {
-        message(uploadMessage, "Enter your University ID and choose a file.", "error");
-        return;
-      }
-
-      const button = $("previewBtn");
-      button.disabled = true;
-      button.textContent = "Uploading...";
-
-      try {
-        const body = new FormData();
-        body.append("file", file);
-        body.append("university", universityId);
-        body.append("type", type);
-
-        const result = await requestJSON(`${API_BASE}/preview`, {
-          method: "POST",
-          body
-        });
-
-        const rows = result.rows || result.data || [];
-        const errors = result.errors || [];
-
-        if (!Array.isArray(rows) || !Array.isArray(errors)) {
-          throw new Error("The preview API returned an unexpected response.");
-        }
-
-        previewToken = result.previewToken || null;
-        previewType = type;
-        previewUniversity = universityId;
-        previewFile = file;
-
-        renderRows(rows);
-        renderErrors(errors);
-
-        $("previewCount").textContent = rows.length;
-        $("errorCount").textContent = errors.length;
-        $("previewDescription").textContent =
-          `${rows.length} record(s) found. Showing up to 100 records.`;
-
-        previewPanel.classList.remove("hidden");
-
-        if (errors.length) {
-          message(uploadMessage,
-            `${errors.length} validation issue(s) found. Correct the file before importing.`,
-            "error");
-        } else {
-          message(uploadMessage, "Preview generated successfully.", "success");
-        }
-
-        confirmBtn.disabled =
-          errors.length > 0 || !previewToken || rows.length === 0;
-
-      } catch (error) {
-        message(uploadMessage, error.message, "error");
-      } finally {
-        button.disabled = false;
-        button.textContent = "Preview records →";
-      }
-    });
-
-    function renderRows(rows) {
-      const head = $("previewHead");
-      const body = $("previewBody");
-      head.replaceChildren();
-      body.replaceChildren();
-
-      const columns = [...new Set(rows.slice(0, 100).flatMap(row =>
-        row && typeof row === "object" && !Array.isArray(row)
-          ? Object.keys(row) : []
-      ))];
-
-      if (!columns.length) {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.textContent = "No records available to display.";
-        tr.appendChild(td);
-        body.appendChild(tr);
-        return;
-      }
-
-      const trHead = document.createElement("tr");
-
-      columns.forEach(column => {
-        const th = document.createElement("th");
-        th.textContent = column;
-        trHead.appendChild(th);
-      });
-
-      head.appendChild(trHead);
-
-      rows.slice(0, 100).forEach(row => {
-        const tr = document.createElement("tr");
-
-        columns.forEach(column => {
-          const td = document.createElement("td");
-          const value = row[column];
-
-          td.textContent = value == null ? "" :
-            typeof value === "object" ? JSON.stringify(value) : String(value);
-
-          tr.appendChild(td);
-        });
-
-        body.appendChild(tr);
-      });
-    }
-
-    function renderErrors(errors) {
-      const box = $("validationErrors");
-      box.replaceChildren();
-
-      if (!errors.length) {
-        clearMessage(box);
-        return;
-      }
-
-      const heading = document.createElement("strong");
-      heading.textContent = "Validation issues";
-      box.appendChild(heading);
-
-      const list = document.createElement("ul");
-      list.style.margin = "10px 0 0 20px";
-
-      errors.slice(0, 50).forEach(error => {
-        const li = document.createElement("li");
-        li.textContent = typeof error === "string" ?
-          error : JSON.stringify(error);
-        list.appendChild(li);
-      });
-
-      box.appendChild(list);
-      box.className = "message error";
-    }
-
-    confirmBtn.addEventListener("click", async () => {
-      if (!previewToken || confirmBtn.disabled) return;
-
-      if (
-        $("dataType").value !== previewType ||
-        $("university").value.trim() !== previewUniversity ||
-        fileInput.files[0] !== previewFile
-      ) {
-        resetPreview();
-        message(uploadMessage,
-          "The selected data changed. Preview the file again.", "error");
-        return;
-      }
-
-      if (!confirm("Save these records to the database?")) return;
-
-      confirmBtn.disabled = true;
-      confirmBtn.textContent = "Saving...";
-
-      try {
-        const result = await requestJSON(`${API_BASE}/confirm`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            previewToken,
-            university: previewUniversity,
-            type: previewType
-          })
-        });
-
-        message(uploadMessage,
-          result.message || "Import completed successfully.", "success");
-
-        resetPreview();
-        form.reset();
-        $("fileName").textContent = "No file selected";
-        $("selectedType").textContent = "Students";
-        $("previewCount").textContent = "0";
-        $("errorCount").textContent = "0";
-
-      } catch (error) {
-        message(uploadMessage, error.message, "error");
-      } finally {
-        confirmBtn.textContent = "Confirm & Save →";
-        confirmBtn.disabled = !previewToken;
-      }
-    });
-
-    $("cancelBtn").addEventListener("click", () => {
-      resetPreview();
-      clearMessage(uploadMessage);
-    });
-
-    $("templateBtn").addEventListener("click", async () => {
-      const button = $("templateBtn");
-      button.disabled = true;
-
-      try {
-        const type = $("dataType").value;
-        const url = `${API_BASE}/template?type=${encodeURIComponent(type)}`;
-
-        let response;
-
-        try {
-          response = await fetch(url);
-        } catch {
-          throw new Error("Cannot reach the backend. Check the API URL and server.");
-        }
-
-        if (!response.ok) {
-          const result = await response.json().catch(() => ({}));
-          throw new Error(result.message || `Template request failed (${response.status}).`);
-        }
-
-        const blob = await response.blob();
-        const objectURL = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-
-        link.href = objectURL;
-        link.download = `${type}-template.csv`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(objectURL);
-
-      } catch (error) {
-        message(uploadMessage, error.message, "error");
-      } finally {
-        button.disabled = false;
-      }
-    });
-  </script>
 </body>
+
 </html>
