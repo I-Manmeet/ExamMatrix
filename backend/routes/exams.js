@@ -135,6 +135,22 @@ router.get("/:examId", async (req, res) => {
   res.json({ data: exam });
 });
 
+// POST /api/exams/check  → same checks as creating, but nothing is saved
+// (the Create Exam page uses this before enabling "Generate")
+router.post("/check", async (req, res) => {
+  const { students, free, result } = await planExam(req.user.university, req.body);
+  res.json({
+    data: {
+      ok: true,
+      students: students.length,
+      freeSeats: free,
+      halls: Object.keys(result.seatMap),
+      stats: result.stats
+    }
+  });
+});
+
+
 
 // POST /api/exams  { examName, date, slot, subjects: ["CS301"], halls: ["Hall A"] }
 // → checks everything, seats everyone, saves the exam, returns it with the seat map
