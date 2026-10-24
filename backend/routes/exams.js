@@ -87,6 +87,14 @@ async function planExam(university, body) {
       clash.listSome(twice, function (s) { return s.roll + " (" + s.subjects.join(", ") + ")"; }));
   }
 
+
+  // a student can't be in two exams whose times overlap
+  const busy = clash.busyStudents(studentDocs.map(function (s) { return s.roll; }), overlapping);
+  if (busy.length) {
+    throw new AppError(409, busy.length + " student(s) already have an exam at this time: " +
+      clash.listSome(busy, function (b) { return b.roll + " in " + b.examName + " (" + b.slot + ")"; }));
+  }
+
   // each student sits once, for the picked subject they take
   const students = studentDocs.map(function (s) {
     return { roll: s.roll, code: value.subjects.find(function (code) { return s.subjects.includes(code); }) };
