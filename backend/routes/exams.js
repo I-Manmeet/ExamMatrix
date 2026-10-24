@@ -66,6 +66,18 @@ async function planExam(university, body) {
 
   // ---- clash checks (Task 6) ----
 
+
+  // a subject can only be examined once (deleting its exam frees it again)
+  const alreadyIn = await Exam.find({ university: university, subjects: { $in: value.subjects } })
+    .select("examId examName subjects")
+    .lean();
+  const scheduled = clash.scheduledSubjects(alreadyIn, value.subjects);
+  if (scheduled.size) {
+    throw new AppError(409, clash.listSome([...scheduled], function ([code, e]) {
+      return code + " is already in " + e.examName + " (" + e.examId + ")";
+    }) + ". A subject can only be examined once.");
+  }
+
   // each student sits once, for the picked subject they take
   const students = studentDocs.map(function (s) {
     return { roll: s.roll, code: value.subjects.find(function (code) { return s.subjects.includes(code); }) };
