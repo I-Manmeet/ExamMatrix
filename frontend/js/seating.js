@@ -196,3 +196,66 @@ adminReady
       showEmpty("Couldn't load the seating", err.message);
     }
   });
+
+
+
+/* ---- find my seat ---- */
+function setupSearch() {
+  let input = document.getElementById("seatSearchInput");
+  if (!input) { return; }
+  input.addEventListener("input", function () {
+    let q = input.value.trim().toLowerCase();
+    document.querySelectorAll("#hallsContainer .seat").forEach(function (seat) {
+      let roll = (seat.getAttribute("data-roll") || "").toLowerCase();
+      if (!q) {
+        seat.style.outline = "";
+        seat.style.opacity = "";
+      } else if (roll === q) {
+        seat.style.outline = "3px solid #111827";
+        seat.style.opacity = "1";
+        seat.scrollIntoView({ block: "center", behavior: "smooth" });
+      } else {
+        seat.style.outline = "";
+        seat.style.opacity = "0.25";
+      }
+    });
+  });
+}
+
+
+/* ---- export CSV ---- */
+// quotes are doubled, and values starting with = + - @ get a ' so Excel can't run them as formulas
+function csvCell(value) {
+  let text = String(value == null ? "" : value);
+  if (/^[=+\-@]/.test(text)) { text = "'" + text; }
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function setupExport() {
+  let btn = document.getElementById("exportBtn");
+  if (!btn) { return; }
+  btn.addEventListener("click", function () {
+    if (!currentExam) {
+      alert("No exam is open yet.");
+      return;
+    }
+    let rows = [["Hall", "Row", "Col", "Roll", "ExamCode"]];
+    hallResults.forEach(function (h) {
+      h.grid.forEach(function (row, r) {
+        row.forEach(function (cell, c) {
+          if (cell) { rows.push([h.hallNo, r + 1, c + 1, cell.roll, cell.code]); }
+        });
+      });
+    });
+
+    let csv = rows.map(function (row) { return row.map(csvCell).join(","); }).join("\n");
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = (currentExam.examId + " " + currentExam.examName).replace(/[^\w\- ]+/g, "") + ".csv";
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+}
+
+setupSearch();
+setupExport();
