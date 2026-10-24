@@ -1,32 +1,32 @@
 /* =========================================================
-   UPLOAD PAGE — choose a dataset + file → preview → confirm
+   UPLOAD PAGE — one row per dataset → check all → save all
    ---------------------------------------------------------
-   GET  /api/uploads/:type/template   CSV with the right column names
-   POST /api/uploads/:type/preview    checks the file, saves nothing
-   POST /api/uploads/:type/confirm    same file again, saves the good rows
+   GET  /api/uploads/status          saved count per dataset
+   GET  /api/uploads/:type/template  CSV with the right column names
+   POST /api/uploads/all/preview     checks every chosen file, saves nothing
+   POST /api/uploads/all/confirm     same files again, saved in order
+   Each row keeps its own file, so switching rows never loses anything.
    The server takes the university from the login, never from this page.
    New invigilator passwords are shown once and never stored in the browser.
 ========================================================= */
 
 const UPLOADS = API_BASE + "/uploads";
+const DATASETS = ["halls", "subjects", "students", "invigilators"];
+const LABELS = { halls: "Halls", subjects: "Subjects", students: "Students", invigilators: "Invigilators" };
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_FILES = [".csv", ".xlsx", ".xls", ".json"];
 const MAX_ROWS_SHOWN = 100;
 const MAX_ERRORS_SHOWN = 50;
 
-const uploadForm = document.getElementById("uploadForm");
-const dataType = document.getElementById("dataType");
-const fileInput = document.getElementById("fileInput");
-const dropZone = document.getElementById("dropZone");
-const fileNameEl = document.getElementById("fileName");
 const uploadMessage = document.getElementById("uploadMessage");
-const previewBtn = document.getElementById("previewBtn");
+const checkBtn = document.getElementById("checkBtn");
+const saveBtn = document.getElementById("saveBtn");
 const previewPanel = document.getElementById("previewPanel");
-const confirmBtn = document.getElementById("confirmBtn");
 const credentialsPanel = document.getElementById("credentialsPanel");
 
-let previewType = null;     // dataset the preview was made for
-let previewFile = null;     // file the preview was made for
+const chosen = {};          // dataset → File picked on this page
+let checked = null;         // { files, results } from the last check
+let activeTab = null;
 let shownCredentials = null;
 
 /* ---------- small helpers ---------- */
@@ -42,26 +42,17 @@ function hideMessage() {
   uploadMessage.hidden = true;
 }
 
-function typeLabel() {
-  return dataType.options[dataType.selectedIndex].text;
+function slot(type) {
+  return document.querySelector('.slot[data-type="' + type + '"]');
+}
+
+function chosenTypes() {
+  return DATASETS.filter((type) => chosen[type]);
 }
 
 function cellText(value) {
   if (Array.isArray(value)) return value.join("; ");
   return value == null ? "" : String(value);
-}
-
-function resetPreview() {
-  previewType = null;
-  previewFile = null;
-  confirmBtn.disabled = true;
-  previewPanel.hidden = true;
-  document.getElementById("validationErrors").hidden = true;
-}
-
-function clearFile() {
-  fileInput.value = "";
-  fileNameEl.textContent = "No file selected";
 }
 
 function downloadBlob(blob, filename) {
@@ -75,80 +66,104 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
-/* ---------- choosing a dataset and a file ---------- */
+/* ---------- choosing files ---------- */
 
-dataType.addEventListener("change", () => {
-  document.getElementById("selectedType").textContent = typeLabel();
-  resetPreview();
-  hideMessage();
-});
-
-function selectFile(file) {
-  resetPreview();
-  hideMessage();
-  if (!file) {
-    clearFile();
-    return;
-  }
-
+function fileProblem(file) {
   const dot = file.name.lastIndexOf(".");
   const ext = dot >= 0 ? file.name.slice(dot).toLowerCase() : "";
-  if (!ALLOWED_FILES.includes(ext)) {
-    clearFile();
-    showMessage("Choose a CSV, Excel or JSON file.", "bad");
-    return;
-  }
-  if (file.size === 0) {
-    clearFile();
-    showMessage("That file is empty.", "bad");
-    return;
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    clearFile();
-    showMessage("The maximum file size is 5 MB.", "bad");
-    return;
-  }
-  fileNameEl.textContent = file.name;
+  if (!ALLOWED_FILES.includes(ext)) return "choose a CSV, Excel or JSON file.";
+  if (file.size === 0) return "that file is empty.";
+  if (file.size > MAX_FILE_SIZE) return "the maximum file size is 5 MB.";
+  return null;
 }
 
-fileInput.addEventListener("change", () => selectFile(fileInput.files[0]));
+// any change to the chosen files means the last check no longer counts
+function resetCheck() {
+  checked = null;
+  activeTab = null;
+  previewPanel.hidden = true;
+  saveBtn.disabled = true;
+  checkBtn.disabled = chosenTypes().length === 0;
+}
 
-dropZone.addEventListener("dragover", (event) => {
-  event.preventDefault();
-  dropZone.classList.add("dragover");
+function setFile(type, file) {
+  const problem = file ? fileProblem(file) : null;
+  if (problem) {
+    showMessage(LABELS[type] + ": " + problem, "bad");
+    file = null;
+  } else {
+    hideMessage();
+  }
+
+  if (file) chosen[type] = file;
+  else delete chosen[type];
+
+  const row = slot(type);
+  row.classList.toggle("hasFile", Boolean(file));
+  row.querySelector(".slotFile").textContent = file ? file.name : "No file chosen";
+  row.querySelector("[data-remove]").hidden = !file;
+  row.querySelector('input[type="file"]').value = "";   // lets the same file be picked again
+  resetCheck();
+}
+
+DATASETS.forEach((type) => {
+  const row = slot(type);
+  const input = row.querySelector('input[type="file"]');
+
+  input.addEventListener("change", () => {
+    if (input.files[0]) setFile(type, input.files[0]);
+  });
+  row.querySelector("[data-remove]").addEventListener("click", () => setFile(type, null));
+  row.querySelector("[data-template]").addEventListener("click", (event) => downloadTemplate(type, event.currentTarget));
+
+  row.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    row.classList.add("dragover");
+  });
+  row.addEventListener("dragleave", () => row.classList.remove("dragover"));
+  row.addEventListener("drop", (event) => {
+    event.preventDefault();
+    row.classList.remove("dragover");
+    const files = event.dataTransfer.files;
+    if (files.length !== 1) {
+      showMessage("Drop one file at a time onto its row.", "bad");
+      return;
+    }
+    setFile(type, files[0]);
+  });
 });
 
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+/* ---------- saved counts per row ---------- */
 
-dropZone.addEventListener("drop", (event) => {
-  event.preventDefault();
-  dropZone.classList.remove("dragover");
-  const files = event.dataTransfer.files;
-  if (files.length > 1) {
-    showMessage("Drop one file at a time.", "bad");
-    return;
-  }
-  if (!files[0]) return;
+async function loadStatus() {
   try {
-    const transfer = new DataTransfer();
-    transfer.items.add(files[0]);
-    fileInput.files = transfer.files;
-    selectFile(files[0]);
+    const counts = await api("GET", "/uploads/status");
+    DATASETS.forEach((type) => {
+      const n = counts[type] || 0;
+      const badge = slot(type).querySelector(".slotSaved");
+            badge.textContent = n ? "Already saved: " + n : "Nothing saved yet";
+      badge.title = n
+        ? n + " " + LABELS[type].toLowerCase() + " are already saved for your university. Choose a file only to add or change them."
+        : "Nothing uploaded yet for " + LABELS[type].toLowerCase() + ".";
+      badge.classList.toggle("empty", n === 0);
+    });
   } catch {
-    showMessage("Please click the box and choose your file instead.", "bad");
+    // the page still works without the counts; api() already handles an expired login
   }
-});
+}
 
 /* ---------- talking to the server ---------- */
 
 // files can't go through api() (it sends JSON), so this adds the login token itself
-async function sendFile(type, step, file) {
+async function sendFiles(step, files) {
   const body = new FormData();
-  body.append("file", file);
+  DATASETS.forEach((type) => {
+    if (files[type]) body.append(type, files[type]);
+  });
 
   let response;
   try {
-    response = await fetch(`${UPLOADS}/${encodeURIComponent(type)}/${step}`, {
+    response = await fetch(`${UPLOADS}/all/${step}`, {
       method: "POST",
       headers: { Authorization: "Bearer " + getAuthToken() },
       body
@@ -167,55 +182,77 @@ async function sendFile(type, step, file) {
   return result.data;
 }
 
-/* ---------- preview ---------- */
+/* ---------- check ---------- */
 
-uploadForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  resetPreview();
-  hideMessage();
-
-  const file = fileInput.files[0];
-  const type = dataType.value;
-  if (!file) {
-    showMessage("Choose a file first.", "bad");
+checkBtn.addEventListener("click", async () => {
+  const files = { ...chosen };
+  if (Object.keys(files).length === 0) {
+    showMessage("Choose at least one file.", "bad");
     return;
   }
 
-  previewBtn.disabled = true;
-  previewBtn.textContent = "Checking…";
+  hideMessage();
+  checkBtn.disabled = true;
+  checkBtn.textContent = "Checking…";
   try {
-    const data = await sendFile(type, "preview", file);
-    const usable = data.counts.new + data.counts.update;
+    const data = await sendFiles("preview", files);
+    checked = { files, results: data.files };
 
-    previewType = type;
-    previewFile = file;
+    const types = DATASETS.filter((type) => checked.results[type]);
+    let usable = 0;
+    let problems = 0;
+    types.forEach((type) => {
+      const c = checked.results[type].counts;
+      usable += c.new + c.update;
+      problems += c.error;
+    });
 
-    renderRows(data.rows);
-    renderErrors(data.rows.filter((r) => r.status === "error"));
-    document.getElementById("selectedType").textContent = typeLabel();
-    document.getElementById("previewCount").textContent = data.rows.length;
-    document.getElementById("errorCount").textContent = data.counts.error;
-    document.getElementById("previewDescription").textContent =
-      `${data.counts.new} new, ${data.counts.update} to update, ${data.counts.error} with problems.` +
-      (data.rows.length > MAX_ROWS_SHOWN ? ` Showing the first ${MAX_ROWS_SHOWN} rows.` : "");
+    showTab(types.find((type) => checked.results[type].counts.error) || types[0]);
     previewPanel.hidden = false;
+    saveBtn.disabled = usable === 0;
 
     if (usable === 0) {
-      showMessage("Every row has a problem. Fix the file and preview again.", "bad");
-    } else if (data.counts.error) {
-      showMessage(`${data.counts.error} row(s) have problems and will be skipped. Fix them in the file to include them.`, "bad");
+      showMessage("Every row has a problem. Fix the files and check again.", "bad");
+    } else if (problems) {
+      showMessage(`${problems} row(s) have problems and will be skipped. Fix them in the file to include them.`, "bad");
     } else {
-      showMessage("Everything looks good. Check the rows and confirm.", "ok");
+      showMessage("Everything looks good. Check the rows and save.", "ok");
     }
-    confirmBtn.disabled = usable === 0;
     previewPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
     showMessage(error.message, "bad");
   } finally {
-    previewBtn.disabled = false;
-    previewBtn.textContent = "Preview records →";
+    checkBtn.disabled = chosenTypes().length === 0;
+    checkBtn.textContent = "Check files →";
   }
 });
+
+function renderTabs() {
+  const tabs = document.getElementById("previewTabs");
+  tabs.replaceChildren();
+  DATASETS.filter((type) => checked.results[type]).forEach((type) => {
+    const c = checked.results[type].counts;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "tab" + (c.error ? " hasErrors" : "") + (type === activeTab ? " active" : "");
+    button.setAttribute("role", "tab");
+    button.textContent = LABELS[type] + " · " + (c.new + c.update) + " ok" + (c.error ? " · " + c.error + " with problems" : "");
+    button.addEventListener("click", () => showTab(type));
+    tabs.appendChild(button);
+  });
+}
+
+function showTab(type) {
+  activeTab = type;
+  renderTabs();
+  const result = checked.results[type];
+  const c = result.counts;
+  renderRows(result.rows);
+  renderErrors(result.rows.filter((r) => r.status === "error"));
+  document.getElementById("previewDescription").textContent =
+    `${LABELS[type]}: ${c.new} new, ${c.update} to update, ${c.error} with problems.` +
+    (result.rows.length > MAX_ROWS_SHOWN ? ` Showing the first ${MAX_ROWS_SHOWN} rows.` : "");
+}
 
 // rows from the server: [{ rowNo, status: "new" | "update" | "error", data, errors }]
 function renderRows(rows) {
@@ -296,37 +333,51 @@ function renderErrors(errorRows) {
 }
 
 document.getElementById("cancelBtn").addEventListener("click", () => {
-  resetPreview();
+  resetCheck();
   hideMessage();
 });
 
-/* ---------- confirm ---------- */
+/* ---------- save ---------- */
 
-confirmBtn.addEventListener("click", async () => {
-  if (confirmBtn.disabled || !previewFile) return;
-  if (dataType.value !== previewType || fileInput.files[0] !== previewFile) {
-    resetPreview();
-    showMessage("The dataset or file changed. Preview it again.", "bad");
+function sameFiles(a, b) {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+}
+
+saveBtn.addEventListener("click", async () => {
+  if (saveBtn.disabled || !checked) return;
+  if (!sameFiles(checked.files, chosen)) {
+    resetCheck();
+    showMessage("The files changed since the check. Check them again.", "bad");
     return;
   }
-  if (!confirm("Save these records?")) return;
+  if (!confirm("Save all checked files? Rows with problems are skipped.")) return;
 
-  confirmBtn.disabled = true;
-  confirmBtn.textContent = "Saving…";
+  saveBtn.disabled = true;
+  checkBtn.disabled = true;
+  saveBtn.textContent = "Saving…";
   try {
-    const data = await sendFile(previewType, "confirm", previewFile);
-    resetPreview();
-    clearFile();
-    showMessage(
-      `Saved: ${data.added} added, ${data.updated} updated` + (data.skipped ? `, ${data.skipped} skipped.` : "."),
-      "ok"
-    );
-    if (data.credentials && data.credentials.length) showCredentials(data.credentials);
+    const data = await sendFiles("confirm", checked.files);
+    const lines = DATASETS.filter((type) => data.saved[type]).map((type) => {
+      const s = data.saved[type];
+      return `${LABELS[type]}: ${s.added} added, ${s.updated} updated` + (s.skipped ? `, ${s.skipped} skipped` : "");
+    });
+
+    DATASETS.forEach((type) => setFile(type, null));   // clears the rows and the old check
+    showMessage("Saved. " + lines.join(" · "), "ok");
+
+    const invigilators = data.saved.invigilators;
+    if (invigilators && invigilators.credentials && invigilators.credentials.length) {
+      showCredentials(invigilators.credentials);
+    }
   } catch (error) {
-    showMessage(error.message, "bad");
-    confirmBtn.disabled = false;
+    // files are saved one after another, so earlier ones may already be in; saving again only updates them
+    showMessage(error.message + " Anything saved before this stays saved; you can safely save again.", "bad");
+    saveBtn.disabled = false;
+    checkBtn.disabled = chosenTypes().length === 0;
   } finally {
-    confirmBtn.textContent = "Confirm & save →";
+    saveBtn.textContent = "Save all →";
+    loadStatus();
   }
 });
 
@@ -371,16 +422,14 @@ document.getElementById("credentialsDone").addEventListener("click", () => {
   shownCredentials = null;
 });
 
-// warn before leaving while passwords are still on screen
+// warn before leaving while passwords or unsaved files are on the page
 window.addEventListener("beforeunload", (event) => {
-  if (shownCredentials) event.preventDefault();
+  if (shownCredentials || chosenTypes().length) event.preventDefault();
 });
 
 /* ---------- template download (public, only column names) ---------- */
 
-document.getElementById("templateBtn").addEventListener("click", async (event) => {
-  const button = event.currentTarget;
-  const type = dataType.value;
+async function downloadTemplate(type, button) {
   button.disabled = true;
   try {
     let response;
@@ -399,4 +448,9 @@ document.getElementById("templateBtn").addEventListener("click", async (event) =
   } finally {
     button.disabled = false;
   }
-});
+}
+
+/* ---------- start ---------- */
+
+resetCheck();
+loadStatus();

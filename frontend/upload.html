@@ -22,53 +22,89 @@
     <div class="pageHead">
       <div>
         <h1 class="pageTitle">Upload data</h1>
-        <p class="pageSub">Upload halls and subjects first, then students and invigilators. Nothing is saved until you confirm.</p>
+        <p class="pageSub">Choose one file per row (or only the ones you want to replace), check them, then save. Nothing is saved until you click Save all.</p>
       </div>
     </div>
 
-    <!-- STEP 1: dataset + file -->
-    <form id="uploadForm" class="card" novalidate>
-      <div class="cardLabel">1 · Choose data and file</div>
+    <!-- STEP 1: one row per dataset -->
+    <section class="card">
+      <div class="cardLabel">1 · Choose your files</div>
 
-      <div class="detailRow">
-        <div class="field">
-          <label for="dataType">Dataset</label>
-          <select id="dataType">
-            <option value="halls">Halls</option>
-            <option value="subjects">Subjects</option>
-            <option value="students">Student roster</option>
-            <option value="invigilators">Invigilators</option>
-          </select>
+      <div class="slotList">
+        <div class="slot" data-type="halls">
+          <span class="slotStep">1</span>
+          <div class="slotInfo">
+            <div class="slotTitle">Halls</div>
+            <div class="slotSub">hallNo, rows, cols</div>
+          </div>
+          <span class="slotSaved empty">–</span>
+          <span class="slotFile">No file chosen</span>
+          <div class="slotActions">
+            <label class="btnGhostSmall">Choose<input type="file" accept=".csv,.xlsx,.xls,.json" hidden></label>
+            <button type="button" class="btnLink" data-template>Template</button>
+            <button type="button" class="btnLink danger" data-remove hidden>Remove</button>
+          </div>
         </div>
-        <div class="field fieldAction">
-          <button type="button" id="templateBtn" class="btnGhostSmall">↓ Download template</button>
+
+        <div class="slot" data-type="subjects">
+          <span class="slotStep">2</span>
+          <div class="slotInfo">
+            <div class="slotTitle">Subjects</div>
+            <div class="slotSub">code, name, dept</div>
+          </div>
+          <span class="slotSaved empty">–</span>
+          <span class="slotFile">No file chosen</span>
+          <div class="slotActions">
+            <label class="btnGhostSmall">Choose<input type="file" accept=".csv,.xlsx,.xls,.json" hidden></label>
+            <button type="button" class="btnLink" data-template>Template</button>
+            <button type="button" class="btnLink danger" data-remove hidden>Remove</button>
+          </div>
+        </div>
+
+        <div class="slot" data-type="students">
+          <span class="slotStep">3</span>
+          <div class="slotInfo">
+            <div class="slotTitle">Students</div>
+            <div class="slotSub">roll, name, subjects (CS301;MA201)</div>
+          </div>
+          <span class="slotSaved empty">–</span>
+          <span class="slotFile">No file chosen</span>
+          <div class="slotActions">
+            <label class="btnGhostSmall">Choose<input type="file" accept=".csv,.xlsx,.xls,.json" hidden></label>
+            <a class="btnLink" data-template>Template</a>
+            <button type="button" class="btnLink danger" data-remove hidden>Remove</button>
+          </div>
+        </div>
+
+        <div class="slot" data-type="invigilators">
+          <span class="slotStep">4</span>
+          <div class="slotInfo">
+            <div class="slotTitle">Invigilators</div>
+            <div class="slotSub">name, email, department, subjects, unavailable (YYYY-MM-DD)</div>
+          </div>
+          <span class="slotSaved empty">–</span>
+          <span class="slotFile">No file chosen</span>
+          <div class="slotActions">
+            <label class="btnGhostSmall">Choose<input type="file" accept=".csv,.xlsx,.xls,.json" hidden></label>
+            <button type="button" class="btnLink" data-template>Template</button>
+            <button type="button" class="btnLink danger" data-remove hidden>Remove</button>
+          </div>
         </div>
       </div>
 
-      <label id="dropZone" class="dropZone" for="fileInput">
-        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.json" hidden>
-        <span class="dropTitle">Drop a file here or click to browse</span>
-        <span class="dropSub">CSV, Excel or JSON · max 5 MB</span>
-        <span id="fileName" class="fileName">No file selected</span>
-      </label>
+      <p class="slotHint">CSV, Excel or JSON · max 5 MB each · the first line must be the column names · you can also drop a file onto its row.</p>
 
       <div id="uploadMessage" class="uploadMsg" role="status" aria-live="polite" hidden></div>
 
       <div class="panelActions">
-        <button type="submit" id="previewBtn" class="btnPrimary btnSmall">Preview records →</button>
+        <button type="button" id="checkBtn" class="btnPrimary btnSmall" disabled>Check files →</button>
       </div>
-    </form>
+    </section>
 
-    <!-- STEP 2: preview (upload.js fills this) -->
+    <!-- STEP 2: results per file (upload.js fills this) -->
     <section id="previewPanel" class="card" hidden>
-      <div class="cardLabel">
-        2 · Check the rows
-        <span class="cardLabelRight">
-          <span id="selectedType">Halls</span> ·
-          <span id="previewCount">0</span> rows ·
-          <span id="errorCount">0</span> with problems
-        </span>
-      </div>
+      <div class="cardLabel">2 · Check the rows</div>
+      <div id="previewTabs" class="tabs" role="tablist"></div>
       <p id="previewDescription" class="pageSub"></p>
 
       <div class="previewWrap">
@@ -82,7 +118,7 @@
 
       <div class="panelActions">
         <button type="button" id="cancelBtn" class="btnGhostSmall">Cancel</button>
-        <button type="button" id="confirmBtn" class="btnPrimary btnSmall" disabled>Confirm &amp; save →</button>
+        <button type="button" id="saveBtn" class="btnPrimary btnSmall" disabled>Save all →</button>
       </div>
     </section>
 
