@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Login — ExamMatrix</title>
+  <title>Log in — ExamMatrix</title>
 
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/login.css">
@@ -17,54 +17,50 @@
 
   <main id="main">
     <div id="loginCard" class="authCard">
-      
+
       <!-- Institutional Split-Tone Header Band -->
       <div id="cardHero">
         <div class="hero-top-row">
           <div class="logoMark">EM</div>
-          <span class="authBadge font-mono">ADMIN / STAFF</span>
+          <span class="authBadge font-mono" id="authBadge">UNIVERSITY ADMIN</span>
         </div>
         <h2>Welcome back</h2>
-        <p>Log in to manage examinations & seating grids</p>
+        <p id="heroText">Log in to manage examinations &amp; seating grids</p>
       </div>
 
       <!-- Crisp White Form Body -->
       <div id="cardBody">
         <div id="message" role="alert"></div>
 
+        <div class="roleTabs" role="tablist" aria-label="Who is logging in">
+          <button type="button" class="roleTab active" data-role="admin" role="tab" aria-selected="true">University admin</button>
+          <button type="button" class="roleTab" data-role="invigilator" role="tab" aria-selected="false">Invigilator</button>
+        </div>
+        <input type="hidden" id="loginRole" value="admin">
+
         <form id="loginForm" novalidate>
           <div class="formField">
-            <label for="username">Staff Username</label>
-            <input 
-              type="text" 
-              id="username" 
-              placeholder="e.g. admin or faculty ID" 
-              autocomplete="username" 
-              spellcheck="false"
-              required
-            >
+            <label for="username" id="usernameLabel">Admin email</label>
+            <input type="text" id="username" placeholder="admin@university.edu" autocomplete="email"
+              spellcheck="false" maxlength="254" required>
           </div>
 
           <div class="formField">
-            
-              <label for="password">Password</label>
-              
+            <label for="password">Password</label>
+
             <!-- Wrapped for Show/Hide Toggle -->
             <div class="pwWrap">
-              <input 
-                type="password" 
-                id="password" 
-                placeholder="Enter password" 
-                autocomplete="current-password"
-                required
-              >
+              <input type="password" id="password" placeholder="Enter password" autocomplete="current-password"
+                maxlength="128" required>
               <button type="button" id="pwToggle" class="pwToggle" aria-label="Show password" title="Toggle visibility">
                 👁
               </button>
             </div>
           </div>
 
-          
+          <div class="forgotRow" id="forgotRow">
+            <a href="forgot-password.html">Forgot password?</a>
+          </div>
 
           <button type="submit" id="loginButton" class="btnPrimary">
             <span class="btnText">Log in</span>
@@ -73,8 +69,7 @@
         </form>
 
         <div id="loginRedirect">
-          <span>Need admin access? <a href="register.html">Register</a></span>
-          <span class="separator">·</span>
+          <span id="adminRegister">New university? <a href="register.html">Register</a><span class="separator">·</span></span>
           <a href="index.html#lookup" class="studentLink">🎓 Student Seat Finder</a>
         </div>
       </div>
@@ -85,8 +80,12 @@
   <div id="site-footer-slot"></div>
 
   <script src="js/auth-shared.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/login-role.js"></script>
   <script src="js/login.js"></script>
   <script src="js/theme.js"></script>
 
 </body>
+
 </html>
