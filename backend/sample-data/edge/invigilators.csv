@@ -1,0 +1,10 @@
+name,email,department,subjects,unavailable
+Dr. Tanvi Kulkarni,tanvi.kulkarni@exammatrix-demo.edu,Computer Science,CS301,
+Dr. Anjali Mehta,ANJALI.MEHTA@exammatrix-demo.edu,Computer Science,CS301;CS303,
+Kavita Joshi,kavita.joshi@,Mathematics,MA201,
+Amit Tiwari,amit.tiwari@exammatrix-demo.edu,Physics,,27-10-2026
+Pooja Hegde,pooja.hegde@exammatrix-demo.edu,Chemistry,ZZ999,
+Sunil Kumar,sunil.kumar@exammatrix-demo.edu,,MA201,
+,ghost@exammatrix-demo.edu,Physics,,
+"Rao, Jr.",rao.jr@exammatrix-demo.edu,Physics,,
+Dr. Tanvi Kulkarni,tanvi.kulkarni@exammatrix-demo.edu,Computer Science,CS302,
