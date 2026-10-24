@@ -200,7 +200,10 @@ function onPickChange() {
 }
 
 function refreshAll() {
+  lockUnavailableSubjects();   // unticks subjects that can't be picked at all
+  readPicks();
   refreshMatchedTable();
+  applyClashLocks();
 }
 
 /* clear all picked subjects and halls, then reset the UI */
@@ -210,6 +213,132 @@ function clearAllPicks() {
   });
   onPickChange();
 }
+
+
+/* -----------------------------------------------------------
+   LOCKS
+   Fixed locks (don't depend on what's ticked):
+     · already examined → "✓ already conducted"
+     · some of its students already sit an exam at this time
+   Clash locks: a subject that shares students with a ticked one.
+----------------------------------------------------------- */
+function lockRow(row, text, label) {
+  let box = row.querySelector("input");
+  row.classList.add("locked");
+  box.disabled = true;
+  box.checked = false;
+
+  let right = row.querySelector(".pickRight, .pickLock");
+  if (right) {
+    right.className = "pickLock";
+    right.textContent = text;
+  }
+  row.setAttribute("aria-disabled", "true");
+  row.setAttribute("aria-label", label);
+}
+
+function unlockRow(row, text) {
+  let box = row.querySelector("input");
+  row.classList.remove("locked");
+  box.disabled = false;
+
+  let right = row.querySelector(".pickRight, .pickLock");
+  if (right) {
+    right.className = "pickRight";
+    right.textContent = text;
+  }
+  row.removeAttribute("aria-disabled");
+  row.removeAttribute("aria-label");
+  row.onmouseenter = null;
+  row.onmouseleave = null;
+}
+
+function findSubject(code) {
+  return examOptions.subjects.find(function (s) { return s.code === code; });
+}
+
+function lockUnavailableSubjects() {
+  if (!examOptions) { return; }
+  document.querySelectorAll("#subjectList .pickRow").forEach(function (row) {
+    let subj = findSubject(row.dataset.course);
+    if (!subj) { return; }
+
+    if (subj.scheduledIn) {
+      row.dataset.fixed = "1";
+      row.title = "Already in " + subj.scheduledIn.examName + " (" + subj.scheduledIn.examId + ")";
+      lockRow(row, "✓ already conducted",
+        subj.code + " is already in " + subj.scheduledIn.examName + " and cannot be conducted again.");
+    } else if (subj.busyNow.length) {
+      let rolls = subj.busyNow;
+      row.dataset.fixed = "1";
+      lockRow(row, "🔒 " + rolls.length + " busy now",
+        subj.code + " is locked — " + rolls.length + " of its students already have an exam at this time.");
+      row.onmouseenter = function () {
+        showClashInfo(rolls, "<b>" + escapeHtml(subj.code) + "</b> has " + rolls.length +
+          " students who already have an exam at this time, so it is locked.");
+      };
+      row.onmouseleave = clearClashInfo;
+    }
+  });
+}
+
+/* "CS301|MA201": the same key the server uses (codes in A-Z order) */
+function pairKey(a, b) {
+  return a < b ? a + "|" + b : b + "|" + a;
+}
+
+function applyClashLocks() {
+  if (!examOptions) { return; }
+  document.querySelectorAll("#subjectList .pickRow").forEach(function (row) {
+    if (row.dataset.fixed) { return; }   // fixed locks never unlock here
+
+    let course = row.dataset.course;
+    let shared = [];
+    if (pickedCourses.indexOf(course) === -1) {
+      pickedCourses.forEach(function (picked) {
+        (examOptions.shared[pairKey(course, picked)] || []).forEach(function (roll) {
+          if (shared.indexOf(roll) === -1) { shared.push(roll); }
+        });
+      });
+    }
+
+    if (shared.length) {
+      lockRow(row, "🔒 locked · " + shared.length + " shared",
+        course + " locked — shares " + shared.length +
+        " students with a picked subject, so it cannot be scheduled in the same slot.");
+      row.onmouseenter = function () {
+        showClashInfo(shared, "<b>" + escapeHtml(course) + "</b> shares " + shared.length +
+          " students with your picked subjects, so it is locked.");
+      };
+      row.onmouseleave = clearClashInfo;
+    } else {
+      unlockRow(row, findSubject(course).students + " students");
+    }
+  });
+}
+
+/* show the clash detail in the info bar (first 3 rolls + "+N more") */
+function showClashInfo(rolls, sentenceHtml) {
+  let infoEl = document.getElementById("clashInfo");
+  if (!infoEl) { return; }
+
+  let shown = rolls.slice(0, 3).map(escapeHtml).join(", ");
+  let extra = rolls.length - 3;
+  let moreText = extra > 0 ? ' <span class="clashMore">+' + extra + ' more</span>' : "";
+
+  infoEl.className = "clashInfo";
+  infoEl.innerHTML = "<span>" + sentenceHtml + "</span> " +
+    '<span class="clashRolls">' + shown + "</span>" + moreText;
+}
+
+function clearClashInfo() {
+  let infoEl = document.getElementById("clashInfo");
+  if (!infoEl) { return; }
+  infoEl.className = "clashInfo clashInfo--idle";
+  infoEl.innerHTML = "<span>Hover a locked subject to see which students clash.</span>";
+}
+
+
 
 
 /* =========================================================
