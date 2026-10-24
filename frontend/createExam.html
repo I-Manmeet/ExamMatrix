@@ -30,15 +30,15 @@
       <div class="cardLabel">1 · Exam details</div>
       <div class="detailRow">
         <div class="field big">
-          <label>Exam name</label>
-          <input type="text" id="examName" value="Mid-Semester Exam">
+          <label for="examName">Exam name</label>
+          <input type="text" id="examName" value="Mid-Semester Exam" maxlength="100">
         </div>
         <div class="field">
-          <label>Date</label>
-          <input type="date" id="examDate" value="2026-08-20" onchange="onDateTimeChange()">
+          <label for="examDate">Date</label>
+          <input type="date" id="examDate" onchange="onDateTimeChange()">
         </div>
         <div class="field">
-          <label>Slot</label>
+          <label for="examSlot">Slot</label>
           <select id="examSlot" onchange="onDateTimeChange()">
             <option>09:00–11:00</option>
             <option>11:30–13:30</option>
@@ -91,7 +91,7 @@
         <span id="statusText">Pick subjects and halls to begin.</span>
       </div>
       <button type="button" class="btnGhostSmall" id="clearAllBtn" onclick="clearAllPicks()">Clear all</button>
-      <button class="btnPrimary btnSmall" id="generateBtn" disabled>Generate seating &amp; save →</button>
+      <button type="button" class="btnPrimary btnSmall" id="generateBtn" disabled>Generate seating &amp; save →</button>
     </div>
 
   </main>
@@ -99,9 +99,10 @@
   <!-- Shared footer -->
   <div id="footerContainer"></div>
 
-  <!-- logged-in navbar + footer + username + logout + auth gate -->
+  <!-- server address + api() helper, then navbar/auth gate, then this page -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/app-shell.js"></script>
-  <script src="js/data.js"></script>
   <script src="js/createExam.js"></script>
 
 </body>
