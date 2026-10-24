@@ -43,9 +43,9 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   checkId(req.params.id);
   const hall = await Hall.findOneAndUpdate(
-    { _id: req.params.id, university: req.user.university},
-    { $set: pick(req.body) },
-    { new: true, runValidators: true }
+      { _id: req.params.id, university: req.user.university },
+      { $set: pick(req.body) },
+      { returnDocument: "after", runValidators: true }
   );
   if (!hall) throw new AppError(404, "Hall not found");
   res.json({ data: hall });
