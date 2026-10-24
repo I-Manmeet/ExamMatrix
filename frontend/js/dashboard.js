@@ -1,2264 +1,815 @@
-/* =========================================================
-   ExamMatrix — Dashboard JS
-   ========================================================= */
 
-(function () {
+"use strict";
 
-    "use strict";
+/* =========================================
+   ExamMatrix Dashboard
+   Data fetched from backend APIs
+========================================= */
 
+var examsData = [];
+var hallsData = [];
 
-    /* =====================================================
-       STORAGE KEYS
-    ===================================================== */
+var uploadCounts = {
+    halls: 0,
+    subjects: 0,
+    students: 0,
+    invigilators: 0
+};
 
-    var EXAMS_KEY = "em_exams";
+var currentTab = "upcoming";
+var selectedExamId = null;
+var dashboardLoading = false;
 
-    var CURRENT_KEY = "em_currentExam";
+document.addEventListener("DOMContentLoaded", initDashboard);
 
-    var SESSION_KEY = "em_session";
+/* =========================================
+   INITIALIZATION
+========================================= */
 
-    var SEATING_PAGE = "seating.html";
+function initDashboard() {
+    wireTabs();
+    wireHeaderButtons();
+    loadDashboard();
+}
 
+/* =========================================
+   LOAD BACKEND DATA
+========================================= */
 
-    /* =====================================================
-       CURRENT TAB
-    ===================================================== */
+async function loadDashboard() {
+    if (dashboardLoading) return;
 
-    var currentTab = "upcoming";
+    dashboardLoading = true;
+    showError("");
 
-    var selectedExamId = null;
+    var examList = document.getElementById("exam-list");
 
-
-    /* =====================================================
-       GET EXAMS
-    ===================================================== */
-
-    function getExams() {
-
-        var list = [];
-
-        try {
-
-            var raw =
-                localStorage.getItem(EXAMS_KEY);
-
-            if (raw) {
-
-                var parsed =
-                    JSON.parse(raw);
-
-                if (Array.isArray(parsed)) {
-
-                    list = (typeof getMyExams === "function") ? getMyExams() : parsed;
-
-
-                }
-
-            }
-
-        } catch (e) {
-
-        }
-
-
-        /* Fallback to current exam */
-
-        if (!list.length) {
-
-            try {
-
-                var cur =
-                    localStorage.getItem(CURRENT_KEY);
-
-                if (cur) {
-
-                    var one =
-                        JSON.parse(cur);
-
-                    if (one && one.examName && one.owner === getSessionUser()) {
-
-                        if (one.id == null) {
-
-                            one.id = "current";
-
-                        }
-
-                        list = [one];
-
-                    }
-
-                }
-
-            } catch (e) {
-
-            }
-
-        }
-
-
-        return list;
-
-    }
-
-
-    /* =====================================================
-       HELPERS
-    ===================================================== */
-
-    function num(value) {
-
-        var n =
-            Number(value);
-
-        return isFinite(n) ? n : 0;
-
-    }
-
-
-    function studentCount(exam) {
-
-        return Array.isArray(exam.students)
-            ? exam.students.length
-            : num(exam.studentCount || exam.studentsCount);
-
-    }
-
-
-    function examHalls(exam) {
-
-        return Array.isArray(exam.pickedHalls)
-            ? exam.pickedHalls
-            : [];
-
-    }
-
-
-    function examConflicts(exam) {
-
-        if (Array.isArray(exam.conflicts)) {
-
-            return exam.conflicts.length;
-
-        }
-
-        return num(exam.conflicts);
-
-    }
-
-
-    /* =====================================================
-       ESCAPE HTML
-    ===================================================== */
-
-    function escapeHtml(str) {
-
-        return String(
-            str == null ? "" : str
-        )
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
-
-    }
-
-
-    /* =====================================================
-       DATE PARSER
-    ===================================================== */
-
-    function parseExamDate(dateValue) {
-
-        if (!dateValue) {
-
-            return null;
-
-        }
-
-
-        var value =
-            String(dateValue).trim();
-
-        var date = null;
-
-
-        /* YYYY-MM-DD */
-
-        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-
-            var parts =
-                value.split("-");
-
-            date =
-                new Date(
-                    Number(parts[0]),
-                    Number(parts[1]) - 1,
-                    Number(parts[2])
-                );
-
-        }
-
-
-        /* DD-MM-YYYY */
-
-        else if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
-
-            var parts2 =
-                value.split("-");
-
-            date =
-                new Date(
-                    Number(parts2[2]),
-                    Number(parts2[1]) - 1,
-                    Number(parts2[0])
-                );
-
-        }
-
-
-        /* DD/MM/YYYY */
-
-        else if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
-
-            var parts3 =
-                value.split("/");
-
-            date =
-                new Date(
-                    Number(parts3[2]),
-                    Number(parts3[1]) - 1,
-                    Number(parts3[0])
-                );
-
-        }
-
-
-        /* Normal JS date */
-
-        else {
-
-            date =
-                new Date(value);
-
-        }
-
-
-        if (
-            !date ||
-            isNaN(date.getTime())
-        ) {
-
-            return null;
-
-        }
-
-
-        date.setHours(
-            0,
-            0,
-            0,
-            0
+    if (examList) {
+        examList.replaceChildren(
+            createText("p", "Loading examinations...")
         );
-
-
-        return date;
-
     }
 
-
-    /* =====================================================
-       TODAY
-    ===================================================== */
-
-    function getToday() {
-
-        var today =
-            new Date();
-
-        today.setHours(
-            0,
-            0,
-            0,
-            0
-        );
-
-        return today;
-
-    }
-
-
-    /* =====================================================
-       PREVIOUS EXAM
-    ===================================================== */
-
-    function isPreviousExam(exam) {
-
-        var date =
-            parseExamDate(exam.date);
-
-
-        if (!date) {
-
-            return false;
-
-        }
-
-
-        return date < getToday();
-
-    }
-
-
-    /* =====================================================
-       FORMAT DATE
-    ===================================================== */
-
-    function formatDate(dateValue) {
-
-        var date =
-            parseExamDate(dateValue);
-
-
-        if (!date) {
-
-            return "Date Not Available";
-
-        }
-
-
-        return date.toLocaleDateString(
-            "en-US",
-            {
-                month: "long",
-                day: "numeric",
-                year: "numeric"
-            }
-        );
-
-    }
-
-
-    /* =====================================================
-       SORT EXAMS
-    ===================================================== */
-
-    function sortByDate(exams, ascending) {
-
-        return exams.slice().sort(
-
-            function (a, b) {
-
-                var dateA =
-                    parseExamDate(a.date);
-
-                var dateB =
-                    parseExamDate(b.date);
-
-
-                if (!dateA && !dateB) {
-
-                    return 0;
-
-                }
-
-
-                if (!dateA) {
-
-                    return 1;
-
-                }
-
-
-                if (!dateB) {
-
-                    return -1;
-
-                }
-
-
-                if (ascending) {
-
-                    return dateA - dateB;
-
-                }
-
-
-                return dateB - dateA;
-
-            }
-
-        );
-
-    }
-
-
-    /* =====================================================
-       GROUP BY DATE
-    ===================================================== */
-
-    function groupExamsByDate(exams) {
-
-        var groups = {};
-
-
-        exams.forEach(
-
-            function (exam) {
-
-                var date =
-                    parseExamDate(exam.date);
-
-                var key;
-
-
-                if (date) {
-
-                    key =
-                        date.getFullYear() +
-                        "-" +
-                        String(
-                            date.getMonth() + 1
-                        ).padStart(2, "0") +
-                        "-" +
-                        String(
-                            date.getDate()
-                        ).padStart(2, "0");
-
-                } else {
-
-                    key = "unknown";
-
-                }
-
-
-                if (!groups[key]) {
-
-                    groups[key] = [];
-
-                }
-
-
-                groups[key].push(exam);
-
-            }
-
-        );
-
-
-        return groups;
-
-    }
-
-
-    /* =====================================================
-       STATUS
-    ===================================================== */
-
-    function getExamStatus(exam) {
-
-        var date =
-            parseExamDate(exam.date);
-
-
-        if (!date) {
-
-            return {
-
-                text: "Upcoming",
-
-                className: "upcoming"
-
-            };
-
-        }
-
-
-        var today =
-            getToday();
-
-
-        if (date < today) {
-
-            return {
-
-                text: "Completed",
-
-                className: "completed"
-
-            };
-
-        }
-
-
-        if (
-            date.getTime() ===
-            today.getTime()
-        ) {
-
-            return {
-
-                text: "Today",
-
-                className: "today"
-
-            };
-
-        }
-
-
-        return {
-
-            text: "Upcoming",
-
-            className: "upcoming"
-
+    try {
+        var results = await Promise.all([
+            api("GET", "/exams"),
+            api("GET", "/uploads/status"),
+            api("GET", "/halls")
+        ]);
+
+        examsData = extractArray(results[0]);
+        var status = extractObject(results[1]);
+        hallsData = extractArray(results[2]);
+
+        uploadCounts = {
+            halls: getCount(status, "halls"),
+            subjects: getCount(status, "subjects"),
+            students: getCount(status, "students"),
+            invigilators: getCount(status, "invigilators")
         };
 
-    }
-
-
-    /* =====================================================
-       TIME
-    ===================================================== */
-
-    function getExamTime(exam) {
-
-        if (exam.slot) {
-
-            return escapeHtml(
-                exam.slot
-            );
-
-        }
-
-
-        if (exam.time) {
-
-            return escapeHtml(
-                exam.time
-            );
-
-        }
-
-
-        return "Time not specified";
-
-    }
-
-
-    /* =====================================================
-       CREATE EXAM CARD
-    ===================================================== */
-
-    function createExamCard(exam, index) {
-
-        var id =
-            exam.id != null
-                ? exam.id
-                : index;
-
-
-        var name =
-            escapeHtml(
-                exam.examName ||
-                "Untitled Exam"
-            );
-
-
-        var courses =
-            Array.isArray(
-                exam.pickedCourses
-            )
-                ? exam.pickedCourses
-                : [];
-
-
-        var subject =
-            escapeHtml(
-                courses.length
-                    ? courses.join(", ")
-                    : "No subject specified"
-            );
-
-
-        var status =
-            getExamStatus(exam);
-
-
-        var selectedClass =
-            String(id) === String(selectedExamId)
-                ? " selected"
-                : "";
-
-
-        return (
-
-            '<div class="exam-item' +
-                selectedClass +
-                '" data-exam-id="' +
-                escapeHtml(id) +
-            '">' +
-
-
-                '<div class="exam-information">' +
-
-                    '<strong>' +
-                        name +
-                    '</strong>' +
-
-                    '<span class="exam-subject">' +
-                        subject +
-                    '</span>' +
-
-                    '<span class="exam-time">' +
-
-                        '<i class="fa-regular fa-clock"></i>' +
-
-                        getExamTime(exam) +
-
-                    '</span>' +
-
-                '</div>' +
-
-
-                '<div class="exam-actions">' +
-
-                    '<span class="exam-status ' +
-                        status.className +
-                    '">' +
-
-                        status.text +
-
-                    '</span>' +
-
-
-                    '<button ' +
-
-                        'class="matrix-btn" ' +
-
-                        'data-exam-id="' +
-                            escapeHtml(id) +
-                        '"' +
-
-                    '>' +
-
-                        'Matrix' +
-
-                        '<i class="fa-solid fa-arrow-right"></i>' +
-
-                    '</button>' +
-
-
-                    '<button ' +
-
-                        'class="delete-exam-btn" ' +
-
-                        'data-exam-id="' +
-                            escapeHtml(id) +
-                        '"' +
-
-                    '>' +
-
-                        'Delete' +
-
-                    '</button>' +
-
-                '</div>' +
-
-            '</div>'
-
-        );
-
-    }
-
-
-    /* =====================================================
-       CREATE DATE GROUP
-    ===================================================== */
-
-    function createDateGroup(dateKey, exams, indexStart) {
-
-        var firstExam =
-            exams[0];
-
-
-        var dateText =
-            formatDate(
-                firstExam.date
-            );
-
-
-        var html =
-
-            '<div class="exam-date-group">' +
-
-                '<div class="exam-date-heading">' +
-
-                    '<i class="fa-regular fa-calendar"></i>' +
-
-                    '<span>' +
-
-                        escapeHtml(dateText) +
-
-                    '</span>' +
-
-                '</div>' +
-
-
-                '<div class="exam-date-line"></div>';
-
-
-        exams.forEach(
-
-            function (exam, index) {
-
-                html +=
-                    createExamCard(
-                        exam,
-                        indexStart + index
-                    );
-
-            }
-
-        );
-
-
-        html +=
-            '</div>';
-
-
-        return html;
-
-    }
-
-
-    /* =====================================================
-       RENDER EXAM LIST
-    ===================================================== */
-
-    function renderExamList(
-
-        container,
-
-        exams,
-
-        emptyMessage,
-
-        ascending
-
-    ) {
-
-        if (!container) {
-
-            return;
-
-        }
-
-
-        if (!exams.length) {
-
-            container.innerHTML =
-
-                '<div class="no-exams">' +
-
-                    '<i class="fa-regular fa-calendar-xmark"></i>' +
-
-                    '<span>' +
-
-                        emptyMessage +
-
-                    '</span>' +
-
-                '</div>';
-
-            return;
-
-        }
-
-
-        var sorted =
-            sortByDate(
-                exams,
-                ascending
-            );
-
-
-        var groups =
-            groupExamsByDate(
-                sorted
-            );
-
-
-        var html = "";
-
-        var counter = 0;
-
-
-        Object.keys(groups)
-
-            .sort(
-
-                function (a, b) {
-
-                    if (a === "unknown") {
-
-                        return 1;
-
-                    }
-
-
-                    if (b === "unknown") {
-
-                        return -1;
-
-                    }
-
-
-                    if (ascending) {
-
-                        return a.localeCompare(b);
-
-                    }
-
-
-                    return b.localeCompare(a);
-
-                }
-
-            )
-
-            .forEach(
-
-                function (key) {
-
-                    html +=
-                        createDateGroup(
-                            key,
-                            groups[key],
-                            counter
-                        );
-
-
-                    counter +=
-                        groups[key].length;
-
-                }
-
-            );
-
-
-        container.innerHTML =
-            html;
-
-    }
-
-
-    /* =====================================================
-       FIND EXAM
-    ===================================================== */
-
-    function findExam(examId) {
-
-        var exams =
-            getExams();
-
-
-        for (
-            var i = 0;
-            i < exams.length;
-            i++
-        ) {
-
-            var id =
-                exams[i].id != null
-                    ? exams[i].id
-                    : i;
-
-
-            if (
-                String(id) ===
-                String(examId)
-            ) {
-
-                return exams[i];
-
-            }
-
-        }
-
-
-        return null;
-
-    }
-
-
-    /* =====================================================
-       SELECT EXAM
-    ===================================================== */
-
-    function selectExam(examId) {
-
-        var exam =
-            findExam(examId);
-
-
-        if (!exam) {
-
-            return;
-
-        }
-
-
-        selectedExamId =
-            exam.id != null
-                ? exam.id
-                : examId;
-
-
-        renderCurrentTab();
-
-
-        renderSelectedExamHall(exam);
-
-    }
-
-
-    /* =====================================================
-       SELECTED EXAM HALL CAPACITY
-    ===================================================== */
-
-    function renderSelectedExamHall(exam) {
-
-        var grid =
-            document.getElementById(
-                "capacity-grid"
-            );
-
-
-        var title =
-            document.getElementById(
-                "hall-section-title"
-            );
-
-
-        var subtitle =
-            document.getElementById(
-                "hall-section-subtitle"
-            );
-
-
-        var examName =
-            document.getElementById(
-                "selected-exam-name"
-            );
-
-
-        var examDetails =
-            document.getElementById(
-                "selected-exam-details"
-            );
-
-
-        if (!grid) {
-
-            return;
-
-        }
-
-
-        var name =
-            exam.examName ||
-            "Selected Exam";
-
-
-        var students =
-            studentCount(exam);
-
-
-        var halls =
-            examHalls(exam);
-
-
-        if (title) {
-
-            title.textContent =
-                "Hall Capacity & Allocation — " +
-                name;
-
-        }
-
-
-        if (subtitle) {
-
-            subtitle.textContent =
-                "Hall allocation for this particular exam";
-
-        }
-
-
-        if (examName) {
-
-            examName.textContent =
-                name;
-
-        }
-
-
-        if (examDetails) {
-
-            examDetails.textContent =
-                students +
-                " Students • " +
-                halls.length +
-                " Halls Assigned";
-
-        }
-
-
-        if (!halls.length) {
-
-            grid.innerHTML =
-
-                '<div class="hall-card">' +
-
-                    '<div class="hall-info-row">' +
-
-                        '<span class="hall-title">' +
-
-                            'No halls assigned' +
-
-                        '</span>' +
-
-                    '</div>' +
-
-                    '<div class="progress-bar-wrapper">' +
-
-                        '<span class="empty-text">' +
-
-                            'No hall allocation available for this exam.' +
-
-                        '</span>' +
-
-                    '</div>' +
-
-                '</div>';
-
-            return;
-
-        }
-
-
-        var allHalls =
-
-            (
-                typeof EM_DATA !== "undefined" &&
-                EM_DATA.halls
-            ) || [];
-
-
-        var studentsPerHall =
-            halls.length > 0
-                ? Math.ceil(
-                    students / halls.length
+        renderStats();
+        renderExamList();
+        renderSelectedExam();
+        renderEmptyDataNotice();
+
+    } catch (error) {
+        console.error("Dashboard loading failed:", error);
+
+        if (examList) {
+            examList.replaceChildren(
+                createText(
+                    "p",
+                    "Unable to load examinations. Please try again."
                 )
-                : 0;
-
-
-        var html = "";
-
-
-        halls.forEach(
-
-            function (hallValue) {
-
-                var hallName =
-                    String(hallValue).trim();
-
-
-                var hallData = null;
-
-
-                for (
-                    var i = 0;
-                    i < allHalls.length;
-                    i++
-                ) {
-
-                    if (
-                        String(
-                            allHalls[i].hallNo
-                        ).trim() === hallName
-                    ) {
-
-                        hallData =
-                            allHalls[i];
-
-                        break;
-
-                    }
-
-                }
-
-
-                var capacity =
-                    hallData
-                        ? num(hallData.rows) *
-                          num(hallData.cols)
-                        : 0;
-
-
-                var seated =
-                    studentsPerHall;
-
-
-                if (
-                    capacity > 0 &&
-                    seated > capacity
-                ) {
-
-                    seated =
-                        capacity;
-
-                }
-
-
-                var percent =
-                    capacity > 0
-                        ? Math.round(
-                            (
-                                seated /
-                                capacity
-                            ) * 100
-                        )
-                        : 0;
-
-
-                if (percent > 100) {
-
-                    percent = 100;
-
-                }
-
-
-                var state =
-                    hallState(percent);
-
-
-                var percentageText =
-                    percent === 0
-                        ? '<span class="empty-text">0%</span>'
-                        : '<span>' +
-                            percent +
-                            '%' +
-                          '</span>';
-
-
-                html +=
-
-                    '<div class="hall-card">' +
-
-                        '<div class="hall-info-row">' +
-
-                            '<span class="hall-title">' +
-
-                                escapeHtml(
-                                    hallName
-                                ) +
-
-                            '</span>' +
-
-
-                            '<div class="hall-meta">' +
-
-                                '<span class="capacity-count">' +
-
-                                    seated +
-                                    ' / ' +
-                                    capacity +
-                                    ' Seats' +
-
-                                '</span>' +
-
-
-                                '<span class="hall-status-badge ' +
-                                    state.badge +
-                                '">' +
-
-                                    '<i class="fa-solid fa-circle"></i>' +
-
-                                    state.label +
-
-                                '</span>' +
-
-                            '</div>' +
-
-                        '</div>' +
-
-
-                        '<div class="progress-bar-wrapper">' +
-
-                            '<div ' +
-
-                                'class="progress-bar ' +
-                                    state.bar +
-                                '"' +
-
-                                'style="width:' +
-                                    percent +
-                                '%;"' +
-
-                            '>' +
-
-                                percentageText +
-
-                            '</div>' +
-
-                        '</div>' +
-
-                    '</div>';
-
-            }
-
+            );
+        }
+
+        showError(
+            "Can't reach the server or load dashboard data. " +
+            "Check that your backend is running."
         );
+    } finally {
+        dashboardLoading = false;
+    }
+}
 
+/* =========================================
+   NORMALIZE API RESPONSES
+========================================= */
 
-        grid.innerHTML =
-            html;
+function extractArray(response) {
+    if (Array.isArray(response)) return response;
 
+    if (!response || typeof response !== "object") return [];
+
+    if (Array.isArray(response.data)) return response.data;
+    if (Array.isArray(response.exams)) return response.exams;
+    if (Array.isArray(response.halls)) return response.halls;
+
+    return [];
+}
+
+function extractObject(response) {
+    if (!response || typeof response !== "object") return {};
+
+    if (
+        response.data &&
+        typeof response.data === "object" &&
+        !Array.isArray(response.data)
+    ) {
+        return response.data;
     }
 
+    return response;
+}
 
-    /* =====================================================
-       HALL STATE
-    ===================================================== */
+function getCount(object, key) {
+    var value = Number(object[key]);
 
-    function hallState(percent) {
+    return Number.isFinite(value) && value >= 0 ? value : 0;
+}
 
-        if (percent >= 100) {
-
-            return {
-
-                badge: "status-full",
-
-                bar: "bar-full",
-
-                label: "Filled"
-
-            };
-
-        }
-
-
-        if (percent >= 50) {
-
-            return {
-
-                badge: "status-occupied",
-
-                bar: "bar-blue",
-
-                label: "Occupied"
-
-            };
-
-        }
-
-
-        if (percent > 0) {
-
-            return {
-
-                badge: "status-available",
-
-                bar: "bar-gold",
-
-                label: "Available"
-
-            };
-
-        }
-
-
-        return {
-
-            badge: "status-empty",
-
-            bar: "bar-empty",
-
-            label: "Empty"
-
-        };
-
-    }
-
-
-    /* =====================================================
-       STATISTICS
-    ===================================================== */
-
-/* =====================================================
+/* =========================================
    STATISTICS
-===================================================== */
+========================================= */
 
-function renderStats(exams) {
+function renderStats() {
+    /*
+     * These IDs are optional. If your HTML still uses
+     * .stat-number elements, the fallback updates them.
+     */
 
-    var numbers =
-        document.querySelectorAll(
-            "#stats .stat-number"
+    setText("stat-exams", examsData.length);
+
+    // This is uploaded student count, not necessarily seated count.
+    setText("stat-students", uploadCounts.students);
+    setText("stat-halls", uploadCounts.halls);
+    setText("stat-subjects", uploadCounts.subjects);
+    setText("stat-invigilators", uploadCounts.invigilators);
+
+    var statNumbers = document.querySelectorAll("#stats .stat-number");
+
+    if (statNumbers.length >= 4) {
+        statNumbers[0].textContent = String(examsData.length);
+        statNumbers[1].textContent = String(uploadCounts.students);
+        statNumbers[2].textContent = String(uploadCounts.halls);
+
+        var conflicts = examsData.reduce(function (total, exam) {
+            return total + (Number(exam.stats?.conflicts) || 0);
+        }, 0);
+
+        var conflictElement = statNumbers[3];
+        var checkIcon = conflictElement.querySelector("i");
+
+        conflictElement.replaceChildren();
+
+        if (checkIcon && conflicts === 0) {
+            conflictElement.appendChild(checkIcon);
+        }
+
+        conflictElement.appendChild(
+            document.createTextNode(String(conflicts))
+        );
+    }
+}
+
+function renderEmptyDataNotice() {
+    var notice = document.getElementById("empty-data-notice");
+
+    if (!notice) return;
+
+    var hasUploadedData =
+        uploadCounts.halls > 0 ||
+        uploadCounts.subjects > 0 ||
+        uploadCounts.students > 0 ||
+        uploadCounts.invigilators > 0;
+
+    notice.hidden = hasUploadedData;
+}
+
+/* =========================================
+   TABS
+========================================= */
+
+function wireTabs() {
+    var upcomingTab = document.getElementById("upcoming-tab");
+    var previousTab = document.getElementById("previous-tab");
+
+    if (upcomingTab) {
+        upcomingTab.addEventListener("click", function () {
+            setCurrentTab("upcoming");
+        });
+    }
+
+    if (previousTab) {
+        previousTab.addEventListener("click", function () {
+            setCurrentTab("previous");
+        });
+    }
+}
+
+function setCurrentTab(tabName) {
+    currentTab = tabName;
+
+    var upcomingTab = document.getElementById("upcoming-tab");
+    var previousTab = document.getElementById("previous-tab");
+
+    if (upcomingTab) {
+        upcomingTab.classList.toggle("active", tabName === "upcoming");
+        upcomingTab.setAttribute(
+            "aria-pressed",
+            String(tabName === "upcoming")
+        );
+    }
+
+    if (previousTab) {
+        previousTab.classList.toggle("active", tabName === "previous");
+        previousTab.setAttribute(
+            "aria-pressed",
+            String(tabName === "previous")
+        );
+    }
+
+    renderExamList();
+}
+
+/* =========================================
+   DATE HELPERS
+========================================= */
+
+function getLocalDateString() {
+    var date = new Date();
+
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, "0");
+    var day = String(date.getDate()).padStart(2, "0");
+
+    return year + "-" + month + "-" + day;
+}
+
+function getExamDate(exam) {
+    return String(exam.date || "").slice(0, 10);
+}
+
+function isPreviousExam(exam) {
+    var date = getExamDate(exam);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return false;
+    }
+
+    return date < getLocalDateString();
+}
+
+function formatExamDate(dateString) {
+    if (!dateString) return "Date not specified";
+
+    var parts = dateString.slice(0, 10).split("-");
+
+    if (parts.length !== 3) return dateString;
+
+    var date = new Date(
+        Number(parts[0]),
+        Number(parts[1]) - 1,
+        Number(parts[2])
+    );
+
+    if (Number.isNaN(date.getTime())) return dateString;
+
+    return date.toLocaleDateString("en-US", {
+        month: "long",
+        day: "2-digit",
+        year: "numeric"
+    });
+}
+
+/* =========================================
+   RENDER EXAMS, GROUPED BY DATE
+========================================= */
+
+function renderExamList() {
+    var examList = document.getElementById("exam-list");
+    if (!examList) return;
+
+    examList.replaceChildren();
+
+    var upcoming = examsData.filter(function (exam) {
+        return !isPreviousExam(exam);
+    });
+
+    var previous = examsData.filter(function (exam) {
+        return isPreviousExam(exam);
+    });
+
+    setText("upcoming-count", upcoming.length);
+    setText("previous-count", previous.length);
+
+    var filteredExams = currentTab === "previous" ? previous : upcoming;
+
+    filteredExams.sort(function (a, b) {
+        return getExamDate(a).localeCompare(getExamDate(b));
+    });
+
+    if (filteredExams.length === 0) {
+        var empty = document.createElement("div");
+        empty.className = "empty-exams";
+
+        var heading = createText(
+            "h3",
+            currentTab === "previous"
+                ? "No previous exams"
+                : "No upcoming exams"
         );
 
+        var description = createText(
+            "p",
+            currentTab === "previous"
+                ? "Previous exam sessions will appear here."
+                : "Create an exam to get started."
+        );
 
-    if (!numbers.length) {
+        empty.append(heading, description);
+
+        if (currentTab === "upcoming") {
+            var link = document.createElement("a");
+            link.href = "createExam.html";
+            link.textContent = "Create Exam";
+            empty.appendChild(link);
+        }
+
+        examList.appendChild(empty);
         return;
     }
 
+    var groupedDates = {};
 
-    /* =================================================
-       ONLY UPCOMING EXAMS
-    ================================================= */
+    filteredExams.forEach(function (exam) {
+        var date = getExamDate(exam) || "unscheduled";
 
-    var upcomingExams =
-        exams.filter(
-            function (exam) {
-
-                return !isPreviousExam(exam);
-
-            }
-        );
-
-
-    /* =================================================
-       1. EXAMS SCHEDULED
-       Only upcoming exams
-    ================================================= */
-
-    var examsScheduled =
-        upcomingExams.length;
-
-
-    /* =================================================
-       2. STUDENTS SEATED
-       Only students of upcoming exams
-    ================================================= */
-
-    var studentsSeated =
-        upcomingExams.reduce(
-
-            function (total, exam) {
-
-                return total +
-                    studentCount(exam);
-
-            },
-
-            0
-
-        );
-
-
-    /* =================================================
-       3. HALLS AVAILABLE
-       Halls assigned to upcoming exams
-
-       We count unique halls so that if the same hall
-       is used by multiple upcoming exams, it is not
-       counted multiple times.
-    ================================================= */
-
-    var uniqueHalls = [];
-
-
-    upcomingExams.forEach(
-
-        function (exam) {
-
-            var halls =
-                examHalls(exam);
-
-
-            halls.forEach(
-
-                function (hall) {
-
-                    var hallName =
-                        String(hall).trim();
-
-
-                    if (
-                        hallName &&
-                        uniqueHalls.indexOf(hallName) === -1
-                    ) {
-
-                        uniqueHalls.push(
-                            hallName
-                        );
-
-                    }
-
-                }
-
-            );
-
+        if (!groupedDates[date]) {
+            groupedDates[date] = [];
         }
 
-    );
+        groupedDates[date].push(exam);
+    });
 
+    Object.keys(groupedDates).sort().forEach(function (date) {
+        var group = document.createElement("section");
+        group.className = "exam-date-group";
 
-    var hallsAvailable =
-        uniqueHalls.length;
+        var dateHeading = document.createElement("div");
+        dateHeading.className = "exam-date-heading";
 
+        var calendarIcon = document.createElement("i");
+        calendarIcon.className = "fa-regular fa-calendar";
 
-    /* =================================================
-       4. TOTAL CONFLICTS
-       Only conflicts of upcoming exams
-    ================================================= */
-
-    var totalConflicts =
-        upcomingExams.reduce(
-
-            function (total, exam) {
-
-                return total +
-                    examConflicts(exam);
-
-            },
-
-            0
-
+        dateHeading.appendChild(calendarIcon);
+        dateHeading.appendChild(
+            document.createTextNode(
+                date === "unscheduled"
+                    ? "Date not specified"
+                    : formatExamDate(date)
+            )
         );
 
+        var grid = document.createElement("div");
+        grid.className = "exam-grid";
 
-    /* =================================================
-       UPDATE DASHBOARD
-    ================================================= */
+        groupedDates[date].forEach(function (exam) {
+            grid.appendChild(createExamCard(exam));
+        });
 
-    setStat(
-        numbers[0],
-        examsScheduled
+        group.append(dateHeading, grid);
+        examList.appendChild(group);
+    });
+}
+
+/* =========================================
+   EXAM CARD
+========================================= */
+
+function createExamCard(exam) {
+    var card = document.createElement("article");
+    card.className = "exam-card";
+
+    var examId = getExamId(exam);
+    var examDate = getExamDate(exam);
+
+    // Highlight the selected exam.
+    card.classList.toggle(
+        "selected",
+        selectedExamId !== null &&
+        String(selectedExamId) === String(examId)
     );
 
+    // Left side: exam information.
+    var main = document.createElement("div");
+    main.className = "exam-card-main";
 
-    setStat(
-        numbers[1],
-        studentsSeated
+    var header = document.createElement("div");
+    header.className = "exam-card-header";
+
+    header.appendChild(
+        createText(
+            "h3",
+            exam.examName || exam.name || "Untitled Examination"
+        )
     );
 
-
-    setStat(
-        numbers[2],
-        hallsAvailable
+    var status = createText(
+        "span",
+        examDate === getLocalDateString()
+            ? "Today"
+            : isPreviousExam(exam)
+                ? "Previous"
+                : "Upcoming"
     );
 
+    status.className = "exam-status";
+    header.appendChild(status);
 
-    setStat(
-        numbers[3],
-        totalConflicts,
-        true
+    main.appendChild(header);
+
+    var subjects = Array.isArray(exam.subjects) ? exam.subjects : [];
+
+    if (subjects.length) {
+        var subjectNames = subjects.map(function (subject) {
+            return typeof subject === "string"
+                ? subject
+                : subject.code || subject.name || "";
+        }).filter(Boolean);
+
+        if (subjectNames.length) {
+            main.appendChild(
+                createText("p", subjectNames.join(", "))
+            );
+        }
+    }
+
+    var details = document.createElement("div");
+    details.className = "exam-details";
+
+    var slotRow = document.createElement("div");
+    slotRow.className = "exam-detail-row";
+
+    slotRow.appendChild(
+        createText("span", "◷ " + (exam.slot || "Time not specified"))
     );
 
+    details.appendChild(slotRow);
+    main.appendChild(details);
+
+    // Right side: actions.
+    var actions = document.createElement("div");
+    actions.className = "exam-card-actions";
+
+    var matrixButton = createButton(
+        "Matrix →",
+        "btn-primary",
+        function () {
+            openExamSeating(examId);
+        }
+    );
+
+    var deleteButton = createButton(
+        "Delete",
+        "btn-danger",
+        function () {
+            deleteExam(examId);
+        }
+    );
+
+    actions.append(matrixButton, deleteButton);
+    card.append(main, actions);
+
+    // Clicking the card selects it and displays its allocation.
+    card.addEventListener("click", function (event) {
+        if (event.target.closest("button, a")) return;
+
+        selectedExamId = examId;
+        renderExamList();
+        renderSelectedExam();
+    });
+
+    return card;
 }
 
 
-    function setStat(
-        element,
-        value,
-        keepIcon
-    ) {
+function createButton(label, className, callback) {
+    var button = document.createElement("button");
 
-        if (!element) {
+    button.type = "button";
+    button.className = className;
+    button.textContent = label;
+    button.addEventListener("click", callback);
 
-            return;
+    return button;
+}
 
-        }
+function getExamId(exam) {
+    return exam.examId ?? exam.id ?? exam._id ?? null;
+}
 
+function getExamStudentCount(exam) {
+    return Number(exam.studentCount ?? exam.studentsCount ?? 0) || 0;
+}
 
-        if (keepIcon) {
+/* =========================================
+   OPEN SEATING PAGE
+========================================= */
 
-            var icon =
-                element.querySelector("i");
-
-
-            element.textContent = "";
-
-
-            if (icon) {
-
-                element.appendChild(icon);
-
-            }
-
-
-            element.appendChild(
-                document.createTextNode(
-                    " " + value
-                )
-            );
-
-        } else {
-
-            element.textContent =
-                String(value);
-
-        }
-
+function openExamSeating(examId) {
+    if (examId === null || examId === undefined || examId === "") {
+        showError("This examination does not have a valid exam ID.");
+        return;
     }
 
+    window.location.href =
+        "seating.html?examId=" + encodeURIComponent(examId);
+}
 
-    /* =====================================================
-       MATRIX BUTTON
-    ===================================================== */
+/* =========================================
+   HALL CAPACITY
+========================================= */
 
-    function openExamMatrix(examId) {
+function renderSelectedExam() {
+    var examName = document.getElementById("selected-exam-name");
+    var examDetails = document.getElementById("selected-exam-details");
+    var capacityGrid = document.getElementById("capacity-grid");
+    var sectionTitle = document.getElementById("hall-section-title");
+    var sectionSubtitle = document.getElementById("hall-section-subtitle");
 
-        var selectedExam =
-            findExam(examId);
+    if (!examName || !examDetails || !capacityGrid) return;
 
+    capacityGrid.replaceChildren();
 
-        if (!selectedExam) {
+    var exam = findExam(selectedExamId);
 
-            return;
+    if (!exam) {
+        examName.textContent = "Select an examination";
+        examDetails.textContent = "Select an exam above to view its hall capacity.";
 
+        if (sectionTitle) {
+            sectionTitle.textContent = "Hall Capacity & Allocation";
         }
 
-
-        try {
-
-            localStorage.setItem(
-
-                CURRENT_KEY,
-
-                JSON.stringify(
-                    selectedExam
-                )
-
-            );
-
-        } catch (e) {
-
-        }
-
-
-        window.location.href =
-
-            SEATING_PAGE +
-            "?examId=" +
-            encodeURIComponent(
-                examId
-            );
-
-    }
-
-
-    /* =====================================================
-       DELETE EXAM
-    ===================================================== */
-
-    function deleteExam(examId) {
-
-        var exams =
-            getExams();
-
-
-        var filtered =
-            exams.filter(
-
-                function (exam, index) {
-
-                    var id =
-                        exam.id != null
-                            ? exam.id
-                            : index;
-
-
-                    return String(id) !==
-                        String(examId);
-
-                }
-
-            );
-
-
-        try {
-
-            localStorage.setItem(
-
-                EXAMS_KEY,
-
-                JSON.stringify(
-                    filtered
-                )
-
-            );
-
-        } catch (e) {
-
-        }
-
-
-        try {
-
-            var current =
-                JSON.parse(
-                    localStorage.getItem(
-                        CURRENT_KEY
-                    )
-                );
-
-
-            if (
-
-                current &&
-
-                String(current.id) ===
-                String(examId)
-
-            ) {
-
-                localStorage.removeItem(
-                    CURRENT_KEY
-                );
-
-            }
-
-        } catch (e) {
-
-        }
-
-
-        if (
-            String(selectedExamId) ===
-            String(examId)
-        ) {
-
-            selectedExamId = null;
-
-            resetSelectedExamHall();
-
-        }
-
-
-        renderAll();
-
-    }
-
-
-    /* =====================================================
-       RESET HALL PANEL
-    ===================================================== */
-
-    function resetSelectedExamHall() {
-
-        var title =
-            document.getElementById(
-                "hall-section-title"
-            );
-
-
-        var subtitle =
-            document.getElementById(
-                "hall-section-subtitle"
-            );
-
-
-        var examName =
-            document.getElementById(
-                "selected-exam-name"
-            );
-
-
-        var examDetails =
-            document.getElementById(
-                "selected-exam-details"
-            );
-
-
-        var grid =
-            document.getElementById(
-                "capacity-grid"
-            );
-
-
-        if (title) {
-
-            title.textContent =
-                "Hall Capacity & Allocation";
-
-        }
-
-
-        if (subtitle) {
-
-            subtitle.textContent =
+        if (sectionSubtitle) {
+            sectionSubtitle.textContent =
                 "Select an exam to view its hall allocation";
-
         }
 
-
-        if (examName) {
-
-            examName.textContent =
-                "No Exam Selected";
-
-        }
-
-
-        if (examDetails) {
-
-            examDetails.textContent =
-                "Select an exam above to view its hall capacity.";
-
-        }
-
-
-        if (grid) {
-
-            grid.innerHTML =
-
-                '<div class="hall-card">' +
-
-                    '<div class="hall-info-row">' +
-
-                        '<span class="hall-title">' +
-
-                            'No Exam Selected' +
-
-                        '</span>' +
-
-                    '</div>' +
-
-                    '<div class="progress-bar-wrapper">' +
-
-                        '<span class="empty-text">' +
-
-                            'Select an exam above.' +
-
-                        '</span>' +
-
-                    '</div>' +
-
-                '</div>';
-
-        }
-
-    }
-
-
-    /* =====================================================
-       RENDER CURRENT TAB
-    ===================================================== */
-
-    function renderCurrentTab() {
-
-        var exams =
-            getExams();
-
-
-        var upcoming =
-            exams.filter(
-
-                function (exam) {
-
-                    return !isPreviousExam(
-                        exam
-                    );
-
-                }
-
-            );
-
-
-        var previous =
-            exams.filter(
-
-                function (exam) {
-
-                    return isPreviousExam(
-                        exam
-                    );
-
-                }
-
-            );
-
-
-        var list =
-            document.getElementById(
-                "exam-list"
-            );
-
-
-        if (currentTab === "upcoming") {
-
-            renderExamList(
-
-                list,
-
-                upcoming,
-
-                "No upcoming exams. Click + New Exam to create one.",
-
-                true
-
-            );
-
-        } else {
-
-            renderExamList(
-
-                list,
-
-                previous,
-
-                "No previous exams yet.",
-
-                false
-
-            );
-
-        }
-
-
-        var upcomingCount =
-            document.getElementById(
-                "upcoming-count"
-            );
-
-
-        var previousCount =
-            document.getElementById(
-                "previous-count"
-            );
-
-
-        if (upcomingCount) {
-
-            upcomingCount.textContent =
-                upcoming.length;
-
-        }
-
-
-        if (previousCount) {
-
-            previousCount.textContent =
-                previous.length;
-
-        }
-
-
-        updateTabs();
-
-
-        if (selectedExamId != null) {
-
-            var selectedExam =
-                findExam(selectedExamId);
-
-
-            if (selectedExam) {
-
-                renderSelectedExamHall(
-                    selectedExam
-                );
-
-            }
-
-        }
-
-    }
-
-
-    /* =====================================================
-       UPDATE TABS
-    ===================================================== */
-
-    function updateTabs() {
-
-        var upcomingTab =
-            document.getElementById(
-                "upcoming-tab"
-            );
-
-
-        var previousTab =
-            document.getElementById(
-                "previous-tab"
-            );
-
-
-        if (upcomingTab) {
-
-            upcomingTab.classList.toggle(
-                "active",
-                currentTab === "upcoming"
-            );
-
-        }
-
-
-        if (previousTab) {
-
-            previousTab.classList.toggle(
-                "active",
-                currentTab === "previous"
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       TAB EVENTS
-    ===================================================== */
-
-    function wireTabs() {
-
-        var upcomingTab =
-            document.getElementById(
-                "upcoming-tab"
-            );
-
-
-        var previousTab =
-            document.getElementById(
-                "previous-tab"
-            );
-
-
-        if (upcomingTab) {
-
-            upcomingTab.addEventListener(
-
-                "click",
-
-                function () {
-
-                    currentTab =
-                        "upcoming";
-
-                    renderCurrentTab();
-
-                }
-
-            );
-
-        }
-
-
-        if (previousTab) {
-
-            previousTab.addEventListener(
-
-                "click",
-
-                function () {
-
-                    currentTab =
-                        "previous";
-
-                    renderCurrentTab();
-
-                }
-
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       CLICK EVENTS
-    ===================================================== */
-
-    function wireExamButtons() {
-
-        document.addEventListener(
-
-            "click",
-
-            function (event) {
-
-
-                /* Matrix */
-
-                var matrixButton =
-                    event.target.closest(
-                        ".matrix-btn"
-                    );
-
-
-                if (matrixButton) {
-
-                    event.preventDefault();
-
-                    event.stopPropagation();
-
-
-                    var id =
-                        matrixButton.getAttribute(
-                            "data-exam-id"
-                        );
-
-
-                    if (id) {
-
-                        openExamMatrix(id);
-
-                    }
-
-
-                    return;
-
-                }
-
-
-                /* Delete */
-
-                var deleteButton =
-                    event.target.closest(
-                        ".delete-exam-btn"
-                    );
-
-
-                if (deleteButton) {
-
-                    event.preventDefault();
-
-                    event.stopPropagation();
-
-
-                    var deleteId =
-                        deleteButton.getAttribute(
-                            "data-exam-id"
-                        );
-
-
-                    var examName =
-                        deleteButton
-                            .closest(".exam-item")
-                            ?.querySelector("strong")
-                            ?.textContent ||
-                        "this exam";
-
-
-                    if (
-
-                        deleteId &&
-
-                        window.confirm(
-
-                            'Delete "' +
-                            examName +
-                            '"?\n\n' +
-                            'Its halls and subjects will be freed.'
-
-                        )
-
-                    ) {
-
-                        deleteExam(
-                            deleteId
-                        );
-
-                    }
-
-
-                    return;
-
-                }
-
-
-                /* Exam card */
-
-                var examCard =
-                    event.target.closest(
-                        ".exam-item"
-                    );
-
-
-                if (examCard) {
-
-                    var examId =
-                        examCard.getAttribute(
-                            "data-exam-id"
-                        );
-
-
-                    if (examId) {
-
-                        selectExam(
-                            examId
-                        );
-
-                    }
-
-                }
-
-            }
-
+        capacityGrid.appendChild(
+            createText("p", "No examination selected.")
         );
 
+        return;
     }
 
+    var assignedHalls = Array.isArray(exam.halls) ? exam.halls : [];
+    var totalStudents = getExamStudentCount(exam);
 
-    /* =====================================================
-       RENDER EVERYTHING
-    ===================================================== */
+    examName.textContent =
+        exam.examName || exam.name || "Untitled Examination";
 
-    function renderAll() {
+    examDetails.textContent =
+        totalStudents + " Students • " + assignedHalls.length + " Halls Assigned";
 
-        var exams =
-            getExams();
+    if (sectionTitle) {
+        sectionTitle.textContent =
+            "Hall Capacity & Allocation — " +
+            (exam.examName || exam.name || "Examination");
+    }
 
+    if (sectionSubtitle) {
+        sectionSubtitle.textContent =
+            "Hall allocation for this particular examination";
+    }
 
-        renderStats(
-            exams
+    if (assignedHalls.length === 0) {
+        capacityGrid.appendChild(
+            createText("p", "No halls assigned to this examination.")
+        );
+        return;
+    }
+
+    var remainingStudents = totalStudents;
+
+    assignedHalls.forEach(function (assignedHall, index) {
+        var hallNumber = typeof assignedHall === "object"
+            ? (assignedHall.hallNo ?? assignedHall.name ?? assignedHall._id)
+            : assignedHall;
+
+        var hallId = typeof assignedHall === "object"
+            ? (assignedHall._id ?? assignedHall.hallId ?? null)
+            : null;
+
+        var hall = hallsData.find(function (item) {
+            var itemId = item._id ?? item.hallId ?? null;
+
+            if (hallId && itemId) {
+                return String(itemId) === String(hallId);
+            }
+
+            return String(item.hallNo) === String(hallNumber);
+        });
+
+        var hallCard = document.createElement("article");
+        hallCard.className = "capacity-card";
+
+        var heading = createText(
+            "h3",
+            hall
+                ? "Block " + (hall.block || "A") + " – Room " +
+                    (hall.hallNo ?? hallNumber)
+                : "Hall " + String(hallNumber ?? "Unknown")
         );
 
+        hallCard.appendChild(heading);
 
-        renderCurrentTab();
+        if (!hall) {
+            hallCard.appendChild(
+                createText("p", "Hall details are unavailable.")
+            );
+            capacityGrid.appendChild(hallCard);
+            return;
+        }
 
+        var rows = Number(hall.rows) || 0;
+        var cols = Number(hall.cols) || 0;
+        var capacity = rows * cols;
 
         /*
-         * If there is no selected exam,
-         * automatically select first exam
+         * Estimate distribution only if backend does not provide
+         * actual per-hall occupied-seat data.
+         * Replace this estimate with real seating allocations
+         * when your seating API exposes them.
          */
 
-        if (selectedExamId == null) {
-
-            var firstExam = null;
-
-
-            var upcoming =
-                exams.filter(
-
-                    function (exam) {
-
-                        return !isPreviousExam(
-                            exam
-                        );
-
-                    }
-
-                );
-
-
-            var previous =
-                exams.filter(
-
-                    function (exam) {
-
-                        return isPreviousExam(
-                            exam
-                        );
-
-                    }
-
-                );
-
-
-            if (currentTab === "upcoming") {
-
-                firstExam =
-                    sortByDate(
-                        upcoming,
-                        true
-                    )[0];
-
-            } else {
-
-                firstExam =
-                    sortByDate(
-                        previous,
-                        false
-                    )[0];
-
-            }
-
-
-            if (firstExam) {
-
-                selectedExamId =
-                    firstExam.id != null
-                        ? firstExam.id
-                        : 0;
-
-
-                renderCurrentTab();
-
-
-                renderSelectedExamHall(
-                    firstExam
-                );
-
-            } else {
-
-                resetSelectedExamHall();
-
-            }
-
-        }
-
-    }
-
-
-    /* =====================================================
-       INITIALIZATION
-    ===================================================== */
-
-    function init() {
-
-        wireTabs();
-
-        wireExamButtons();
-
-
-        if (
-            typeof loadExamData ===
-            "function"
-        ) {
-
-            loadExamData(
-
-                renderAll
-
-            );
-
-        } else {
-
-            renderAll();
-
-        }
-
-    }
-
-
-    /* =====================================================
-       DOM READY
-    ===================================================== */
-
-    if (
-
-        document.readyState ===
-        "loading"
-
-    ) {
-
-        document.addEventListener(
-
-            "DOMContentLoaded",
-
-            init
-
+        var occupied = Number(
+            assignedHall.studentCount ??
+            assignedHall.occupiedSeats ??
+            assignedHall.studentsCount
         );
 
-    } else {
+        if (!Number.isFinite(occupied) || occupied < 0) {
+            var hallsLeft = assignedHalls.length - index;
+            occupied = hallsLeft > 0
+                ? Math.min(remainingStudents, capacity)
+                : 0;
+        }
 
-        init();
+        occupied = Math.max(0, Math.min(occupied, capacity));
+        remainingStudents = Math.max(0, remainingStudents - occupied);
 
+        var percentage = capacity > 0
+            ? Math.min(100, Math.round((occupied / capacity) * 100))
+            : 0;
+
+        var statsLine = document.createElement("div");
+        statsLine.className = "capacity-progress-label";
+
+        var seatCount = createText(
+            "span",
+            occupied + " / " + capacity + " Seats"
+        );
+
+        var occupiedBadge = createText(
+            "span",
+            occupied >= capacity && capacity > 0
+                ? "Full"
+                : "Occupied"
+        );
+
+        occupiedBadge.className = "capacity-occupied";
+
+        statsLine.append(seatCount, occupiedBadge);
+
+        var progress = document.createElement("div");
+        progress.className = "capacity-progress";
+
+        var track = document.createElement("div");
+        track.className = "capacity-progress-track";
+
+        var fill = document.createElement("div");
+        fill.className = "capacity-progress-fill";
+        fill.style.width = percentage + "%";
+        fill.setAttribute("role", "progressbar");
+        fill.setAttribute("aria-valuemin", "0");
+        fill.setAttribute("aria-valuemax", "100");
+        fill.setAttribute("aria-valuenow", String(percentage));
+        fill.setAttribute(
+            "aria-label",
+            "Hall utilization " + percentage + "%"
+        );
+
+        track.appendChild(fill);
+
+        var percentageLabel = createText("span", percentage + "%");
+        percentageLabel.style.cssText =
+            "display:block;margin-top:5px;text-align:right;" +
+            "font-size:9px;font-weight:800;color:#3478e5;";
+
+        progress.append(statsLine, track, percentageLabel);
+        hallCard.appendChild(progress);
+
+        capacityGrid.appendChild(hallCard);
+    });
+}
+
+function findExam(examId) {
+    if (examId === null || examId === undefined) return null;
+
+    return examsData.find(function (exam) {
+        return String(getExamId(exam)) === String(examId);
+    }) || null;
+}
+
+/* =========================================
+   DELETE EXAM
+========================================= */
+
+async function deleteExam(examId) {
+    if (examId === null || examId === undefined || examId === "") {
+        showError("Cannot delete this exam because its ID is missing.");
+        return;
     }
 
-})();
+    if (!window.confirm("Are you sure you want to delete this examination?")) {
+        return;
+    }
+
+    showError("");
+
+    try {
+        await api("DELETE", "/exams/" + encodeURIComponent(examId));
+
+        examsData = examsData.filter(function (exam) {
+            return String(getExamId(exam)) !== String(examId);
+        });
+
+        if (String(selectedExamId) === String(examId)) {
+            selectedExamId = null;
+        }
+
+        renderStats();
+        renderExamList();
+        renderSelectedExam();
+
+    } catch (error) {
+        console.error("Exam deletion failed:", error);
+        showError("Unable to delete the exam. Please try again.");
+    }
+}
+
+/* =========================================
+   HEADER BUTTONS
+========================================= */
+
+function wireHeaderButtons() {
+    var timetableButton = document.getElementById("view-timetable-btn");
+    var newExamButton = document.getElementById("new-exam-btn");
+
+    if (timetableButton) {
+        timetableButton.addEventListener("click", function () {
+            window.location.href = "timetable.html";
+        });
+    }
+
+    if (newExamButton) {
+        newExamButton.addEventListener("click", function () {
+            window.location.href = "createExam.html";
+        });
+    }
+}
+
+/* =========================================
+   COMMON HELPERS
+========================================= */
+
+function setText(id, value) {
+    var element = document.getElementById(id);
+
+    if (element) {
+        element.textContent = String(value);
+    }
+}
+
+function createText(tagName, value) {
+    var element = document.createElement(tagName);
+    element.textContent = String(value);
+    return element;
+}
+
+function showError(message) {
+    var errorElement = document.getElementById("dashboard-error");
+
+    if (!errorElement) {
+        if (message) console.error(message);
+        return;
+    }
+
+    errorElement.textContent = message;
+    errorElement.hidden = !message;
+}
+
