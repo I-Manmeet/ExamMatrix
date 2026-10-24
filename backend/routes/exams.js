@@ -8,7 +8,7 @@ const { requireLogin, requireRole } = require("../middleware/auth");
 const { AppError } = require("../middleware/errorHandler");
 const { activity } = require("../utils/events");
 const { nextId } = require("../utils/idCounter");
-const { validateExam } = require("../utils/validateExam");
+const { validateExam, normalizeSlot, isRealDate } = require("../utils/validateExam");
 const { solveSeating, freeSeats } = require("../utils/seating");
 const clash = require("../utils/clashCheck");
 
@@ -126,6 +126,58 @@ router.get("/", async (req, res) => {
     .sort({ date: 1, slot: 1, examId: 1 });
   res.json({ data: exams });
 });
+
+
+// GET /api/exams/options?date=2026-11-02&slot=09:00-11:00
+// → everything the Create Exam page needs to grey out subjects and halls
+router.get("/options", async (req, res) => {
+  const university = req.user.university;
+  const date = String(req.query.date || "").trim();
+  const slot = normalizeSlot(String(req.query.slot || ""));
+  if (!isRealDate(date) || !slot) {
+    throw new AppError(400, "Give a valid date and slot, e.g. ?date=2026-11-02&slot=09:00-11:00");
+  }
+
+  const [subjects, halls, students, allExams, sameDay] = await Promise.all([
+    Subject.find({ university: university }).select("code name dept").sort({ code: 1 }).lean(),
+    Hall.find({ university: university }).select("hallNo rows cols").sort({ hallNo: 1 }).lean(),
+    Student.find({ university: university }).select("roll subjects").lean(),
+    Exam.find({ university: university }).select("examId examName subjects").lean(),
+    Exam.find({ university: university, date: date }).select("examId examName slot seatMap").lean()
+  ]);
+
+  const codes = subjects.map(function (s) { return s.code; });
+  const overlapping = clash.overlappingExams(sameDay, slot);
+  const scheduled = clash.scheduledSubjects(allExams, codes);
+  const busy = clash.seatedRolls(overlapping);
+  const booked = clash.bookedSeats(overlapping, halls.map(function (h) { return h.hallNo; }));
+
+  res.json({
+    data: {
+      date: date,
+      slot: slot,
+      subjects: subjects.map(function (s) {
+        const takers = students.filter(function (st) { return st.subjects.includes(s.code); });
+        return {
+          code: s.code,
+          name: s.name,
+          dept: s.dept,
+          students: takers.length,
+          scheduledIn: scheduled.get(s.code) || null,                       // already examined → locked
+          busyNow: takers.filter(function (st) { return busy.has(st.roll); })
+            .map(function (st) { return st.roll; }).sort()                   // already sitting an exam now
+        };
+      }),
+      halls: halls.map(function (h) {
+        const seats = h.rows * h.cols;
+        const free = freeSeats([h], booked);
+        return { hallNo: h.hallNo, rows: h.rows, cols: h.cols, seats: seats, booked: seats - free, free: free };
+      }),
+      shared: clash.sharedStudents(students, codes)   // "CS301|MA201" → rolls who take both
+    }
+  });
+});
+
 
 
 // GET /api/exams/EXM-0001-0001  → one exam with its seat map
