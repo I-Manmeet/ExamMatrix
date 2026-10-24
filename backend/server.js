@@ -31,10 +31,16 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/halls", require("./routes/halls"));
 app.use("/api/exams", require("./routes/exams"));
 
+app.use("/api/invigilators", require("./routes/invigilators"));
+
+
+
+
 // Unknown API routes
 app.use("/api", (req, res, next) => {
   next(new AppError(404, "Route not found"));
 });
+
 
 // Error handler (must stay last)
 app.use(errorHandler);
