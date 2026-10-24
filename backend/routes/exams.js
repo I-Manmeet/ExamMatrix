@@ -141,7 +141,7 @@ router.get("/options", async (req, res) => {
   const [subjects, halls, students, allExams, sameDay] = await Promise.all([
     Subject.find({ university: university }).select("code name dept").sort({ code: 1 }).lean(),
     Hall.find({ university: university }).select("hallNo rows cols").sort({ hallNo: 1 }).lean(),
-    Student.find({ university: university }).select("roll subjects").lean(),
+    Student.find({ university: university }).select("roll name subjects").sort({ roll: 1 }).lean(),
     Exam.find({ university: university }).select("examId examName subjects").lean(),
     Exam.find({ university: university, date: date }).select("examId examName slot seatMap").lean()
   ]);
@@ -173,7 +173,10 @@ router.get("/options", async (req, res) => {
         const free = freeSeats([h], booked);
         return { hallNo: h.hallNo, rows: h.rows, cols: h.cols, seats: seats, booked: seats - free, free: free };
       }),
-      shared: clash.sharedStudents(students, codes)   // "CS301|MA201" → rolls who take both
+      shared: clash.sharedStudents(students, codes),  // "CS301|MA201" → rolls who take both
+      students: students.map(function (s) {
+        return { roll: s.roll, name: s.name || "", subjects: s.subjects || [] };
+      })   
     }
   });
 });
