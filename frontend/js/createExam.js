@@ -204,6 +204,7 @@ function refreshAll() {
   readPicks();
   refreshMatchedTable();
   applyClashLocks();
+  updateStatusBar();
 }
 
 /* clear all picked subjects and halls, then reset the UI */
@@ -337,6 +338,89 @@ function clearClashInfo() {
   infoEl.className = "clashInfo clashInfo--idle";
   infoEl.innerHTML = "<span>Hover a locked subject to see which students clash.</span>";
 }
+
+/* -----------------------------------------------------------
+   STATUS BAR
+   Quick seat count here; when seats are enough, the server
+   runs every real check (POST /api/exams/check, nothing saved)
+   and only then the Generate button turns on.
+----------------------------------------------------------- */
+let checkTimer = null;
+let checkRequest = 0;
+
+function setStatus(kind, text, canGenerate) {
+  document.getElementById("statusMsg").className = "statusMsg " + kind;
+  document.getElementById("statusText").textContent = text;
+  document.getElementById("generateBtn").disabled = !canGenerate;
+}
+
+function freeSeatsInPickedHalls() {
+  return examOptions.halls
+    .filter(function (h) { return pickedHalls.indexOf(h.hallNo) !== -1; })
+    .reduce(function (sum, h) { return sum + h.free; }, 0);
+}
+
+function examBody() {
+  return {
+    examName: document.getElementById("examName").value,
+    date: document.getElementById("examDate").value,
+    slot: document.getElementById("examSlot").value,
+    subjects: pickedCourses,
+    halls: pickedHalls
+  };
+}
+
+function updateStatusBar() {
+  clearTimeout(checkTimer);
+  checkRequest++;   // forget any check that is still running
+
+  if (!examOptions) {
+    setStatus("neutral", "Loading data…", false);
+    return;
+  }
+
+  let studentCount = getMatchedStudents().length;
+
+  if (pickedCourses.length === 0 && pickedHalls.length === 0) {
+    setStatus("neutral", "Pick subjects and halls to begin.", false);
+    return;
+  }
+  if (pickedCourses.length === 0) {
+    setStatus("neutral", "Pick at least one subject.", false);
+    return;
+  }
+  if (pickedHalls.length === 0) {
+    setStatus("neutral", studentCount + " students selected · Pick at least one hall.", false);
+    return;
+  }
+
+  let totalSeats = freeSeatsInPickedHalls();
+  if (totalSeats < studentCount) {
+    let shortage = studentCount - totalSeats;
+    setStatus("bad", totalSeats + " seats available · " + studentCount + " students selected · " +
+      shortage + " more seat" + (shortage === 1 ? "" : "s") + " required.", false);
+    return;
+  }
+
+  // seats are enough on paper: ask the server (waits 0.4 s so fast clicking sends one request)
+  setStatus("neutral", totalSeats + " seats available · " + studentCount + " students selected · Checking…", false);
+  let thisCheck = checkRequest;
+  checkTimer = setTimeout(function () {
+    api("POST", "/exams/check", examBody())
+      .then(function (data) {
+        if (thisCheck !== checkRequest) { return; }
+        setStatus("good", data.freeSeats + " seats available · " + data.students + " students selected · " +
+          data.halls.length + " hall(s) needed · Ready to generate.", true);
+      })
+      .catch(function (err) {
+        if (thisCheck !== checkRequest) { return; }
+        setStatus("bad", err.message, false);
+      });
+  }, 400);
+}
+
+// a changed exam name can make the check pass or fail
+document.getElementById("examName").addEventListener("input", updateStatusBar);
 
 
 
