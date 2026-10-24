@@ -29,7 +29,10 @@ app.get("/api/health", (req, res) => {
 app.use("/api/universities", require("./routes/universities"));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/halls", require("./routes/halls"));
+app.use("/api/exams/:examId/duties", require("./routes/duties"));
 app.use("/api/exams", require("./routes/exams"));
+
+
 
 app.use("/api/invigilators", require("./routes/invigilators"));
 app.use("/api/uploads", require("./routes/uploads"));
