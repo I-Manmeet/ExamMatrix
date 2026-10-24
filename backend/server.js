@@ -29,6 +29,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/universities", require("./routes/universities"));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/halls", require("./routes/halls"));
+app.use("/api/exams", require("./routes/exams"));
 
 // Unknown API routes
 app.use("/api", (req, res, next) => {
