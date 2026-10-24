@@ -26,7 +26,7 @@ const hallSchema = new mongoose.Schema(
       max: [30, "Columns can be at most 30"]
     }
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
 
 // Hall number unique within each university

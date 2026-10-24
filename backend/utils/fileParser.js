@@ -74,4 +74,5 @@ async function parseFile(buffer, filename) {
   return rows.map(normalizeRow);
 }
 
+
 module.exports = { parseFile, normalizeHeader };
