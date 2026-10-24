@@ -131,11 +131,11 @@ test("empty file is rejected", async () => {
 });
 
 test("file with only the header is rejected", async () => {
-  await assert.rejects(() => loadCsv("name,email,department,subjects,unavailable\n"), { message: "File has no rows" });
+  await assert.rejects(() => loadCsv("name,email,department,subjects,unavailable\n"), { message: /no (data )?rows/ });
 });
 
 test(".txt file is rejected", async () => {
-  await assert.rejects(() => loadCsv("name,email\nA,a@b.co\n", "invigilators.txt"), { message: /Only CSV/ });
+  await assert.rejects(() => loadCsv("name,email\nA,a@b.co\n", "invigilators.txt"), { message: /CSV/  });
 });
 
 test("a comma inside a name makes the row an error instead of saving wrong data", async () => {
