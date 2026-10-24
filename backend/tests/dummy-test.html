@@ -1,0 +1,424 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExamMatrix - Hall Management</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 30px 15px;
+      color: #1e293b;
+    }
+
+    .container { max-width: 1000px; margin: auto; }
+    h1 { text-align: center; color: #1d4ed8; }
+
+    .card {
+      background: white;
+      padding: 25px;
+      margin: 20px 0;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px #00000010;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px;
+      margin-top: 6px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+
+    .row {
+      display: flex;
+      gap: 15px;
+    }
+
+    .row > div { flex: 1; }
+
+    button {
+      padding: 10px 14px;
+      margin: 8px 5px 0 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+    }
+
+    button:hover { opacity: 0.85; }
+    .delete-btn { background: #dc2626; }
+    .edit-btn { background: #d97706; }
+    .secondary-btn { background: #475569; }
+
+    #message {
+      margin-top: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    .success { color: #15803d; }
+    .error { color: #dc2626; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 8px;
+      text-align: left;
+    }
+
+    th { background: #eff6ff; }
+
+    @media (max-width: 600px) {
+      .row { flex-direction: column; gap: 0; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <h1>ExamMatrix</h1>
+  <p style="text-align:center">Hall Management - CRUD Operations</p>
+
+  <div class="card">
+    <h2 id="formTitle">Add New Hall</h2>
+
+    <form id="hallForm">
+      <label for="university">University ID</label>
+      <input id="university" value="UNI-0001" required>
+
+      <label for="hallNo">Hall Number</label>
+      <input id="hallNo" placeholder="Example: HALL-A" required>
+
+      <div class="row">
+        <div>
+          <label for="rows">Rows (1-30)</label>
+          <input id="rows" type="number" min="1" max="30"
+                 value="5" required>
+        </div>
+
+        <div>
+          <label for="cols">Columns (1-30)</label>
+          <input id="cols" type="number" min="1" max="30"
+                 value="6" required>
+        </div>
+      </div>
+
+      <p>Seat Capacity: <strong id="capacity">30</strong></p>
+
+      <button type="submit" id="submitBtn">Add Hall</button>
+      <button type="button" id="cancelBtn"
+              class="secondary-btn" hidden>
+        Cancel Edit
+      </button>
+
+      <p id="message" role="status"></p>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Saved Halls</h2>
+
+    <label for="filterUniversity">Filter by University ID</label>
+    <input id="filterUniversity" placeholder="Example: UNI-0001">
+
+    <button type="button" id="refreshBtn">Refresh Halls</button>
+    <button type="button" id="filterBtn">Apply Filter</button>
+    <button type="button" id="clearFilterBtn"
+            class="secondary-btn">Show All</button>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>University</th>
+            <th>Hall No.</th>
+            <th>Rows</th>
+            <th>Columns</th>
+            <th>Capacity</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="hallTable">
+          <tr><td colspan="6">Click Refresh Halls to load records.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "http://localhost:5000/api/Hall";
+
+  const form = document.getElementById("hallForm");
+  const message = document.getElementById("message");
+  const universityInput = document.getElementById("university");
+  const hallNoInput = document.getElementById("hallNo");
+  const rowsInput = document.getElementById("rows");
+  const colsInput = document.getElementById("cols");
+  const table = document.getElementById("hallTable");
+
+  let editingId = null;
+
+  function showMessage(text, isError = false) {
+    message.textContent = text;
+    message.className = isError ? "error" : "success";
+  }
+
+  function updateCapacity() {
+    document.getElementById("capacity").textContent =
+      (Number(rowsInput.value) || 0) *
+      (Number(colsInput.value) || 0);
+  }
+
+  rowsInput.addEventListener("input", updateCapacity);
+  colsInput.addEventListener("input", updateCapacity);
+
+  // Safely read JSON responses, including server errors.
+  async function apiRequest(url, options = {}) {
+    const response = await fetch(url, options);
+    const text = await response.text();
+
+    let result = {};
+    try {
+      result = text ? JSON.parse(text) : {};
+    } catch {
+      throw new Error("Server returned an invalid response.");
+    }
+
+    if (!response.ok) {
+      throw new Error(result.message || `Request failed: ${response.status}`);
+    }
+
+    return result;
+  }
+
+  function resetForm() {
+    editingId = null;
+    form.reset();
+
+    universityInput.value = "UNI-0001";
+    rowsInput.value = 5;
+    colsInput.value = 6;
+
+    document.getElementById("formTitle").textContent = "Add New Hall";
+    document.getElementById("submitBtn").textContent = "Add Hall";
+    document.getElementById("cancelBtn").hidden = true;
+
+    updateCapacity();
+  }
+
+  document.getElementById("cancelBtn").addEventListener("click", () => {
+    resetForm();
+    showMessage("Edit cancelled.");
+  });
+
+  // CREATE and UPDATE
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const hallData = {
+      university: universityInput.value.trim(),
+      hallNo: hallNoInput.value.trim(),
+      rows: Number(rowsInput.value),
+      cols: Number(colsInput.value)
+    };
+
+    if (!hallData.university || !hallData.hallNo) {
+      showMessage("University ID and hall number are required.", true);
+      return;
+    }
+
+    if (
+      !Number.isInteger(hallData.rows) ||
+      hallData.rows < 1 || hallData.rows > 30 ||
+      !Number.isInteger(hallData.cols) ||
+      hallData.cols < 1 || hallData.cols > 30
+    ) {
+      showMessage("Rows and columns must be between 1 and 30.", true);
+      return;
+    }
+
+    try {
+      const isEditing = Boolean(editingId);
+
+      const result = await apiRequest(
+        isEditing ? `${API_URL}/${editingId}` : API_URL,
+        {
+          method: isEditing ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(hallData)
+        }
+      );
+
+      showMessage(
+        result.message || (isEditing
+          ? "Hall updated successfully."
+          : "Hall created successfully.")
+      );
+
+      resetForm();
+      await loadHalls();
+
+    } catch (error) {
+      showMessage(error.message, true);
+    }
+  });
+
+  // READ all halls or filter by university
+  async function loadHalls() {
+    table.innerHTML =
+      '<tr><td colspan="6">Loading...</td></tr>';
+
+    const filter = document.getElementById("filterUniversity")
+      .value.trim();
+
+    const url = filter
+      ? `${API_URL}?university=${encodeURIComponent(filter)}`
+      : API_URL;
+
+    try {
+      const result = await apiRequest(url);
+      const halls = Array.isArray(result)
+        ? result
+        : (result.halls || []);
+
+      table.innerHTML = "";
+
+      if (halls.length === 0) {
+        table.innerHTML =
+          '<tr><td colspan="6">No halls found.</td></tr>';
+        return;
+      }
+
+      halls.forEach((hall) => {
+        const row = document.createElement("tr");
+
+        const values = [
+          hall.university,
+          hall.hallNo,
+          hall.rows,
+          hall.cols,
+          hall.capacity ?? (Number(hall.rows) * Number(hall.cols))
+        ];
+
+        values.forEach((value) => {
+          const cell = document.createElement("td");
+          cell.textContent = value ?? "";
+          row.appendChild(cell);
+        });
+
+        const actions = document.createElement("td");
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.className = "edit-btn";
+        editBtn.addEventListener("click", () => editHall(hall));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "delete-btn";
+        deleteBtn.addEventListener("click", () => deleteHall(hall));
+
+        actions.append(editBtn, deleteBtn);
+        row.appendChild(actions);
+        table.appendChild(row);
+      });
+
+    } catch (error) {
+      table.innerHTML =
+        '<tr><td colspan="6">Unable to load halls.</td></tr>';
+      showMessage(error.message, true);
+    }
+  }
+
+  // EDIT: Load selected hall into the form
+  function editHall(hall) {
+    if (!hall._id) {
+      showMessage("Hall ID is missing from the API response.", true);
+      return;
+    }
+
+    editingId = hall._id;
+
+    universityInput.value = hall.university ?? "";
+    hallNoInput.value = hall.hallNo ?? "";
+    rowsInput.value = hall.rows ?? 1;
+    colsInput.value = hall.cols ?? 1;
+
+    document.getElementById("formTitle").textContent = "Edit Hall";
+    document.getElementById("submitBtn").textContent = "Save Changes";
+    document.getElementById("cancelBtn").hidden = false;
+
+    updateCapacity();
+    showMessage("Edit hall details and click Save Changes.");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // DELETE: Remove selected hall
+  async function deleteHall(hall) {
+    if (!hall._id) {
+      showMessage("Hall ID is missing from the API response.", true);
+      return;
+    }
+
+    const confirmed = confirm(
+      `Delete hall ${hall.hallNo} for ${hall.university}?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const result = await apiRequest(`${API_URL}/${hall._id}`, {
+        method: "DELETE"
+      });
+
+      if (editingId === hall._id) resetForm();
+
+      showMessage(result.message || "Hall deleted successfully.");
+      await loadHalls();
+
+    } catch (error) {
+      showMessage(error.message, true);
+    }
+  }
+
+  document.getElementById("refreshBtn")
+    .addEventListener("click", loadHalls);
+
+  document.getElementById("filterBtn")
+    .addEventListener("click", loadHalls);
+
+  document.getElementById("clearFilterBtn")
+    .addEventListener("click", () => {
+      document.getElementById("filterUniversity").value = "";
+      loadHalls();
+    });
+
+  // Load saved records when page opens
+  loadHalls();
+</script>
+</body>
+</html>

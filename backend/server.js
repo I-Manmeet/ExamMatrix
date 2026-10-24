@@ -1,29 +1,38 @@
+
 require("dotenv").config();
+
 const http = require("http");
 const express = require("express");
 const cors = require("cors");
+
 const { connectDB } = require("./config/db");
 const { AppError, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
-app.use(cors());          // lets the frontend call the backend
-app.use(express.json());  // reads JSON from requests
+// Middleware
+app.use(cors({
+  origin: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.use(express.json());
 
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ data: "ok" });
 });
 
-// Routes get added here later, e.g.
-// app.use("/api/auth", require("./routes/auth"));
+// Hall routes
+app.use("/api/Hall", require("./routes/Hall"));
 
-// Unknown /api paths
+// Unknown API routes
 app.use("/api", (req, res, next) => {
   next(new AppError(404, "Route not found"));
 });
 
-// Must be last
+// Error handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
@@ -31,7 +40,9 @@ const server = http.createServer(app);
 
 connectDB()
   .then(() => {
-    server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+    server.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("DB connection failed:", err.message);
