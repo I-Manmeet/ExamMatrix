@@ -1,116 +1,17 @@
-
+/* =========================================================
+   CREATE EXAM — js/createExam.js
+   Needs config.js, api.js and app-shell.js loaded first.
+   Subjects, halls and students come from the server
+   (GET /api/exams/options) for the picked date + slot.
+   The server runs every clash and seat check again when the
+   exam is saved, so nothing on this page can be skipped.
+========================================================= */
 
 /* shared picked-state (all sections read/write these) */
+let examOptions = null;   // last reply from /api/exams/options
 let pickedCourses = [];
 let pickedHalls = [];
-
-/* -----------------------------------------------------------
-   ALREADY-CONDUCTED COURSES
-   Reads em_exams (saved exams) and returns the set of course
-   codes already scheduled — so a course can't be conducted twice.
------------------------------------------------------------ */
-function getUsedCourses() {
-  let used = {};
-  let emExams = (typeof getMyExams === "function") ? getMyExams() : [];
-
-
-  for (let i = 0; i < emExams.length; i++) {
-    let courses = emExams[i].pickedCourses || [];
-    for (let c = 0; c < courses.length; c++) {
-      used[courses[c]] = true;
-    }
-  }
-  return used;
-}
-/* -----------------------------------------------------------
-   HALL BOOKINGS FOR A DATE + SLOT
-   Looks at all saved exams (em_exams) that happen on the SAME
-   date AND slot, and adds up how many students each hall already
-   holds. Halls are only "busy" relative to a specific date+slot —
-   a different day or slot leaves them free.
-
-   Returns: { hallNo: seatsUsed, ... }
-   e.g. { "Hall 1": 40, "Hall 3": 18 }
------------------------------------------------------------ */
-function getHallBookings(date, slot) {
-  let bookings = {};                 // hallNo -> seats already used
-    let emExams = (typeof getMyExams === "function") ? getMyExams() : [];
-
-
-  for (let i = 0; i < emExams.length; i++) {
-    let ex = emExams[i];
-
-    // only exams in the SAME date + slot compete for halls
-    if (ex.date !== date || ex.slot !== slot) { continue; }
-
-    let halls = ex.pickedHalls || [];
-    let studentCount = (ex.students || []).length;
-
-    // spread that exam's students evenly across its halls
-    let perHall = halls.length ? Math.ceil(studentCount / halls.length) : 0;
-
-    for (let h = 0; h < halls.length; h++) {
-      let hallNo = halls[h];
-      bookings[hallNo] = (bookings[hallNo] || 0) + perHall;
-    }
-  }
-  return bookings;
-}
-/* total FREE seats across the picked halls, for the picked date+slot.
-   Uses getHallBookings so already-booked seats don't get counted twice. */
-function getAvailableSeats() {
-  let date = document.getElementById("examDate").value;
-  let slot = document.getElementById("examSlot").value;
-  let bookings = getHallBookings(date, slot);
-
-  let free = 0;
-  for (let i = 0; i < pickedHalls.length; i++) {
-    for (let h = 0; h < EM_DATA.halls.length; h++) {
-      let hall = EM_DATA.halls[h];
-      if (hall.hallNo === pickedHalls[i]) {
-        let seats = hall.rows * hall.cols;
-        let used  = bookings[hall.hallNo] || 0;
-        let open  = seats - used;
-        if (open > 0) { free += open; }   // only count seats still open
-        break;
-      }
-    }
-  }
-  return free;
-}
-
-
-/* -----------------------------------------------------------
-   LOCK already-scheduled courses in the picker.
-   A course that appears in any saved exam (em_exams) cannot be
-   scheduled again — grey it out and disable its checkbox.
------------------------------------------------------------ */
-function lockUsedCourses() {
-  let used = getUsedCourses();
-  let rows = document.querySelectorAll('#subjectList .pickRow');
-
-  for (let i = 0; i < rows.length; i++) {
-    let row = rows[i];
-    let course = row.dataset.course;
-
-    if (used[course]) {
-      let box = row.querySelector('input');
-      row.classList.add('locked');
-      box.disabled = true;
-      box.checked = false;
-
-      let right = row.querySelector('.pickRight');
-      if (right) {
-        right.className = 'pickLock';
-        right.textContent = '✓ already conducted';
-      }
-      row.setAttribute('aria-disabled', 'true');
-      row.setAttribute('aria-label', course + ' has already been scheduled and cannot be conducted again.');
-    }
-  }
-}
-
-
+let optionsRequest = 0;   // when the date/slot changes fast, only the newest reply is used
 
 
 /* colour per course (simple palette) */
@@ -123,200 +24,153 @@ function colorFor(code) {
   return courseColorMap[code];
 }
 
-/* how many students take a given course */
-function countStudentsForCourse(courseCode) {
-  let n = 0;
-  for (let i = 0; i < EM_DATA.students.length; i++) {
-    if (EM_DATA.students[i].subjects.indexOf(courseCode) !== -1) { n++; }
-  }
-  return n;
+/* names come from uploads, so escape them before they go into HTML */
+function escapeHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-/* render the subject checkboxes from subjects.json */
+/* today's date in India as YYYY-MM-DD (same rule as the server) */
+function todayInIndia() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+}
+
+function setLoadInfo(text) {
+  document.getElementById("loadInfo").textContent = text;
+}
+
+
+/* -----------------------------------------------------------
+   LOAD what's free for the picked date + slot
+----------------------------------------------------------- */
+function loadOptions() {
+  let date = document.getElementById("examDate").value;
+  let slot = document.getElementById("examSlot").value;
+  if (!date) {
+    setLoadInfo("Pick a date to see subjects and halls.");
+    return;
+  }
+
+  let thisRequest = ++optionsRequest;
+  setLoadInfo("Loading data…");
+
+  api("GET", "/exams/options?date=" + encodeURIComponent(date) + "&slot=" + encodeURIComponent(slot))
+    .then(function (data) {
+      if (thisRequest !== optionsRequest) { return; }   // an older reply came back late
+      examOptions = data;
+      setLoadInfo("✓ " + data.subjects.length + " subjects · " + data.halls.length + " halls · " +
+        data.students.length + " students loaded");
+      renderSubjectPickers();
+      renderHallPickers();
+      onPickChange();
+    })
+    .catch(function (err) {
+      if (thisRequest !== optionsRequest) { return; }
+      setLoadInfo("⚠ " + err.message);
+    });
+}
+
+/* when the date or slot changes, what's booked changes too */
+function onDateTimeChange() {
+  loadOptions();
+}
+
+
+/* -----------------------------------------------------------
+   PICKERS (ticks are kept when the date/slot changes)
+----------------------------------------------------------- */
 function renderSubjectPickers() {
   let list = document.getElementById("subjectList");
-  let html = "";
-
-  for (let i = 0; i < EM_DATA.subjects.length; i++) {
-    let subj = EM_DATA.subjects[i];
-    let count = countStudentsForCourse(subj.code);
-
-    html +=
-      '<label class="pickRow" data-course="' + subj.code + '">' +
-      '<input type="checkbox" onchange="onPickChange()">' +
-      '<span class="pickSwatch" style="background:' + colorFor(subj.code) + '"></span>' +
-      '<span><span class="pickMain">' + subj.code + '</span> ' +
-      '<span class="pickSub">' + subj.name + '</span></span>' +
-      '<span class="pickRight">' + count + ' students</span>' +
-      '</label>';
+  if (!examOptions.subjects.length) {
+    list.innerHTML = '<p class="emptyHint">No subjects yet. Add subjects first.</p>';
+    return;
   }
+
+  let html = "";
+  examOptions.subjects.forEach(function (subj) {
+    let checked = pickedCourses.indexOf(subj.code) !== -1 ? " checked" : "";
+    html +=
+      '<label class="pickRow" data-course="' + escapeHtml(subj.code) + '">' +
+      '<input type="checkbox" onchange="onPickChange()"' + checked + '>' +
+      '<span class="pickSwatch" style="background:' + colorFor(subj.code) + '"></span>' +
+      '<span><span class="pickMain">' + escapeHtml(subj.code) + '</span> ' +
+      '<span class="pickSub">' + escapeHtml(subj.name) + '</span></span>' +
+      '<span class="pickRight">' + subj.students + ' students</span>' +
+      '</label>';
+  });
   list.innerHTML = html;
 }
 
-
-/* when the exam's date or slot changes, hall availability changes too,
-   so re-render the hall picker and refresh the status bar */
-function onDateTimeChange() {
-  renderHallPickers();   // recompute booked/free for the new date+slot
-  onPickChange();        // hall picks may have been cleared → refresh totals
-}
-
-/* render the hall checkboxes from halls.json, factoring in
-   what's already booked for the currently selected date + slot */
 function renderHallPickers() {
   let list = document.getElementById("hallList");
-
-  // what date + slot is the user currently building for?
-  let date = document.getElementById("examDate").value;
-  let slot = document.getElementById("examSlot").value;
-  let bookings = getHallBookings(date, slot);   // Commit 1's helper
+  if (!examOptions.halls.length) {
+    list.innerHTML = '<p class="emptyHint">No halls yet. Add halls first.</p>';
+    return;
+  }
 
   let html = "";
-
-  for (let i = 0; i < EM_DATA.halls.length; i++) {
-    let hall = EM_DATA.halls[i];
-    let seats = hall.rows * hall.cols;
-
-    let used = bookings[hall.hallNo] || 0;       // already booked this slot
-    let free = seats - used;                     // seats still open
-    if (free < 0) { free = 0; }
-
-    let isFull = free <= 0;
+  examOptions.halls.forEach(function (hall) {
+    let isFull = hall.free <= 0;
 
     // right-hand label: plain seats if untouched, else booked/free split
     let rightText;
-    if (used === 0) {
-      rightText = seats + ' seats';
+    if (hall.booked === 0) {
+      rightText = hall.seats + " seats";
     } else if (isFull) {
-      rightText = '🔒 full · ' + used + '/' + seats + ' booked';
+      rightText = "🔒 full · " + hall.booked + "/" + hall.seats + " booked";
     } else {
-      rightText = used + '/' + seats + ' booked · ' + free + ' free';
+      rightText = hall.booked + "/" + hall.seats + " booked · " + hall.free + " free";
     }
 
-    let lockedClass = isFull ? ' locked' : '';
-    let rightClass  = isFull ? 'pickLock' : 'pickRight';
-    let disabledAttr = isFull ? ' disabled' : '';
+    let checked = !isFull && pickedHalls.indexOf(hall.hallNo) !== -1 ? " checked" : "";
 
     html +=
-      '<label class="pickRow' + lockedClass + '" data-hall="' + hall.hallNo + '">' +
-      '<input type="checkbox" onchange="onPickChange()"' + disabledAttr + '>' +
-      '<span><span class="pickMain">' + hall.hallNo + '</span> ' +
+      '<label class="pickRow' + (isFull ? " locked" : "") + '" data-hall="' + escapeHtml(hall.hallNo) + '">' +
+      '<input type="checkbox" onchange="onPickChange()"' + (isFull ? " disabled" : "") + checked + '>' +
+      '<span><span class="pickMain">' + escapeHtml(hall.hallNo) + '</span> ' +
       '<span class="pickSub">' + hall.rows + '×' + hall.cols + '</span></span>' +
-      '<span class="' + rightClass + '">' + rightText + '</span>' +
+      '<span class="' + (isFull ? "pickLock" : "pickRight") + '">' + rightText + '</span>' +
       '</label>';
-  }
+  });
   list.innerHTML = html;
 }
 
 
-  /* given the currently picked courses, return the set of roll numbers
-   of students who are ALREADY assigned to one of those courses.. */
-function getBusyStudents(coursesToCheck) {
-  let busy = {};   // roll -> true
-  for (let i = 0; i < EM_DATA.students.length; i++) {
-    let student = EM_DATA.students[i];
-    for (let c = 0; c < coursesToCheck.length; c++) {
-      if (student.subjects.indexOf(coursesToCheck[c]) !== -1) {
-        busy[student.roll] = true;
-      }
-    }
-  }
-  return busy;
-}
-
 /* -----------------------------------------------------------
-   ANTI-CHEAT NEIGHBOUR CHECK 
-   -----------------------------------------------------------
-   The core seating rule: a seat is only safe for a student if
-   NONE of its 4 orthogonal neighbours (up/down/left/right)
-   holds a student with the SAME exam code. Diagonals don't count.
-   The seating placement stage calls this for every seat it tries.
-
-     grid     = 2D array; each cell is { roll, name, examCode } or null
-     row, col = the seat being tested
-     student  = the student we want to place there
-   Returns true if the seat is safe, false if a neighbour clashes.
+   PICKS + MATCHED STUDENTS
 ----------------------------------------------------------- */
-function fits(grid, row, col, student) {
-
-  let rows = grid.length;
-  let cols = grid[0].length;
-
-  let neighbours = [
-    [row - 1, col],  // front (up)
-    [row + 1, col],  // back (down)
-    [row, col - 1],  // left
-    [row, col + 1]   // right
-  ];
-
-  for (let i = 0; i < neighbours.length; i++) {
-    let r = neighbours[i][0];
-    let c = neighbours[i][1];
-
-    // skip neighbours outside the grid
-    if (r < 0 || r >= rows || c < 0 || c >= cols) {
-      continue;
-    }
-
-    let neighbour = grid[r][c];
-
-    // same exam code next door -> not safe
-    if (neighbour !== null && neighbour.examCode === student.examCode) {
-      return false;
-    }
-  }
-
-  return true;  // no neighbour clashed
-}
-
-
-
-/* runs whenever any subject/hall checkbox changes */
-function onPickChange() {
-
-  // rebuild pickedCourses from the checked subject boxes
+function readPicks() {
   pickedCourses = [];
-  let subjectBoxes = document.querySelectorAll('#subjectList input:checked');
-  for (let i = 0; i < subjectBoxes.length; i++) {
-    pickedCourses.push(subjectBoxes[i].parentElement.dataset.course);
-  }
+  document.querySelectorAll("#subjectList input:checked").forEach(function (box) {
+    pickedCourses.push(box.parentElement.dataset.course);
+  });
 
-  // rebuild pickedHalls from the checked hall boxes
   pickedHalls = [];
-  let hallBoxes = document.querySelectorAll('#hallList input:checked');
-  for (let i = 0; i < hallBoxes.length; i++) {
-    pickedHalls.push(hallBoxes[i].parentElement.dataset.hall);
-  }
-
-  // refresh everything
-  refreshMatchedTable();
-  applyClashPrevention();
-  updateStatusBar();   // Member C's function
+  document.querySelectorAll("#hallList input:checked").forEach(function (box) {
+    pickedHalls.push(box.parentElement.dataset.hall);
+  });
 }
 
-/* return the students enrolled in the picked courses */
+/* the students enrolled in the picked courses (one row each, like the server seats them) */
 function getMatchedStudents() {
   let matched = [];
+  if (!examOptions) { return matched; }
 
-  for (let i = 0; i < EM_DATA.students.length; i++) {
-    let student = EM_DATA.students[i];
-
-    // find which picked course this student is in
+  examOptions.students.forEach(function (student) {
     for (let c = 0; c < pickedCourses.length; c++) {
       if (student.subjects.indexOf(pickedCourses[c]) !== -1) {
-        matched.push({
-          roll: student.roll,
-          name: student.name,
-          examCode: pickedCourses[c]
-        });
+        matched.push({ roll: student.roll, name: student.name, examCode: pickedCourses[c] });
         break;   // one exam per student in the table
       }
     }
-  }
+  });
   return matched;
 }
 
-/* fill the matched-students preview table */
 function refreshMatchedTable() {
   let students = getMatchedStudents();
   let body = document.getElementById("matchBody");
@@ -330,365 +184,45 @@ function refreshMatchedTable() {
   }
 
   let html = "";
-  for (let i = 0; i < students.length; i++) {
-    let s = students[i];
+  students.forEach(function (s) {
     html +=
-      '<tr><td>' + s.roll + '</td>' +
-      '<td>' + s.name + '</td>' +
-      '<td>' + s.examCode + '</td></tr>';
-  }
+      '<tr><td>' + escapeHtml(s.roll) + '</td>' +
+      '<td>' + escapeHtml(s.name) + '</td>' +
+      '<td>' + escapeHtml(s.examCode) + '</td></tr>';
+  });
   body.innerHTML = html;
 }
 
-
-function applyClashPrevention() {
-  var busy = getBusyStudents(pickedCourses);      // Member A's function
-  var rows = document.querySelectorAll('#subjectList .pickRow');
-
-  for (let i = 0; i < rows.length; i++) {
-    let row = rows[i];
-    let course = row.dataset.course;
-    let box = row.querySelector('input');
-
-    // collect the actual rolls this course shares with the picked set
-    let sharedRolls = [];
-    if (pickedCourses.indexOf(course) === -1) {
-      for (let s = 0; s < EM_DATA.students.length; s++) {
-        let student = EM_DATA.students[s];
-        if (student.subjects.indexOf(course) !== -1 && busy[student.roll]) {
-          sharedRolls.push(student.roll);
-        }
-      }
-    }
-
-    if (sharedRolls.length > 0) {
-      // LOCK this course (clash)
-      row.classList.add('locked');
-      box.disabled = true;
-
-      let right = row.querySelector('.pickRight');
-      if (right && !row.querySelector('.pickLock')) {
-        right.className = 'pickLock';
-      }
-      let lock = row.querySelector('.pickLock');
-      if (lock) lock.textContent = '🔒 locked · ' + sharedRolls.length + ' shared';
-
-      // store the rolls on the row so hover can read them
-      row.dataset.sharedRolls = sharedRolls.join(',');
-
-      row.setAttribute('aria-disabled', 'true');
-      row.setAttribute('aria-label',
-        course + ' locked — shares ' + sharedRolls.length +
-        ' students with a picked subject, so it cannot be scheduled in the same slot.');
-
-      // hover → update the info bar below the list
-      row.onmouseenter = function () { showClashInfo(course, sharedRolls); };
-      row.onmouseleave = clearClashInfo;
-
-    } else {
-      // keep already-conducted courses locked — don't unlock them
-      let usedCourses = getUsedCourses();
-      if (usedCourses[course]) {
-        continue;
-      }
-
-      // UNLOCK this course
-      row.classList.remove('locked');
-      box.disabled = false;
-      row.onmouseenter = null;
-      row.onmouseleave = null;
-      delete row.dataset.sharedRolls;
-
-      let lock = row.querySelector('.pickLock');
-      if (lock) {
-        lock.className = 'pickRight';
-        lock.textContent = countStudentsForCourse(course) + ' students';
-      }
-    }
-  }
+/* runs whenever any subject/hall checkbox changes */
+function onPickChange() {
+  readPicks();
+  refreshAll();
 }
 
-
-/* show the clash detail in the info bar (first 3 rolls + "+N more") */
-function showClashInfo(course, rolls) {
-  let infoEl = document.getElementById('clashInfo');
-  if (!infoEl) return;
-
-  let shown = rolls.slice(0, 3).join(', ');
-  let extra = rolls.length - 3;
-  let moreText = extra > 0 ? ' <span class="clashMore">+' + extra + ' more</span>' : '';
-
-  infoEl.className = 'clashInfo';
-  infoEl.innerHTML =
-    '<span><b>' + course + '</b> shares ' + rolls.length +
-    ' students with your picked subjects, so it is locked.</span> ' +
-    '<span class="clashRolls">' + shown + '</span>' + moreText;
+function refreshAll() {
+  refreshMatchedTable();
 }
 
-/* reset the info bar */
-function clearClashInfo() {
-  let infoEl = document.getElementById('clashInfo');
-  if (!infoEl) return;
-  infoEl.className = 'clashInfo clashInfo--idle';
-  infoEl.innerHTML = '<span>Hover a locked subject to see which students clash.</span>';
-}
-
-/* clear all picked subjects and halls, then reset the UI (Member B) */
+/* clear all picked subjects and halls, then reset the UI */
 function clearAllPicks() {
-  // uncheck every subject and hall checkbox
-  let allBoxes = document.querySelectorAll('#subjectList input, #hallList input');
-  for (let i = 0; i < allBoxes.length; i++) {
-    allBoxes[i].checked = false;
-  }
-  // rebuild state + refresh everything (reuses the existing onPickChange)
+  document.querySelectorAll("#subjectList input, #hallList input").forEach(function (box) {
+    box.checked = false;
+  });
   onPickChange();
-}
-
-
-
-
-function updateStatusBar() {
-
-    let totalSeats = getAvailableSeats();   // free seats, not raw capacity
-
-
-  let students = getMatchedStudents();
-  let studentCount = students.length;
-
-  let statusMsg = document.getElementById("statusMsg");
-  let statusText = document.getElementById("statusText");
-  let generateBtn = document.getElementById("generateBtn");
-
-  if (!statusMsg || !statusText || !generateBtn) {
-    return;
-  }
-
-  if (pickedCourses.length === 0 && pickedHalls.length === 0) {
-    statusMsg.className = "statusMsg neutral";
-    statusText.textContent =
-      "Pick subjects and halls to begin.";
-    generateBtn.disabled = true;
-    return;
-  }
-
-  if (pickedCourses.length === 0) {
-    statusMsg.className = "statusMsg neutral";
-    statusText.textContent =
-      "Pick at least one subject.";
-    generateBtn.disabled = true;
-    return;
-  }
-
-  if (pickedHalls.length === 0) {
-    statusMsg.className = "statusMsg neutral";
-    statusText.textContent =
-      studentCount + " students selected · Pick at least one hall.";
-    generateBtn.disabled = true;
-    return;
-  }
-
-  if (totalSeats >= studentCount) {
-    statusMsg.className = "statusMsg good";
-    statusText.textContent =
-      totalSeats + " seats available · " +
-      studentCount + " students selected · " +
-      "Ready to generate.";
-    generateBtn.disabled = false;
-  }
-
-  else {
-    let shortage = studentCount - totalSeats;
-    statusMsg.className = "statusMsg bad";
-    statusText.textContent =
-      totalSeats + " seats available · " +
-      studentCount + " students selected · " +
-      shortage + " more seat" +
-      (shortage === 1 ? "" : "s") +
-      " required.";
-    generateBtn.disabled = true;
-  }
-}
-/* dry-run the real seating rule on the current picks.
-   Returns how many students CAN'T be placed without a same-code neighbour.
-   Mirrors seating.js so the check matches the actual result. */
-function countUnplaceable() {
-  var students = getMatchedStudents();
-
-  // empty grids for each picked hall
-  var grids = [];
-  for (var i = 0; i < pickedHalls.length; i++) {
-    var hall = null;
-    for (var h = 0; h < EM_DATA.halls.length; h++) {
-      if (EM_DATA.halls[h].hallNo === pickedHalls[i]) { hall = EM_DATA.halls[h]; break; }
-    }
-    if (!hall) { continue; }
-    var cells = [];
-    for (var r = 0; r < hall.rows; r++) {
-      var rowArr = [];
-      for (var c = 0; c < hall.cols; c++) { rowArr.push(null); }
-      cells.push(rowArr);
-    }
-    grids.push(cells);
-  }
-
-  // biggest course first, interleaved (same order as seating.js)
-  var groups = {};
-  for (var s = 0; s < students.length; s++) {
-    var st = students[s];
-    if (!groups[st.examCode]) { groups[st.examCode] = []; }
-    groups[st.examCode].push(st);
-  }
-  var groupList = Object.keys(groups).map(function (k) { return groups[k]; });
-  groupList.sort(function (a, b) { return b.length - a.length; });
-  var queue = [], more = true;
-  while (more) {
-    more = false;
-    for (var g = 0; g < groupList.length; g++) {
-      if (groupList[g].length > 0) { queue.push(groupList[g].shift()); more = true; }
-    }
-  }
-
-  // greedy placement with fits() as a hard rule
-  var unplaced = 0;
-  for (var qi = 0; qi < queue.length; qi++) {
-    var stu = queue[qi], placed = false;
-    for (var gg = 0; gg < grids.length && !placed; gg++) {
-      var gr = grids[gg];
-      for (var rr = 0; rr < gr.length && !placed; rr++) {
-        for (var cc = 0; cc < gr[0].length && !placed; cc++) {
-          if (gr[rr][cc] === null && fits(gr, rr, cc, stu)) {
-            gr[rr][cc] = stu;
-            placed = true;
-          }
-        }
-      }
-    }
-    if (!placed) { unplaced++; }
-  }
-  return unplaced;
-}
-
-
-function generateAndSave() {
-   
-
-  let examName = document.getElementById("examName").value.trim();
-  let date = document.getElementById("examDate").value;
-  let slot = document.getElementById("examSlot").value;
-
-  if (examName === "") {
-    alert("Please enter an exam name.");
-    document.getElementById("examName").focus();
-    return;
-  }
-
-  if (date === "") {
-    alert("Please select an exam date.");
-    document.getElementById("examDate").focus();
-    return;
-  }
-
-  if (slot === "") {
-    alert("Please select an exam slot.");
-    document.getElementById("examSlot").focus();
-    return;
-  }
-
-  if (pickedCourses.length === 0) {
-    alert("Please select at least one subject.");
-    return;
-  }
-
-  if (pickedHalls.length === 0) {
-    alert("Please select at least one hall.");
-    return;
-  }
-
-  let students = getMatchedStudents();
-  if (students.length === 0) {
-    alert("No students found for the selected subjects.");
-    return;
-  }
-
-  let totalSeats = 0;
-  for (let i = 0; i < pickedHalls.length; i++) {
-    for (let h = 0; h < EM_DATA.halls.length; h++) {
-      let hall = EM_DATA.halls[h];
-      if (hall.hallNo === pickedHalls[i]) {
-        totalSeats += hall.rows * hall.cols;
-        break;
-      }
-    }
-  }
-
-  if (totalSeats < students.length) {
-    alert(
-      "Not enough seats.\n\n" +
-      "Students: " + students.length + "\n" +
-      "Available seats: " + totalSeats
-    );
-    return;
-  }
-    // constraint check — can everyone actually be seated without a clash?
-  var cantSeat = countUnplaceable();
-  if (cantSeat > 0) {
-    alert(
-      "Cannot generate seating.\n\n" +
-      cantSeat + " student(s) can't be seated without sitting next to the same exam.\n" +
-      "Select more halls, then try again."
-    );
-    return;   // do NOT save — selections stay so you can add halls
-  }
-
-  let exam = {
-    examName: examName,
-    date: date,
-    slot: slot,
-    pickedCourses: pickedCourses,
-    pickedHalls: pickedHalls,
-    students: students
-  };
-
-  // give each exam a stable id + timestamp (dashboard uses these)
-  exam.id = "exam_" + Date.now();
-  exam.createdAt = Date.now();
-    // stamp the logged-in user so exams are per-account
-  exam.owner = getSessionUser();
-
-
-  // keep the single "current exam" seating.html relies on
-  localStorage.setItem("em_currentExam", JSON.stringify(exam));
-
-  // append to the exam list the dashboard reads
-  let emExams = [];
-  try {
-    emExams = JSON.parse(localStorage.getItem("em_exams")) || [];
-    if (!Array.isArray(emExams)) emExams = [];
-  } catch (e) {
-    emExams = [];
-  }
-  emExams.push(exam);
-  localStorage.setItem("em_exams", JSON.stringify(emExams));
-
-  window.location.href = "seating.html";
-
 }
 
 
 /* =========================================================
    ==================  PAGE STARTUP  ======================
-   Runs once data is loaded. (This wiring can stay as-is.)
 ========================================================= */
-loadExamData(function () {
-  document.getElementById("loadInfo").textContent =
-    "✓ " + EM_DATA.subjects.length + " subjects · " +
-    EM_DATA.halls.length + " halls · " +
-    EM_DATA.students.length + " students loaded";
-
-  renderSubjectPickers();   // Member A
-  lockUsedCourses();        
-  renderHallPickers();      // Member A
-
-  let genBtn = document.getElementById("generateBtn");
-  if (genBtn) { genBtn.addEventListener("click", generateAndSave); }  // Member C's function
-});
+adminReady
+  .then(function () {
+    let dateInput = document.getElementById("examDate");
+    let today = todayInIndia();
+    dateInput.min = today;   // no exams in the past
+    if (!dateInput.value || dateInput.value < today) { dateInput.value = today; }
+    loadOptions();
+  })
+  .catch(function () {
+    setLoadInfo("⚠ Can't check your login. Make sure the backend is running.");
+  });
