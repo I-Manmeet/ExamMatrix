@@ -28,87 +28,50 @@
             </div>
         </section>
 
-        <!-- NAVIGATION BAR -->
-
-
         <!-- EXAM INFORMATION & LEGEND -->
         <section class="metaSection" aria-labelledby="examTitle">
-            <h2 id="examTitle" class="examTitle">
-                Data Structures Mid-Sem
-            </h2>
-            <p id="examSub" class="examSub">
-                20 Aug 2026 · 09:00–11:00 · CS201, MA201
-            </p>
+            <h2 id="examTitle" class="examTitle">Loading…</h2>
+            <p id="examSub" class="examSub"></p>
 
             <!-- LEGEND -->
             <div class="legendCard" aria-label="Seating legend">
                 <span class="legendLabel">LEGEND</span>
-                <div id="legendSwatches" class="legendSwatches" role="list">
-                    <span class="legendItem">
-                        <span class="legendDot cs"></span>
-                        CS
-                    </span>
-                    <span class="legendItem">
-                        <span class="legendDot ai"></span>
-                        AI
-                    </span>
-                    <span class="legendItem">
-                        <span class="legendDot ec"></span>
-                        EC
-                    </span>
-                    <span class="legendItem">
-                        <span class="legendDot me"></span>
-                        ME
-                    </span>
-                </div>
+                <div id="legendSwatches" class="legendSwatches" role="list"></div>
             </div>
         </section>
 
         <!-- METRICS -->
         <section class="metricsGrid" aria-label="Seating metrics">
             <div class="metricCard">
-                <span class="metricValue" id="metricConflicts">0</span>
+                <span class="metricValue" id="metricConflicts">–</span>
                 <span class="metricLabel">CONFLICTS</span>
             </div>
 
             <div class="metricCard">
-                <span class="metricValue" id="metricHalls">1</span>
+                <span class="metricValue" id="metricHalls">–</span>
                 <span class="metricLabel">HALLS USED</span>
             </div>
 
             <div class="metricCard">
-                <span class="metricValue" id="metricUtilization">100%</span>
+                <span class="metricValue" id="metricUtilization">–</span>
                 <span class="metricLabel">AVG UTILIZATION</span>
             </div>
 
             <div class="metricCard">
-                <span class="metricValue" id="metricBacktracks">0</span>
+                <span class="metricValue" id="metricBacktracks">–</span>
                 <span class="metricLabel">BACKTRACKS</span>
             </div>
         </section>
 
-        <!-- HALL GRIDS -->
+        <!-- HALL GRIDS (seating.js fills this) -->
         <section id="hallsContainer" class="hallsGrid" aria-label="Examination hall seating arrangements">
-
-            <div class="hallCard">
-                <div class="hallHeader">
-                    <h3 class="hallTitle">Main Examination Hall</h3>
-                    <span class="hallInfo">5x10 · 50 seats</span>
-                </div>
-                <div class="hallDirection">↑ FRONT ↑</div>
-
-                <!-- Target container for Javascript rendering -->
-                <div id="seatingGrid" class="seatingGrid grid5x10">
-                    <!-- JavaScript dynamically injects seats here -->
-                </div>
-            </div>
-
+            <div class="hallCard" style="text-align:center;padding:40px 24px">Loading seating…</div>
         </section>
 
         <!-- CONTROLS & SEARCH -->
         <section class="card controlsCard" aria-label="Seating controls">
             <div class="actionButtons">
-                
+
                 <button type="button" class="btnSecondary" id="printBtn" onclick="window.print()">
                     <span>🖨</span> Print
                 </button>
@@ -125,16 +88,14 @@
             </div>
         </section>
 
-        <!-- FOOTER BAR -->
-
-
     </main>
     <!-- Shared footer -->
     <div id="footerContainer"></div>
 
-    <!-- logged-in navbar + footer + username + logout + auth gate -->
+    <!-- server address + api() helper, then navbar/auth gate, then this page -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/app-shell.js"></script>
-    <script src="js/data.js"></script>
     <script src="js/seating.js"></script>
 
 </body>
