@@ -8,8 +8,9 @@ const { requireLogin, requireRole } = require("../middleware/auth");
 const { AppError } = require("../middleware/errorHandler");
 const { activity } = require("../utils/events");
 const { nextId } = require("../utils/idCounter");
-const { validateExam, slotsOverlap } = require("../utils/validateExam");
-const { solveSeating, freeSeats, seatKey } = require("../utils/seating");
+const { validateExam, normalizeSlot, isRealDate } = require("../utils/validateExam");
+const { solveSeating, freeSeats } = require("../utils/seating");
+const clash = require("../utils/clashCheck");
 
 const router = express.Router();
 const EXAM_ID = /^EXM-\d{4}-\d{4}$/;
@@ -24,52 +25,11 @@ function examIdFrom(req) {
   return id;
 }
 
-// seats in these halls already taken by exams on the same day whose time overlaps
-async function reservedSeats(university, date, slot, hallNos) {
-  const others = await Exam.find({ university: university, date: date, halls: { $in: hallNos } })
-    .select("slot seatMap")
-    .lean();
 
-  const reserved = {};
-  for (const other of others) {
-    if (!slotsOverlap(other.slot, slot)) continue;
-    for (const hallNo of hallNos) {
-      const grid = (other.seatMap || {})[hallNo];
-      if (!grid) continue;
-      reserved[hallNo] = reserved[hallNo] || {};
-      grid.forEach(function (row, r) {
-        (row || []).forEach(function (cell, c) {
-          if (cell) reserved[hallNo][seatKey(r, c)] = cell.code;
-        });
-      });
-    }
-  }
-  return reserved;
-}
-
-
-// GET /api/exams  → this university's exams, soonest first (without the big seat map)
-router.get("/", async (req, res) => {
-  const exams = await Exam.find({ university: req.user.university })
-    .select("-seatMap")
-    .sort({ date: 1, slot: 1, examId: 1 });
-  res.json({ data: exams });
-});
-
-
-// GET /api/exams/EXM-0001-0001  → one exam with its seat map
-router.get("/:examId", async (req, res) => {
-  const exam = await Exam.findOne({ examId: examIdFrom(req), university: req.user.university });
-  if (!exam) throw new AppError(404, "Exam not found");
-  res.json({ data: exam });
-});
-
-// POST /api/exams  { examName, date, slot, subjects: ["CS301"], halls: ["Hall A"] }
-// → seats everyone, saves the exam, returns it with the seat map
-router.post("/", async (req, res) => {
-  const university = req.user.university;
-
-  const { errors, value } = validateExam(req.body);
+// Works out the whole exam without saving: input, clashes, seats.
+// POST /api/exams saves the result; POST /api/exams/check only reports it.
+async function planExam(university, body) {
+  const { errors, value } = validateExam(body);
   if (errors.length) throw new AppError(400, errors.join(". "));
 
   // 1. subjects and halls must exist in THIS university
@@ -92,18 +52,56 @@ router.post("/", async (req, res) => {
     return hallDocs.find(function (h) { return h.hallNo === no; });
   });
 
-  // 2. students who take a picked subject; each sits once, for the first picked subject they take
-  //    (Task 6 will refuse students who have two picked subjects in the same slot)
+  // 2. students who take a picked subject
   const studentDocs = await Student.find({ university: university, subjects: { $in: value.subjects } })
     .select("roll subjects")
     .lean();
+  if (studentDocs.length === 0) throw new AppError(422, "No students take the picked subjects");
+
+  // exams on the same day whose time overlaps this one
+  const sameDay = await Exam.find({ university: university, date: value.date })
+    .select("examId examName slot seatMap")
+    .lean();
+  const overlapping = clash.overlappingExams(sameDay, value.slot);
+
+  // ---- clash checks (Task 6) ----
+
+
+  // a subject can only be examined once (deleting its exam frees it again)
+  const alreadyIn = await Exam.find({ university: university, subjects: { $in: value.subjects } })
+    .select("examId examName subjects")
+    .lean();
+  const scheduled = clash.scheduledSubjects(alreadyIn, value.subjects);
+  if (scheduled.size) {
+    throw new AppError(409, clash.listSome([...scheduled], function ([code, e]) {
+      return code + " is already in " + e.examName + " (" + e.examId + ")";
+    }) + ". A subject can only be examined once.");
+  }
+
+
+  // the same student can't sit two picked subjects at once
+  const twice = clash.doubleBooked(studentDocs, value.subjects);
+  if (twice.length) {
+    throw new AppError(409, twice.length + " student(s) take more than one of the picked subjects, " +
+      "so these subjects can't share a slot: " +
+      clash.listSome(twice, function (s) { return s.roll + " (" + s.subjects.join(", ") + ")"; }));
+  }
+
+
+  // a student can't be in two exams whose times overlap
+  const busy = clash.busyStudents(studentDocs.map(function (s) { return s.roll; }), overlapping);
+  if (busy.length) {
+    throw new AppError(409, busy.length + " student(s) already have an exam at this time: " +
+      clash.listSome(busy, function (b) { return b.roll + " in " + b.examName + " (" + b.slot + ")"; }));
+  }
+
+  // each student sits once, for the picked subject they take
   const students = studentDocs.map(function (s) {
     return { roll: s.roll, code: value.subjects.find(function (code) { return s.subjects.includes(code); }) };
   });
-  if (students.length === 0) throw new AppError(422, "No students take the picked subjects");
 
   // 3. enough free seats once other exams at this time are taken out?
-  const reserved = await reservedSeats(university, value.date, value.slot, value.halls);
+  const reserved = clash.bookedSeats(overlapping, value.halls);
   const free = freeSeats(halls, reserved);
   if (free < students.length) {
     throw new AppError(422, "Not enough seats: " + students.length + " students but only " + free +
@@ -117,7 +115,102 @@ router.post("/", async (req, res) => {
       "someone with the same subject. Add more halls.");
   }
 
-  // 5. save (the EXM id is only taken once seating worked)
+  return { value: value, students: students, free: free, result: result };
+}
+
+
+// GET /api/exams  → this university's exams, soonest first (without the big seat map)
+router.get("/", async (req, res) => {
+  const exams = await Exam.find({ university: req.user.university })
+    .select("-seatMap")
+    .sort({ date: 1, slot: 1, examId: 1 });
+  res.json({ data: exams });
+});
+
+
+// GET /api/exams/options?date=2026-11-02&slot=09:00-11:00
+// → everything the Create Exam page needs to grey out subjects and halls
+router.get("/options", async (req, res) => {
+  const university = req.user.university;
+  const date = String(req.query.date || "").trim();
+  const slot = normalizeSlot(String(req.query.slot || ""));
+  if (!isRealDate(date) || !slot) {
+    throw new AppError(400, "Give a valid date and slot, e.g. ?date=2026-11-02&slot=09:00-11:00");
+  }
+
+  const [subjects, halls, students, allExams, sameDay] = await Promise.all([
+    Subject.find({ university: university }).select("code name dept").sort({ code: 1 }).lean(),
+    Hall.find({ university: university }).select("hallNo rows cols").sort({ hallNo: 1 }).lean(),
+    Student.find({ university: university }).select("roll subjects").lean(),
+    Exam.find({ university: university }).select("examId examName subjects").lean(),
+    Exam.find({ university: university, date: date }).select("examId examName slot seatMap").lean()
+  ]);
+
+  const codes = subjects.map(function (s) { return s.code; });
+  const overlapping = clash.overlappingExams(sameDay, slot);
+  const scheduled = clash.scheduledSubjects(allExams, codes);
+  const busy = clash.seatedRolls(overlapping);
+  const booked = clash.bookedSeats(overlapping, halls.map(function (h) { return h.hallNo; }));
+
+  res.json({
+    data: {
+      date: date,
+      slot: slot,
+      subjects: subjects.map(function (s) {
+        const takers = students.filter(function (st) { return st.subjects.includes(s.code); });
+        return {
+          code: s.code,
+          name: s.name,
+          dept: s.dept,
+          students: takers.length,
+          scheduledIn: scheduled.get(s.code) || null,                       // already examined → locked
+          busyNow: takers.filter(function (st) { return busy.has(st.roll); })
+            .map(function (st) { return st.roll; }).sort()                   // already sitting an exam now
+        };
+      }),
+      halls: halls.map(function (h) {
+        const seats = h.rows * h.cols;
+        const free = freeSeats([h], booked);
+        return { hallNo: h.hallNo, rows: h.rows, cols: h.cols, seats: seats, booked: seats - free, free: free };
+      }),
+      shared: clash.sharedStudents(students, codes)   // "CS301|MA201" → rolls who take both
+    }
+  });
+});
+
+
+
+// GET /api/exams/EXM-0001-0001  → one exam with its seat map
+router.get("/:examId", async (req, res) => {
+  const exam = await Exam.findOne({ examId: examIdFrom(req), university: req.user.university });
+  if (!exam) throw new AppError(404, "Exam not found");
+  res.json({ data: exam });
+});
+
+// POST /api/exams/check  → same checks as creating, but nothing is saved
+// (the Create Exam page uses this before enabling "Generate")
+router.post("/check", async (req, res) => {
+  const { students, free, result } = await planExam(req.user.university, req.body);
+  res.json({
+    data: {
+      ok: true,
+      students: students.length,
+      freeSeats: free,
+      halls: Object.keys(result.seatMap),
+      stats: result.stats
+    }
+  });
+});
+
+
+
+// POST /api/exams  { examName, date, slot, subjects: ["CS301"], halls: ["Hall A"] }
+// → checks everything, seats everyone, saves the exam, returns it with the seat map
+router.post("/", async (req, res) => {
+  const university = req.user.university;
+  const { value, students, result } = await planExam(university, req.body);
+
+  // the EXM id is only taken once every check has passed
   const examId = await nextId("EXM-" + university.replace("UNI-", ""), 4);
   const exam = await Exam.create({
     examId: examId,
@@ -141,7 +234,7 @@ router.post("/", async (req, res) => {
 });
 
 
-// DELETE /api/exams/EXM-0001-0001  → frees its seats and removes its duties
+// DELETE /api/exams/EXM-0001-0001  → frees its seats and subjects, removes its duties
 router.delete("/:examId", async (req, res) => {
   const examId = examIdFrom(req);
   const exam = await Exam.findOneAndDelete({ examId: examId, university: req.user.university });
