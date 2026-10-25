@@ -10,53 +10,46 @@
      <body data-page="inv-dashboard">
      <div id="navbarContainer"></div>
      <div id="footerContainer"></div>
+     <script src="js/config.js"></script>
+     <script src="js/api.js"></script>
      <script src="js/inv-shell.js"></script>
    and then waits for the profile with:
      invReady.then(function (profile) { ... });
+   profile is null while the page is being sent somewhere else.
    ========================================================= */
 
-// TODO(after-jiya): remove this line and use API_BASE from Jiya's js/config.js
-const API_BASE = "http://localhost:5000/api";
-
-// TODO(after-jiya): set to false once Jiya's login + GET /api/auth/me are merged
-const INV_DEMO_MODE = true;
-const DEMO_PROFILE = { invId: "INV-0001-0004", name: "Dr. Neha Kapoor", university: "UNI-2026-0001", role: "invigilator" };
-
-function getToken() {
-  return localStorage.getItem("em_token");
+function goToInvLogin() {
+  clearAuthToken();
+  window.location.href = "login.html?role=invigilator";
 }
 
 /* ask the server who this token belongs to */
-// TODO(after-jiya): switch this fetch to Jiya's api.js helper once it exists
 function fetchProfile() {
-  if (INV_DEMO_MODE) return Promise.resolve(DEMO_PROFILE);
+  if (!getAuthToken()) {
+    goToInvLogin();
+    return Promise.resolve(null);
+  }
 
-  const token = getToken();
-  if (!token) return Promise.reject(new Error("Not logged in"));
-
-  return fetch(API_BASE + "/auth/me", {
-    headers: { Authorization: "Bearer " + token }
-  })
-    .then(function (res) {
-      if (!res.ok) throw new Error("Session expired");
-      return res.json();
-    })
-    .then(function (body) {
-      if (body.data.role !== "invigilator") throw new Error("Not an invigilator");
-      return body.data;
-    });
+  return api("GET", "/auth/me").then(
+    function (profile) {
+      if (profile && profile.role === "invigilator") return profile;
+      window.location.href = "dashboard.html";   // an admin opened an invigilator page
+      return null;
+    },
+    function (error) {
+      if (error.status === 401) return null;    // api.js has already sent them to login
+      throw error;                               // server down: keep the token, the page shows the message
+    }
+  );
 }
 
 /* every invigilator page waits on this before rendering */
-const invReady = fetchProfile().catch(function () {
-  localStorage.removeItem("em_token");
-  window.location.href = "login.html";
-});
+const invReady = fetchProfile();
 
 /* load the invigilator navbar, then fill in the name */
 Promise.all([
   fetch("inv-header.html").then(function (r) { return r.text(); }),
-  invReady
+  invReady.catch(function () { return null; })   // still show the navbar if the server is down
 ])
   .then(function (results) {
     const html = results[0];
@@ -83,6 +76,6 @@ fetch("footer.html")
 
 /* logout: just throw the token away */
 function invLogout() {
-  localStorage.removeItem("em_token");
-  window.location.href = "login.html";
+  clearAuthToken();
+  window.location.href = "login.html?role=invigilator";
 }
