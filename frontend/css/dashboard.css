@@ -83,7 +83,7 @@ body[data-page="dashboard"] {
     color: white;
 }
 
-/* STAT CARDS */
+/* STAT CARDS — ORIGINAL BASE STYLING */
 
 #stats {
     display: grid;
@@ -270,8 +270,6 @@ body[data-page="dashboard"] {
     flex: 1 1 auto;
     min-width: 0;
 }
-
-/* Exam name and Today status on one line */
 
 .exam-card-header {
     display: flex;
@@ -571,7 +569,6 @@ body[data-page="dashboard"] {
         grid-template-columns: 1fr;
     }
 
-    /* Keep exam name, Today, Matrix and Delete in one row */
     .exam-card {
         align-items: center;
         flex-direction: row;
@@ -663,3 +660,270 @@ body[data-page="dashboard"] {
         font-size: 7px;
     }
 }
+
+.dashboardError {
+    color: #b42318;
+    background-color: #fef3f2;
+    border: 1px solid #fecdca;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 12px 0;
+}
+
+.dashboardError[hidden] {
+    display: none;
+}
+
+/* =========================================
+   STATS DROPDOWN + BOX LAYOUT
+   New changes are limited to statistics
+========================================= */
+
+.stats-layout {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    align-items: start;
+    gap: 0 12px;
+    margin-bottom: 17px;
+}
+
+
+
+.stats-layout .stats-filter label {
+    display: none;
+}
+
+.stats-layout .stats-filter select {
+    width: 100%;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.stats-layout .stats-filter select:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+/* Three boxes on the first row, fourth box below */
+.stats-layout #stats {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 12px;
+    min-width: 0;
+    margin: 0;
+}
+
+.stats-layout #stats .stat-card {
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 2px 5px #10213a08;
+    transition: box-shadow .2s ease;
+}
+
+.stats-layout #stats .stat-card:hover {
+    box-shadow: 0 5px 14px #10213a10;
+}
+
+.stats-layout #stats .stat-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.stats-layout #stats .stat-number {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #4bdcba;
+    font-size: 23px;
+    font-weight: 600;
+}
+
+.stats-layout #stats .stat-number i {
+    color: var(--primary);
+}
+
+/* Responsive statistics layout */
+
+@media (max-width: 760px) {
+    .stats-layout {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .stats-layout .stats-filter {
+        grid-column: 1;
+        grid-row: 1;
+        margin: 0;
+    }
+
+    .stats-layout #stats {
+        grid-column: 1;
+        grid-row: 2;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-layout #stats {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-layout #stats .stat-card {
+        padding: 18px;
+    }
+}
+
+
+/* Statistics section */
+#stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+/* Today dropdown — full row above the boxes */
+#stats .stats-filter {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Dropdown styling */
+#stats-period {
+    min-width: 130px;
+    padding: 10px 14px;
+    border: 1px solid #e0e5eb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #10213a;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+}
+
+#stats-period:focus {
+    border-color: #008f7a;
+    box-shadow: 0 0 0 3px rgba(0, 143, 122, 0.12);
+}
+
+/* Statistics cards */
+#stats .stat-card {
+    min-width: 0;
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid #e0e5eb;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(16, 33, 58, 0.04);
+}
+
+/* Card text */
+#stats .stat-label {
+    display: block;
+    margin-bottom: 12px;
+    color: #7b8ba0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#stats .stat-number {
+    color: #10213a;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    #stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    #stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    #stats .stats-filter {
+        justify-content: flex-start;
+    }
+}
+
+
+/* Fix header actions and New Exam button visibility */
+
+#top-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.header-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    visibility: visible;
+    opacity: 1;
+}
+
+.header-actions #new-exam-btn {
+    display: inline-flex;
+    visibility: visible;
+    opacity: 1;
+    padding: 9px 13px;
+    border: 1px solid var(--primary);
+    border-radius: 7px;
+    background: var(--primary);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.header-actions #new-exam-btn:hover {
+    background: #007765;
+}
+
+@media (max-width: 760px) {
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
