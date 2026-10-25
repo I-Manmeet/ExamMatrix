@@ -927,3 +927,27 @@ body[data-page="dashboard"] {
     }
 }
 
+
+.empty-data-notice {
+    padding: 16px 20px;
+    margin: 16px 0;
+    text-align: center;
+    background: #eaf7f3;
+    border: 1px solid #bfe8dc;
+    border-radius: 12px;
+    color: #10213a;
+}
+
+.empty-data-notice p {
+    margin: 0 0 10px;
+}
+
+.empty-data-notice a {
+    color: #008f7a;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.empty-data-notice[hidden] {
+    display: none;
+}

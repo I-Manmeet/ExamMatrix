@@ -58,7 +58,7 @@
 
         <!-- EMPTY DATA NOTICE -->
 
-
+        <p id="dashboard-error" class="dashboardError" hidden></p>
         <!-- STATISTICS -->
         <section id="stats">
 
@@ -92,12 +92,17 @@
             </div>
 
         </section>
-
+        <div id="empty-data-notice" class="empty-data-notice" hidden>
+            <p>Upload halls, subjects, students and invigilators first.</p>
+            <a href="upload.html">Upload Data</a>
+        </div>
         <!-- EXAM LIST -->
         <section class="panel-card">
 
             <div class="section-title-bar">
-                <div>
+
+                <!-- EMPTY DATA NOTICE -->
+
                     <h3>Exams</h3>
                     <p class="section-subtitle">
                         View your upcoming and completed exam sessions
