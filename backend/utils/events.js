@@ -25,6 +25,7 @@ const ACTIVITY_EVENTS = [
   "duty:changed",          // { examId, hall, position, invId, by }
   "incident:reported",     // { examId, hall, type, by }
   "invigilators:uploaded", // { added, updated, by }
+  "invigilator:password-reset", // { university, invId, by }
   "auth:login",            // { role, university, by }
   "university:registered", // { universityId, city }
   "password:reset",        // { universityId }

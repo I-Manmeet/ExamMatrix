@@ -63,7 +63,8 @@ adminReady.catch(function (err) {
   if (err.expired) {
     localStorage.removeItem("em_token");
     sessionStorage.removeItem("em_session");
-    window.location.href = "login.html?expired=1";
+    let here = location.pathname.split("/").pop() + location.search;
+    window.location.href = "login.html?expired=1&next=" + encodeURIComponent(here);
   } else if (err.message !== "Not an admin" && err.message !== "Not logged in") {
     console.log("Can't reach the server to check the login");   // stay logged in; the server may be restarting
   }
