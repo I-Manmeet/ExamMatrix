@@ -38,7 +38,7 @@ app.use("/api/exams", require("./routes/exams"));
 app.use("/api/invigilators", require("./routes/invigilators"));
 app.use("/api/uploads", require("./routes/uploads"));
 app.use("/api/reports", require("./routes/reports"));
-
+app.use("/api/public", require("./routes/public"));
 
 
 // Unknown API routes
