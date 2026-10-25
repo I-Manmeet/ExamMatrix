@@ -759,7 +759,7 @@ function renderSelectedExam() {
             "h3",
             hall
                 ? "Block " + (hall.block || "A") +
-                    " – Room " + (hall.hallNo ?? hallNumber)
+                " – Room " + (hall.hallNo ?? hallNumber)
                 : "Hall " + String(hallNumber ?? "Unknown")
         );
 
@@ -784,9 +784,13 @@ function renderSelectedExam() {
             assignedHall.studentsCount
         );
 
-        if (!Number.isFinite(occupied) || occupied < 0) {
-            occupied = Math.min(remainingStudents, capacity);
+        // the full exam has the seat map: count the real seats used in this hall
+        if (exam.seatMap && Array.isArray(exam.seatMap[hallNumber])) {
+            occupied = exam.seatMap[hallNumber].reduce(function (sum, row) {
+                return sum + (row || []).filter(Boolean).length;
+            }, 0);
         }
+
 
         occupied = Math.max(
             0,
@@ -1031,8 +1035,12 @@ async function loadSelectedExamDetails(examId) {
             exam = exam.data;
         }
 
-        // Keep the detailed exam separate from the list response.
-        renderSelectedExamDetails(exam);
+        // swap in the full exam (it has the seat map) and redraw the hall cards
+        examsData = examsData.map(function (item) {
+            return String(getExamId(item)) === String(examId) ? exam : item;
+        });
+        renderSelectedExam();
+
 
     } catch (error) {
         if (
@@ -1051,4 +1059,3 @@ async function loadSelectedExamDetails(examId) {
         );
     }
 }
- 
