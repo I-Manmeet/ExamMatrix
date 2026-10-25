@@ -68,7 +68,7 @@ router.post("/", async (req, res, next) => {
         verifySentAt: new Date(),
         expiresAt: new Date(Date.now() + VERIFY_TTL_MS)
       },
-      { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: "after", runValidators: true, setDefaultsOnInsert: true }
     );
 
     // 6. send the email; without it they can't finish, so undo if it fails
@@ -177,11 +177,13 @@ router.post("/resend-verification", async (req, res) => {
   const verify = makeToken();   // replaces the old code, so old links stop working
   await PendingUniversity.updateOne(
     { _id: pending._id },
-    { $set: {
+    {
+      $set: {
         verifyTokenHash: verify.hash,
         verifySentAt: new Date(),
         expiresAt: new Date(Date.now() + VERIFY_TTL_MS)
-    } }
+      }
+    }
   );
 
   try {
@@ -210,11 +212,13 @@ router.post("/forgot-password", async (req, res) => {
   const reset = makeToken();
   await University.updateOne(
     { _id: uni._id },
-    { $set: {
+    {
+      $set: {
         resetTokenHash: reset.hash,
         resetTokenExpires: new Date(Date.now() + RESET_TTL_MS),
         resetSentAt: new Date()
-    } }
+      }
+    }
   );
 
   try {
