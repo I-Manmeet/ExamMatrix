@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // sent here because the session ran out?
   if (new URLSearchParams(window.location.search).get("expired")) {
-    showMessage("Your session has expired. Please log in again.", false);
+    showMessage("Your session ended (logins last 8 hours). Log in again with the same password.", false);
   }
 
   // already logged in? skip the form
