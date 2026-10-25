@@ -118,7 +118,14 @@ a.btnLink{ text-decoration:none; }
   background:var(--color-accent-gold-soft); border-radius:6px;
 }
 #credentialsBody td:last-child{ font-family:var(--font-mono); }
-
+/* reset one invigilator's password */
+.resetRow{ display:flex; gap:10px; margin-top:12px; }
+.resetInput{
+  flex:1; max-width:260px; padding:9px 12px; border:1px solid var(--line); border-radius:9px;
+  font-family:var(--font-mono); font-size:13.5px; text-transform:uppercase;
+}
+.resetResult{ margin-top:12px; }
+.resetPassword{ font-family:var(--font-mono); font-weight:700; }
 @media (max-width:760px){
   #uploadMain{ padding:20px 16px 60px; }
   .slot{ grid-template-columns:32px 1fr; }
