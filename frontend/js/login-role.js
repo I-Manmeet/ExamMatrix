@@ -12,6 +12,8 @@
   let roleInput = document.getElementById("loginRole");
   let usernameLabel = document.getElementById("usernameLabel");
   let usernameInput = document.getElementById("username");
+  let passwordInput = document.getElementById("password");
+  let pwToggle = document.getElementById("pwToggle");
   let forgotRow = document.getElementById("forgotRow");
   let adminRegister = document.getElementById("adminRegister");
   let heroText = document.getElementById("heroText");
@@ -77,6 +79,16 @@
     usernameInput.placeholder = r.placeholder;
     usernameInput.setAttribute("autocomplete", r.autocomplete);
     usernameInput.value = "";                             // an email isn't an INV ID, so start clean
+
+    // never carry a password from one tab to the other, and hide it again
+    if (passwordInput) {
+      passwordInput.value = "";
+      passwordInput.type = "password";
+    }
+    if (pwToggle) {
+      pwToggle.textContent = "👁";
+      pwToggle.setAttribute("aria-label", "Show password");
+    }
 
     if (adminRegister) adminRegister.hidden = role !== "admin";   // invigilators can't register themselves
     showForgot(role);

@@ -2,7 +2,7 @@ const test = require("node:test");
 
 const assert = require("node:assert");
 
-const { findSeat } = require("../routes/public.js");
+const { findSeat } = require("../controllers/publicController.js");
 
 const seatMap = {
 
