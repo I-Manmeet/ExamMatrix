@@ -1593,19 +1593,9 @@ async function loadTimetable() {
    LOAD DATA
 ========================================================= */
 
-if (
-    typeof loadExamData ===
-    "function"
-) {
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", loadTimetable);
-    } else {
-        loadTimetable();
-    }
-
+/* start once the page has loaded (data.js is gone, so no loadExamData check) */
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadTimetable);
 } else {
-
     loadTimetable();
-
 }
