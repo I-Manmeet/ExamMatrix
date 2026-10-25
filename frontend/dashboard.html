@@ -1,14 +1,12 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>ExamMatrix - Dashboard</title>
 
-    <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -16,12 +14,10 @@
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- CSS -->
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/headerFooter.css">
     <link rel="stylesheet" href="css/dashboard.css">
@@ -29,136 +25,113 @@
 
 <body data-page="dashboard">
 
-    <!-- NAVBAR -->
     <div id="navbarContainer"></div>
 
-    <!-- MAIN PAGE -->
     <main id="page">
 
         <!-- TOP HEADER -->
         <header id="top-section">
-
             <div class="welcome-text">
                 <h1>Dashboard</h1>
-
                 <p>
                     Overview of your active exam sessions and hall capacity.
                 </p>
             </div>
 
             <div class="header-actions">
-
+                <button id="upload-btn" type="button" class="btn btn-secondary">
+                        Upload Data
+                </button>
                 <button
                     id="view-timetable-btn"
                     class="btn-secondary"
                     type="button">
-
                     <i class="fa-regular fa-calendar"></i>
                     View Timetable
-
                 </button>
 
-                <button
-                    id="new-exam-btn"
-                    type="button">
-
+                <button id="new-exam-btn" type="button">
                     + New Exam
-
                 </button>
-
             </div>
-
         </header>
+
+        <!-- EMPTY DATA NOTICE -->
+
 
         <!-- STATISTICS -->
         <section id="stats">
 
+            <div class="stats-filter">
+        
+                <select id="stats-period" onchange="setStatsView(this.value)">
+                    <option value="today" selected>Today</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
             <div class="stat-card">
                 <span class="stat-label">Exams Scheduled</span>
-
-                <div class="stat-number" id="exams-scheduled-count">
-                    0
-                </div>
+                <div class="stat-number" id="exams-scheduled-count">0</div>
             </div>
 
             <div class="stat-card">
                 <span class="stat-label">Students Seated</span>
-
-                <div class="stat-number" id="students-seated-count">
-                    0
-                </div>
+                <div class="stat-number" id="students-seated-count">0</div>
             </div>
 
             <div class="stat-card">
                 <span class="stat-label">Halls Available</span>
-
-                <div class="stat-number" id="halls-available-count">
-                    0
-                </div>
+                <div class="stat-number" id="halls-available-count">0</div>
             </div>
 
             <div class="stat-card">
                 <span class="stat-label">Total Conflicts</span>
-
                 <div class="stat-number" id="total-conflicts-count">
-                    <i class="fa-regular fa-circle-check"></i>
-                    0
+                    <i class="fa-regular fa-circle-check"></i> 0
                 </div>
             </div>
 
         </section>
 
-        <!-- EXAMS -->
+        <!-- EXAM LIST -->
         <section class="panel-card">
 
             <div class="section-title-bar">
                 <div>
                     <h3>Exams</h3>
-
                     <p class="section-subtitle">
                         View your upcoming and completed exam sessions
                     </p>
                 </div>
             </div>
 
-            <!-- EXAM TABS -->
             <div class="exam-tabs">
-
                 <button
                     id="upcoming-tab"
                     class="exam-tab active"
-                    type="button">
-
+                    type="button"
+                    aria-pressed="true">
                     <i class="fa-regular fa-calendar"></i>
                     Upcoming
-
                     <span id="upcoming-count">0</span>
-
                 </button>
 
                 <button
                     id="previous-tab"
                     class="exam-tab"
-                    type="button">
-
+                    type="button"
+                    aria-pressed="false">
                     <i class="fa-regular fa-calendar-check"></i>
                     Previous
-
                     <span id="previous-count">0</span>
-
                 </button>
-
             </div>
 
-            <!-- EXAMS LIST -->
-            <div
-                id="exam-list"
-                class="exam-scroll"
-                aria-live="polite">
-
-                <!-- JavaScript inserts exams here -->
-
-            </div>
+    <div
+        id="exam-list"
+        class="exam-scroll"
+        aria-live="polite">
+    </div>
 
         </section>
 
@@ -174,14 +147,11 @@
                     <p
                         id="hall-section-subtitle"
                         class="section-subtitle">
-
                         Select an exam to view its hall allocation
-
                     </p>
                 </div>
             </div>
 
-            <!-- SELECTED EXAM INFORMATION -->
             <div
                 id="selected-exam-info"
                 class="selected-exam-info">
@@ -202,23 +172,15 @@
 
             </div>
 
-            <!-- HALL CAPACITY GRID -->
-            <div
-                id="capacity-grid"
-                class="capacity-grid">
-
-                <!-- JavaScript inserts selected exam halls here -->
-
-            </div>
+            <div id="capacity-grid" class="capacity-grid"></div>
 
         </section>
 
     </main>
 
-    <!-- FOOTER -->
     <div id="footerContainer"></div>
 
-    <!-- JAVASCRIPT -->
+    <!-- Keep this script order -->
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/app-shell.js"></script>
