@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,13 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/headerFooter.css">
@@ -40,12 +37,9 @@
 
             <div class="header-actions">
                 <button id="upload-btn" type="button" class="btn btn-secondary">
-                        Upload Data
+                    Upload Data
                 </button>
-                <button
-                    id="view-timetable-btn"
-                    class="btn-secondary"
-                    type="button">
+                <button id="view-timetable-btn" class="btn-secondary" type="button">
                     <i class="fa-regular fa-calendar"></i>
                     View Timetable
                 </button>
@@ -63,7 +57,7 @@
         <section id="stats">
 
             <div class="stats-filter">
-        
+
                 <select id="stats-period" onchange="setStatsView(this.value)">
                     <option value="today" selected>Today</option>
                     <option value="all">All Time</option>
@@ -100,43 +94,28 @@
         <section class="panel-card">
 
             <div class="section-title-bar">
-
-                <!-- EMPTY DATA NOTICE -->
-
-                    <h3>Exams</h3>
-                    <p class="section-subtitle">
-                        View your upcoming and completed exam sessions
-                    </p>
-                </div>
+                <h3>Exams</h3>
+                <p class="section-subtitle">
+                    View your upcoming and completed exam sessions
+                </p>
             </div>
 
             <div class="exam-tabs">
-                <button
-                    id="upcoming-tab"
-                    class="exam-tab active"
-                    type="button"
-                    aria-pressed="true">
+                <button id="upcoming-tab" class="exam-tab active" type="button" aria-pressed="true">
                     <i class="fa-regular fa-calendar"></i>
                     Upcoming
                     <span id="upcoming-count">0</span>
                 </button>
 
-                <button
-                    id="previous-tab"
-                    class="exam-tab"
-                    type="button"
-                    aria-pressed="false">
+                <button id="previous-tab" class="exam-tab" type="button" aria-pressed="false">
                     <i class="fa-regular fa-calendar-check"></i>
                     Previous
                     <span id="previous-count">0</span>
                 </button>
             </div>
 
-    <div
-        id="exam-list"
-        class="exam-scroll"
-        aria-live="polite">
-    </div>
+            <div id="exam-list" class="exam-scroll" aria-live="polite">
+            </div>
 
         </section>
 
@@ -149,17 +128,13 @@
                         Hall Capacity &amp; Allocation
                     </h3>
 
-                    <p
-                        id="hall-section-subtitle"
-                        class="section-subtitle">
+                    <p id="hall-section-subtitle" class="section-subtitle">
                         Select an exam to view its hall allocation
                     </p>
                 </div>
             </div>
 
-            <div
-                id="selected-exam-info"
-                class="selected-exam-info">
+            <div id="selected-exam-info" class="selected-exam-info">
 
                 <div class="selected-exam-icon">
                     <i class="fa-solid fa-building-columns"></i>
@@ -192,4 +167,5 @@
     <script src="js/dashboard.js"></script>
 
 </body>
+
 </html>

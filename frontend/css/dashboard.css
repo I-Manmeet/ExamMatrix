@@ -1,229 +1,362 @@
-
-:root {
-    --primary: #008f7a;
-    --primary-light: #eaf7f3;
-    --text: #10213a;
-    --muted: #7b8ba0;
-    --border: #e0e8f0;
-    --surface: #ffffff;
-    --page: #f6f9f8;
-    --selected-bg: #e8f6f0;
-    --selected-border: #20b995;
-}
-
-/* PAGE */
+/* =========================================================
+   DASHBOARD — css/dashboard.css
+   Colours and fonts come from theme.css (emerald + charcoal).
+   theme.css also styles .stat-card / .stat-number for the
+   dark homepage panel, so #stats resets them for this page.
+========================================================= */
 
 body[data-page="dashboard"] {
-    margin: 0;
-    background: var(--page);
-    color: var(--text);
-    font-family: "Plus Jakarta Sans", sans-serif;
-}
-
-#page,
-#page * {
-    box-sizing: border-box;
+    --dash-border: var(--line, #e4e8e4);
+    --dash-muted: var(--ink-3, #8a938e);
+    --dash-tint: var(--color-emerald-tint, #eef8f4);
+    --dash-hover: var(--color-primary-hover, #0c634a);
+    background: var(--bg, #f6f7f5);
+    color: var(--ink, #1a1f1d);
+    font-family: var(--ui);
 }
 
 #page {
+    flex: 1;
     width: min(1180px, calc(100% - 40px));
-    margin: 22px auto;
+    margin: 28px auto 40px;
 }
 
-/* HEADER */
+/* keyboard users can see where they are */
+body[data-page="dashboard"] button:focus-visible,
+body[data-page="dashboard"] select:focus-visible,
+body[data-page="dashboard"] a:focus-visible {
+    outline: 2px solid var(--emerald);
+    outline-offset: 2px;
+}
+
+
+/* ---- page header ---- */
 
 #top-section {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
+    flex-wrap: wrap;
     gap: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
 }
 
 .welcome-text h1 {
-    margin: 0 0 4px;
-    font-size: 25px;
-    font-weight: 800;
+    margin-bottom: 4px;
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--charcoal);
 }
 
 .welcome-text p,
 .section-subtitle {
-    margin: 0;
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.6;
+    color: var(--dash-muted);
+    font-size: 13px;
+    line-height: 1.55;
 }
 
 .header-actions {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
 .header-actions button {
-    padding: 9px 13px;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: white;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 15px;
+    border: 1px solid var(--dash-border);
+    border-radius: var(--radius-button, 9.5px);
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background .2s ease;
+    transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 
 .header-actions button:hover {
-    background: #f0f7f5;
+    border-color: #c9d3ce;
+    background: #fafcfb;
 }
 
-.header-actions button:not(.btn-secondary) {
-    border-color: var(--primary);
-    background: var(--primary);
-    color: white;
+#new-exam-btn {
+    border-color: var(--emerald);
+    background: var(--emerald);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(15, 122, 92, .22);
 }
 
-/* STAT CARDS — ORIGINAL BASE STYLING */
+#new-exam-btn:hover {
+    border-color: var(--dash-hover);
+    background: var(--dash-hover);
+}
+
+/* dashboard.js hides Upload Data / New Exam with the hidden attribute */
+.header-actions button[hidden] {
+    display: none;
+}
+
+
+/* ---- error box ---- */
+
+.dashboardError {
+    margin: 0 0 16px;
+    padding: 11px 14px;
+    border: 1px solid #f3c9c4;
+    border-radius: 10px;
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.dashboardError[hidden] {
+    display: none;
+}
+
+
+/* ---- statistics ---- */
 
 #stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 17px;
+    gap: 14px;
+    margin-bottom: 18px;
 }
 
-.stat-card {
-    min-width: 0;
-    padding: 15px 16px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: white;
-    box-shadow: 0 2px 5px #10213a08;
+#stats .stats-filter {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
 }
 
-.stat-label {
-    display: block;
-    margin-bottom: 7px;
-    color: #66778d;
-    font-size: 9px;
-    font-weight: 800;
+#stats-period {
+    min-width: 130px;
+    padding: 8px 12px;
+    border: 1px solid var(--dash-border);
+    border-radius: 9px;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#stats-period:focus {
+    border-color: var(--emerald);
+    box-shadow: 0 0 0 3px rgba(15, 122, 92, .12);
+    outline: none;
+}
+
+/* undo the homepage's dark stat card from theme.css */
+#stats .stat-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 0;
+    padding: 18px 20px;
+    border: 1px solid var(--dash-border);
+    border-top: 3px solid var(--emerald);
+    border-radius: var(--radius-card, 14px);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    cursor: default;
+    transform: none;
+    transition: box-shadow .2s ease;
+}
+
+#stats .stat-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-md);
+}
+
+#stats .stat-label {
+    margin: 0 0 10px;
+    color: var(--ink-2);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    line-height: 1.3;
     text-transform: uppercase;
-    letter-spacing: .35px;
 }
 
-.stat-number {
+#stats .stat-number {
     display: flex;
     align-items: center;
-    gap: 7px;
-    color: #4bdcba;
-    font-size: 23px;
+    gap: 8px;
+    margin: 0;
+    color: var(--charcoal);
+    font-family: var(--serif);
+    font-size: 30px;
     font-weight: 600;
+    line-height: 1.1;
 }
 
-.stat-number i {
-    color: var(--primary);
+#stats .stat-number i {
+    color: var(--emerald);
     font-size: 20px;
 }
 
-/* WHITE PANELS */
+
+/* ---- "upload data first" notice ---- */
+
+.empty-data-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin: 0 0 18px;
+    padding: 14px 18px;
+    border: 1px solid var(--emerald-soft);
+    border-left: 4px solid var(--emerald);
+    border-radius: 12px;
+    background: var(--dash-tint);
+    color: var(--ink);
+    font-size: 13.5px;
+}
+
+.empty-data-notice a {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--emerald);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.empty-data-notice a:hover {
+    background: var(--dash-hover);
+}
+
+.empty-data-notice[hidden] {
+    display: none;
+}
+
+
+/* ---- white panels ---- */
 
 .panel-card {
-    margin-bottom: 17px;
-    padding: 17px;
-    border: 1px solid var(--border);
-    border-radius: 13px;
-    background: white;
-    box-shadow: 0 2px 5px #10213a08;
+    margin-bottom: 18px;
+    padding: 20px 22px;
+    border: 1px solid var(--dash-border);
+    border-radius: var(--radius-card, 14px);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
 }
 
 .section-title-bar {
-    margin-bottom: 13px;
+    margin-bottom: 14px;
 }
 
 .section-title-bar h3 {
     margin: 0 0 3px;
-    font-size: 15px;
-    font-weight: 800;
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--charcoal);
 }
 
-/* UPCOMING / PREVIOUS TABS */
+
+/* ---- Upcoming / Previous tabs ---- */
 
 .exam-tabs {
     display: inline-flex;
     gap: 4px;
-    margin: 0 0 14px;
+    margin-bottom: 16px;
     padding: 4px;
-    border-radius: 9px;
-    background: #f0f4f8;
+    border: 1px solid var(--dash-border);
+    border-radius: 10px;
+    background: var(--bg);
 }
 
 .exam-tab {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 11px;
+    gap: 7px;
+    padding: 8px 14px;
     border: 0;
     border-radius: 7px;
     background: transparent;
-    color: #64748b;
-    font-family: inherit;
-    font-size: 10px;
-    font-weight: 700;
+    color: var(--ink-2);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+
+.exam-tab:hover {
+    color: var(--ink);
 }
 
 .exam-tab.active {
-    background: white;
-    color: var(--primary);
-    box-shadow: 0 1px 4px #10213a10;
+    background: var(--paper);
+    color: var(--emerald);
+    box-shadow: 0 1px 3px rgba(33, 43, 40, .10);
 }
 
 .exam-tab span {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 19px;
-    height: 19px;
-    padding: 0 5px;
-    border-radius: 20px;
-    background: #e8f5f2;
-    font-size: 9px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--line);
+    color: var(--ink-2);
+    font-size: 11px;
+    font-weight: 700;
 }
 
+.exam-tab.active span {
+    background: var(--emerald-soft);
+    color: var(--emerald);
+}
+
+
+/* ---- exam list ---- */
+
+/* long lists scroll inside the panel instead of pushing the hall panel far down */
 .exam-scroll {
-    width: 100%;
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
-
-/* DATE GROUPING */
 
 .exam-date-group {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
+}
+
+.exam-date-group:last-child {
+    margin-bottom: 0;
 }
 
 .exam-date-heading {
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 4px 0 9px;
-    border-bottom: 1px solid var(--border);
-    color: var(--primary);
-    font-size: 9px;
-    font-weight: 800;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 4px 0 8px;
+    border-bottom: 1px solid var(--dash-border);
+    color: var(--emerald);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .05em;
     text-transform: uppercase;
 }
 
-.exam-date-heading i {
-    font-size: 10px;
-}
-
-/* EXAM LIST */
-
 .exam-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 9px;
-    padding-top: 5px;
+    gap: 10px;
 }
 
 .exam-card {
@@ -231,40 +364,27 @@ body[data-page="dashboard"] {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    width: 100%;
-    min-width: 0;
-    padding: 12px;
-    border: 1px solid #dce7e5;
-    border-radius: 8px;
-    background: #ffffff;
+    padding: 14px 16px;
+    border: 1px solid var(--dash-border);
+    border-left: 3px solid transparent;
+    border-radius: 10px;
+    background: var(--paper);
     cursor: pointer;
-    transition:
-        background-color .2s ease,
-        border-color .2s ease,
-        box-shadow .2s ease;
+    transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
 }
 
 .exam-card:hover {
-    border-color: var(--selected-border);
-    background: #f3faf7;
+    border-color: #c9dcd4;
+    background: #fbfdfc;
+    box-shadow: var(--shadow-sm);
 }
 
 .exam-card.selected {
-    background-color: var(--selected-bg) !important;
-    border: 1px solid var(--selected-border) !important;
-    box-shadow: 0 0 0 1px #20b99520;
+    border-color: var(--emerald);
+    border-left-color: var(--emerald);
+    background: var(--dash-tint);
+    box-shadow: 0 0 0 1px rgba(15, 122, 92, .12);
 }
-
-.exam-card.selected h3 {
-    color: #103b32;
-}
-
-.exam-card.selected .exam-details,
-.exam-card.selected .exam-card-main {
-    background: transparent;
-}
-
-/* EXAM INFORMATION */
 
 .exam-card-main {
     flex: 1 1 auto;
@@ -274,41 +394,26 @@ body[data-page="dashboard"] {
 .exam-card-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 10px;
-    width: 100%;
-    min-width: 0;
-    margin-bottom: 5px;
-    flex-wrap: nowrap;
+    margin-bottom: 4px;
 }
 
 .exam-card-header h3 {
     flex: 1 1 auto;
     min-width: 0;
     margin: 0;
-    color: var(--text);
-    font-size: 11px;
-    font-weight: 800;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 700;
     overflow-wrap: anywhere;
 }
 
-.exam-status {
-    display: inline-block;
-    flex-shrink: 0;
-    margin: 0 0 0 auto;
-    padding: 4px 7px;
-    border-radius: 5px;
-    background: #fff0c9;
-    color: #a46b00;
-    font-size: 8px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
+/* subject codes line */
 .exam-card p {
-    margin: 3px 0;
-    color: #718096;
-    font-size: 9px;
+    margin: 2px 0 4px;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
     overflow-wrap: anywhere;
 }
 
@@ -319,110 +424,142 @@ body[data-page="dashboard"] {
 
 .exam-detail-row {
     display: flex;
-    align-items: baseline;
-    justify-content: flex-start;
     gap: 8px;
-    padding: 0;
-    border: 0;
+    color: var(--dash-muted);
+    font-size: 12.5px;
 }
 
-.detail-label,
-.detail-value {
-    color: #78889b;
-    font-size: 9px;
-    font-weight: 500;
+/* status badge: dashboard.js adds today / upcoming / previous */
+.exam-status {
+    flex-shrink: 0;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #fbf3df;
+    color: #8a5a00;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    white-space: nowrap;
 }
 
-.exam-card.selected .detail-label,
-.exam-card.selected .detail-value {
-    color: #426b60;
+.exam-status.today {
+    background: var(--emerald);
+    color: #fff;
 }
 
-.detail-value {
-    text-align: right;
+.exam-status.upcoming {
+    background: var(--emerald-soft);
+    color: var(--emerald);
 }
 
-/* MATRIX AND DELETE ON THE RIGHT */
+.exam-status.previous {
+    background: var(--line);
+    color: var(--ink-2);
+}
 
+/* Matrix → and Delete */
 .exam-card-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     flex: 0 0 auto;
-    flex-wrap: nowrap;
-    gap: 12px;
-    margin: 0;
+    gap: 8px;
 }
 
 .exam-card-actions button {
-    position: relative;
-    z-index: 1;
-    flex-shrink: 0;
-    padding: 4px 0;
-    border: 0;
+    padding: 7px 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
     background: transparent;
-    font-family: inherit;
-    font-size: 9px;
-    font-weight: 800;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
 }
 
 .exam-card-actions .btn-primary {
-    color: var(--primary);
+    border-color: var(--emerald);
+    background: var(--emerald);
+    color: #fff;
 }
 
-.exam-card-actions .btn-secondary {
-    color: #64748b;
+.exam-card-actions .btn-primary:hover {
+    border-color: var(--dash-hover);
+    background: var(--dash-hover);
 }
 
 .exam-card-actions .btn-danger {
-    color: #e05268;
+    border-color: #f0cdc8;
+    background: var(--paper);
+    color: var(--danger);
 }
 
-.exam-card-actions button:hover {
-    text-decoration: underline;
+.exam-card-actions .btn-danger:hover {
+    border-color: var(--danger);
+    background: var(--danger-soft);
 }
 
-/* EMPTY EXAMS */
+
+/* ---- empty and loading states ---- */
 
 .empty-exams {
-    padding: 25px 12px;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
-    background: #fafbfd;
+    padding: 32px 16px;
+    border: 1px dashed #cdd6d1;
+    border-radius: 12px;
+    background: var(--bg);
     text-align: center;
 }
 
 .empty-exams h3 {
     margin: 0 0 6px;
-    font-size: 13px;
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--charcoal);
 }
 
 .empty-exams p {
-    color: var(--muted);
-    font-size: 11px;
+    color: var(--dash-muted);
+    font-size: 13px;
 }
 
 .empty-exams a {
     display: inline-block;
-    margin-top: 8px;
-    color: var(--primary);
-    font-size: 11px;
-    font-weight: 800;
+    margin-top: 14px;
+    padding: 9px 16px;
+    border-radius: 9px;
+    background: var(--emerald);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
 }
 
-/* SELECTED EXAM INFORMATION */
+.empty-exams a:hover {
+    background: var(--dash-hover);
+}
+
+/* "Loading examinations…", "No examination selected." */
+#exam-list > p,
+#capacity-grid > p {
+    padding: 14px 0;
+    color: var(--dash-muted);
+    font-size: 13px;
+}
+
+
+/* ---- selected exam ---- */
 
 .selected-exam-info {
     display: flex;
     align-items: center;
-    gap: 11px;
-    margin-bottom: 10px;
-    padding: 11px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: #f7f9fc;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--dash-border);
+    border-radius: 10px;
+    background: var(--bg);
 }
 
 .selected-exam-icon {
@@ -430,62 +567,56 @@ body[data-page="dashboard"] {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 35px;
-    height: 35px;
-    border-radius: 8px;
-    background: #e8f6f2;
-    color: var(--primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--emerald-soft);
+    color: var(--emerald);
+    font-size: 17px;
 }
 
 .selected-exam-info > div:last-child {
     display: grid;
-    gap: 4px;
+    gap: 2px;
 }
 
 #selected-exam-name {
-    font-size: 10px;
-    font-weight: 800;
+    color: var(--ink);
+    font-size: 14.5px;
+    font-weight: 700;
 }
 
 #selected-exam-details {
-    color: var(--muted);
-    font-size: 9px;
-    line-height: 1.5;
+    color: var(--dash-muted);
+    font-size: 12.5px;
 }
 
-/* HALL CAPACITY GRID */
+
+/* ---- hall capacity cards ---- */
 
 .capacity-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
 }
 
 .capacity-card {
-    min-width: 0;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: #fafbfd;
+    padding: 14px 16px;
+    border: 1px solid var(--dash-border);
+    border-radius: 10px;
+    background: var(--paper);
 }
 
 .capacity-card h3 {
-    margin: 0 0 9px;
-    font-size: 10px;
-    font-weight: 800;
+    margin: 0 0 10px;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .capacity-card p {
-    margin: 5px 0;
-    color: #687b90;
-    font-size: 9px;
-}
-
-/* CAPACITY PROGRESS BAR */
-
-.capacity-progress {
-    margin-top: 9px;
+    color: var(--dash-muted);
+    font-size: 12.5px;
 }
 
 .capacity-progress-label {
@@ -493,64 +624,59 @@ body[data-page="dashboard"] {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 6px;
-    color: #64748b;
-    font-size: 9px;
+    margin-bottom: 7px;
+    color: var(--ink-2);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.capacity-occupied {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--emerald-soft);
+    color: var(--emerald);
+    font-size: 11px;
+    font-weight: 700;
 }
 
 .capacity-progress-track {
-    width: 100%;
-    height: 10px;
+    height: 8px;
     overflow: hidden;
-    border-radius: 4px;
-    background: #e0e7ef;
+    border-radius: 999px;
+    background: #e6ebe8;
 }
 
 .capacity-progress-fill {
     height: 100%;
-    border-radius: 4px;
-    background: #3478e5;
+    border-radius: 999px;
+    background: var(--emerald);
     transition: width .3s ease;
 }
 
-.capacity-occupied {
-    display: inline-block;
-    margin-left: 4px;
-    padding: 3px 5px;
-    border-radius: 4px;
-    background: #e4f6ef;
-    color: var(--primary);
-    font-size: 8px;
+/* dashboard.js gives the % label a blue inline colour; match the theme */
+.capacity-progress > span:last-child {
+    color: var(--emerald) !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
 }
 
-/* ERROR MESSAGE */
 
-#dashboard-error:not([hidden]) {
-    display: block;
-    margin-bottom: 14px;
-    padding: 12px;
-    border: 1px solid #f2c5c5;
-    border-radius: 8px;
-    background: #fff2f2;
-    color: #b42332;
-    font-size: 12px;
-}
+/* ---- smaller screens ---- */
 
-/* RESPONSIVE */
-
-@media (max-width: 760px) {
-    #page {
-        width: calc(100% - 24px);
-        margin: 16px auto;
-    }
-
+@media (max-width: 900px) {
     #stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
 
-    #top-section {
-        align-items: flex-start;
-        flex-direction: column;
+@media (max-width: 640px) {
+    #page {
+        width: calc(100% - 24px);
+        margin: 18px auto 28px;
+    }
+
+    .welcome-text h1 {
+        font-size: 24px;
     }
 
     .header-actions {
@@ -558,396 +684,53 @@ body[data-page="dashboard"] {
     }
 
     .header-actions button {
-        flex: 1;
-    }
-
-    .panel-card {
-        padding: 13px;
-    }
-
-    .capacity-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .exam-card {
-        align-items: center;
-        flex-direction: row;
-        gap: 8px;
-        padding: 10px;
-    }
-
-    .exam-card-main {
         flex: 1 1 auto;
-        min-width: 0;
-    }
-
-    .exam-card-header {
-        gap: 6px;
-    }
-
-    .exam-card-header h3 {
-        font-size: 10px;
-    }
-
-    .exam-status {
-        padding: 4px 5px;
-        font-size: 8px;
-    }
-
-    .exam-card-actions {
-        width: auto;
-        flex: 0 0 auto;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .exam-card-actions button {
-        font-size: 9px;
-    }
-}
-
-@media (max-width: 480px) {
-    .exam-card {
-        gap: 6px;
-        padding: 8px;
-    }
-
-    .exam-card-header {
-        gap: 5px;
-    }
-
-    .exam-card-header h3 {
-        font-size: 9px;
-    }
-
-    .exam-status {
-        padding: 3px 4px;
-        font-size: 7px;
-    }
-
-    .exam-card-actions {
-        gap: 7px;
-    }
-
-    .exam-card-actions button {
-        font-size: 8px;
-    }
-}
-
-@media (max-width: 380px) {
-    #stats {
-        grid-template-columns: 1fr;
-    }
-
-    .exam-card {
-        gap: 5px;
-        padding: 7px;
-    }
-
-    .exam-card-header h3 {
-        font-size: 8px;
-    }
-
-    .exam-status {
-        font-size: 7px;
-    }
-
-    .exam-card-actions {
-        gap: 6px;
-    }
-
-    .exam-card-actions button {
-        font-size: 7px;
-    }
-}
-
-.dashboardError {
-    color: #b42318;
-    background-color: #fef3f2;
-    border: 1px solid #fecdca;
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin: 12px 0;
-}
-
-.dashboardError[hidden] {
-    display: none;
-}
-
-/* =========================================
-   STATS DROPDOWN + BOX LAYOUT
-   New changes are limited to statistics
-========================================= */
-
-.stats-layout {
-    display: grid;
-    grid-template-columns: 170px minmax(0, 1fr);
-    align-items: start;
-    gap: 0 12px;
-    margin-bottom: 17px;
-}
-
-
-
-.stats-layout .stats-filter label {
-    display: none;
-}
-
-.stats-layout .stats-filter select {
-    width: 100%;
-    min-width: 0;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.stats-layout .stats-filter select:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 3px;
-}
-
-/* Three boxes on the first row, fourth box below */
-.stats-layout #stats {
-    grid-column: 2;
-    grid-row: 1;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: start;
-    gap: 12px;
-    min-width: 0;
-    margin: 0;
-}
-
-.stats-layout #stats .stat-card {
-    min-width: 0;
-    padding: 22px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--surface);
-    box-shadow: 0 2px 5px #10213a08;
-    transition: box-shadow .2s ease;
-}
-
-.stats-layout #stats .stat-card:hover {
-    box-shadow: 0 5px 14px #10213a10;
-}
-
-.stats-layout #stats .stat-label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 700;
-}
-
-.stats-layout #stats .stat-number {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    color: #4bdcba;
-    font-size: 23px;
-    font-weight: 600;
-}
-
-.stats-layout #stats .stat-number i {
-    color: var(--primary);
-}
-
-/* Responsive statistics layout */
-
-@media (max-width: 760px) {
-    .stats-layout {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .stats-layout .stats-filter {
-        grid-column: 1;
-        grid-row: 1;
-        margin: 0;
-    }
-
-    .stats-layout #stats {
-        grid-column: 1;
-        grid-row: 2;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-layout #stats {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-layout #stats .stat-card {
-        padding: 18px;
-    }
-}
-
-
-/* Statistics section */
-#stats {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
-    margin-bottom: 28px;
-}
-
-/* Today dropdown — full row above the boxes */
-#stats .stats-filter {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 0;
-}
-
-/* Dropdown styling */
-#stats-period {
-    min-width: 130px;
-    padding: 10px 14px;
-    border: 1px solid #e0e5eb;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #10213a;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    outline: none;
-}
-
-#stats-period:focus {
-    border-color: #008f7a;
-    box-shadow: 0 0 0 3px rgba(0, 143, 122, 0.12);
-}
-
-/* Statistics cards */
-#stats .stat-card {
-    min-width: 0;
-    padding: 22px;
-    background: #ffffff;
-    border: 1px solid #e0e5eb;
-    border-radius: 12px;
-    box-shadow: 0 3px 10px rgba(16, 33, 58, 0.04);
-}
-
-/* Card text */
-#stats .stat-label {
-    display: block;
-    margin-bottom: 12px;
-    color: #7b8ba0;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-#stats .stat-number {
-    color: #10213a;
-    font-size: 28px;
-    font-weight: 800;
-}
-
-/* Tablet */
-@media (max-width: 900px) {
-    #stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-/* Mobile */
-@media (max-width: 480px) {
-    #stats {
-        grid-template-columns: 1fr;
-        gap: 12px;
+        justify-content: center;
     }
 
     #stats .stats-filter {
         justify-content: flex-start;
     }
+
+    .panel-card {
+        padding: 16px;
+    }
+
+    .exam-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .exam-card-actions {
+        justify-content: flex-end;
+    }
 }
 
-
-/* Fix header actions and New Exam button visibility */
-
-#top-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.header-actions button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    visibility: visible;
-    opacity: 1;
-}
-
-.header-actions #new-exam-btn {
-    display: inline-flex;
-    visibility: visible;
-    opacity: 1;
-    padding: 9px 13px;
-    border: 1px solid var(--primary);
-    border-radius: 7px;
-    background: var(--primary);
-    color: #ffffff;
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.header-actions #new-exam-btn:hover {
-    background: #007765;
-}
-
-@media (max-width: 760px) {
-    .header-actions {
-        width: 100%;
-        justify-content: flex-start;
+@media (max-width: 400px) {
+    #stats {
+        grid-template-columns: 1fr;
     }
 }
 
 
-.empty-data-notice {
-    padding: 16px 20px;
-    margin: 16px 0;
-    text-align: center;
-    background: #eaf7f3;
-    border: 1px solid #bfe8dc;
-    border-radius: 12px;
-    color: #10213a;
-}
+/* ---- printing ---- */
 
-.empty-data-notice p {
-    margin: 0 0 10px;
-}
+@media print {
+    .header-actions,
+    .exam-card-actions,
+    .exam-tabs,
+    #stats .stats-filter {
+        display: none;
+    }
 
-.empty-data-notice a {
-    color: #008f7a;
-    font-weight: 600;
-    text-decoration: underline;
-}
+    .panel-card,
+    #stats .stat-card {
+        box-shadow: none;
+    }
 
-.empty-data-notice[hidden] {
-    display: none;
+    .exam-scroll {
+        max-height: none;
+        overflow: visible;
+    }
 }
