@@ -23,7 +23,7 @@ var timetableExams = [];
 
 
 /* =========================================================
-   GET EXAMS FROM LOCAL STORAGE
+   GET EXAMS FROM THE SERVER.
 ========================================================= */
 
 
@@ -43,6 +43,16 @@ async function getTimetableExams() {
 
     return [];
 }
+
+/* the server sends subjects / halls; older browser copies used pickedCourses / pickedHalls */
+function examCourses(exam) {
+    return exam.subjects || exam.pickedCourses || [];
+}
+
+function examHalls(exam) {
+    return exam.halls || exam.pickedHalls || [];
+}
+
 
 /* =========================================================
    DATE HELPERS
@@ -283,7 +293,7 @@ function getConductedCourses(exams) {
     for (var i = 0; i < exams.length; i++) {
 
         var courses =
-            exams[i].pickedCourses || [];
+            examCourses(exams[i]);
 
         for (var c = 0; c < courses.length; c++) {
 
@@ -416,8 +426,8 @@ function createExamCard(exam) {
     ===================================== */
 
     if (
-        exam.pickedCourses &&
-        exam.pickedCourses.length > 0
+        examCourses(exam).length &&
+        examCourses(exam).length > 0
     ) {
 
         var courses =
@@ -439,7 +449,7 @@ function createExamCard(exam) {
         courses.appendChild(
             document.createTextNode(
                 " " +
-                exam.pickedCourses.join(", ")
+                examCourses(exam).join(", ")
             )
         );
 
@@ -454,8 +464,8 @@ function createExamCard(exam) {
     ===================================== */
 
     if (
-        exam.pickedHalls &&
-        exam.pickedHalls.length > 0
+        examHalls(exam).length &&
+        examHalls(exam).length > 0
     ) {
 
         var halls =
@@ -477,7 +487,7 @@ function createExamCard(exam) {
         halls.appendChild(
             document.createTextNode(
                 " " +
-                exam.pickedHalls.join(", ")
+                examHalls(exam).join(", ")
             )
         );
 
@@ -1309,8 +1319,8 @@ function showDayExams(date, exams) {
         /* Classes */
 
         if (
-            exam.pickedCourses &&
-            exam.pickedCourses.length
+            examCourses(exam).length &&
+            examCourses(exam).length
         ) {
 
             var courses = document.createElement("div");
@@ -1319,7 +1329,7 @@ function showDayExams(date, exams) {
 
             courses.textContent =
                 "📚 Classes: " +
-                exam.pickedCourses.join(", ");
+                examCourses(exam).join(", ");
 
             item.appendChild(courses);
         }
@@ -1328,8 +1338,8 @@ function showDayExams(date, exams) {
         /* Room */
 
         if (
-            exam.pickedHalls &&
-            exam.pickedHalls.length
+            examHalls(exam).length &&
+            examHalls(exam).length
         ) {
 
             var halls = document.createElement("div");
@@ -1338,7 +1348,7 @@ function showDayExams(date, exams) {
 
             halls.textContent =
                 "📍 Room: " +
-                exam.pickedHalls.join(", ");
+                examHalls(exam).join(", ");
 
             item.appendChild(halls);
         }
@@ -1440,21 +1450,15 @@ function setupExport() {
 
                 rows.push([
                     exam.examName ||
-                        ("Exam " + (i + 1)),
+                    ("Exam " + (i + 1)),
 
                     exam.date || "",
 
                     exam.slot || "",
 
-                    (
-                        exam.pickedCourses ||
-                        []
-                    ).join("; "),
+                    examCourses(exam).join("; "),
 
-                    (
-                        exam.pickedHalls ||
-                        []
-                    ).join("; ")
+                    examHalls(exam).join("; ")
                 ]);
 
             }
