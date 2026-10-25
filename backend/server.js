@@ -55,6 +55,7 @@ const server = http.createServer(app);
 
 connectDB()
   .then(() => {
+    require("./utils/events").startActivityLog();   // writes backend/logs/activity.log
     server.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });

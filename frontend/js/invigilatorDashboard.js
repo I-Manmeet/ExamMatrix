@@ -3,44 +3,10 @@
    ---------------------------------------------------------
    Shows the logged-in invigilator's duties from MongoDB,
    grouped by date, split into Upcoming and Completed tabs.
-   Needs inv-shell.js loaded first (invReady, API_BASE, getToken).
+    Needs config.js, api.js and inv-shell.js loaded first (invReady).
    ========================================================= */
 
-// TODO(after-jiya): delete DUMMY_DUTIES once the duties route is live
-const USE_DUMMY_DUTIES = true;
 
-const DUMMY_DUTIES = [
-  {
-    id: "DTY-1",
-    exam: { examId: "EXM-0001-0001", examName: "Mid Sem · Systems", subjects: ["CS302", "CS303"] },
-    hall: "Hall A", position: 1, date: "2026-10-23", slot: "09:00-12:00",
-    students: 40, coInvigilators: ["Prof. Suresh Iyer"]
-  },
-  {
-    id: "DTY-2",
-    exam: { examId: "EXM-0001-0002", examName: "Mid Sem · Databases", subjects: ["CS301"] },
-    hall: "LT-1", position: 2, date: "2026-10-27", slot: "09:00-12:00",
-    students: 50, coInvigilators: ["Dr. Gurpreet Singh"]
-  },
-  {
-    id: "DTY-3",
-    exam: { examId: "EXM-0001-0003", examName: "Mid Sem · Electronics", subjects: ["EC201"] },
-    hall: "Hall C", position: 1, date: "2026-10-27", slot: "14:00-17:00",
-    students: 18, coInvigilators: []
-  },
-  {
-    id: "DTY-4",
-    exam: { examId: "EXM-0001-0004", examName: "Mid Sem · Communication", subjects: ["HS101"] },
-    hall: "Hall B", position: 1, date: "2026-10-29", slot: "09:00-12:00",
-    students: 40, coInvigilators: ["Prof. Lakshmi Rao"]
-  },
-  {
-    id: "DTY-0",
-    exam: { examId: "EXM-0001-0000", examName: "Class Test · Networks", subjects: ["CS303"] },
-    hall: "Hall B", position: 1, date: "2026-10-20", slot: "14:00-17:00",
-    students: 32, coInvigilators: []
-  }
-];
 
 let allDuties = [];
 let activeTab = "upcoming";
@@ -75,18 +41,11 @@ function formatLongDate(dateStr) {
 
 /* ---------------- data (from MongoDB through the server) ---------------- */
 
-// TODO(after-jiya): switch this fetch to Jiya's api.js helper once it exists
+// GET /api/invigilators/me/duties → [ { id, exam, hall, position, date, slot, students, coInvigilators } ]
 function loadDuties() {
-  if (USE_DUMMY_DUTIES) return Promise.resolve(DUMMY_DUTIES);
-
-  return fetch(API_BASE + "/invigilators/me/duties", {
-    headers: { Authorization: "Bearer " + getToken() }
-  })
-    .then(function (res) {
-      if (!res.ok) throw new Error("Request failed: " + res.status);
-      return res.json();
-    })
-    .then(function (body) { return body.data; });
+  return api("GET", "/invigilators/me/duties").then(function (duties) {
+    return Array.isArray(duties) ? duties : [];   // no duties → the empty state
+  });
 }
 
 /* ---------------- render ---------------- */
@@ -127,26 +86,26 @@ function dutyCardHtml(duty) {
 
   return (
     '<div class="duty-item ' + status + '">' +
-      '<div class="date-tile"><b>' + d.getDate() + "</b><span>" +
-        d.toLocaleDateString("en", { month: "short" }) + "</span></div>" +
+    '<div class="date-tile"><b>' + d.getDate() + "</b><span>" +
+    d.toLocaleDateString("en", { month: "short" }) + "</span></div>" +
 
-      '<div class="duty-info">' +
-        "<strong>" + escapeHtml(duty.hall) + " · " + escapeHtml(duty.exam.examName) + "</strong>" +
-        '<div class="duty-meta">' +
-          '<span><i class="fa-regular fa-clock"></i>' + escapeHtml(duty.slot) + "</span>" +
-          '<span><i class="fa-solid fa-user-group"></i>' + duty.students + " students</span>" +
-          '<span><i class="fa-solid fa-hashtag"></i>' + escapeHtml(duty.exam.examId) + "</span>" +
-          "<span>" + subjects + "</span>" +
-        "</div>" +
-        '<div class="duty-with">' + withText + "</div>" +
-      "</div>" +
+    '<div class="duty-info">' +
+    "<strong>" + escapeHtml(duty.hall) + " · " + escapeHtml(duty.exam.examName) + "</strong>" +
+    '<div class="duty-meta">' +
+    '<span><i class="fa-regular fa-clock"></i>' + escapeHtml(duty.slot) + "</span>" +
+    '<span><i class="fa-solid fa-user-group"></i>' + duty.students + " students</span>" +
+    '<span><i class="fa-solid fa-hashtag"></i>' + escapeHtml(duty.exam.examId) + "</span>" +
+    "<span>" + subjects + "</span>" +
+    "</div>" +
+    '<div class="duty-with">' + withText + "</div>" +
+    "</div>" +
 
-      '<div class="duty-actions">' +
-        '<span class="exam-status ' + status + '">' + statusLabel + "</span>" +
-        '<a class="matrix-btn" href="hallDuty.html?duty=' + encodeURIComponent(duty.id) + '">' +
-          '<i class="fa-solid fa-table-cells"></i> ' + actionLabel +
-        "</a>" +
-      "</div>" +
+    '<div class="duty-actions">' +
+    '<span class="exam-status ' + status + '">' + statusLabel + "</span>" +
+    '<a class="matrix-btn" href="hallDuty.html?duty=' + encodeURIComponent(duty.id) + '">' +
+    '<i class="fa-solid fa-table-cells"></i> ' + actionLabel +
+    "</a>" +
+    "</div>" +
     "</div>"
   );
 }
@@ -221,5 +180,6 @@ invReady
   .catch(function (error) {
     console.log("Could not load duties:", error);
     document.getElementById("duty-list").innerHTML =
-      '<div class="no-exams"><i class="fa-solid fa-triangle-exclamation"></i><strong>Could not load your duties</strong></div>';
+            '<div class="no-exams"><i class="fa-solid fa-triangle-exclamation"></i><strong>Could not load your duties</strong>' +
+      "<span>" + escapeHtml(error.message) + "</span></div>";
   });

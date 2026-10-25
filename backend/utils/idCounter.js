@@ -12,7 +12,7 @@ async function nextId(prefix, pad = 4) {
   const counter = await Counter.findOneAndUpdate(
     { _id: prefix },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true }   // new: return the updated value, upsert: create if missing
+    { returnDocument: "after", upsert: true }   // return the updated value, create if missing
   );
   return `${prefix}-${String(counter.seq).padStart(pad, "0")}`;
 }
