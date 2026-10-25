@@ -484,3 +484,66 @@ async function downloadSaved(type, button) {
 
 resetCheck();
 loadStatus();
+/* ---------- reset one invigilator's password ---------- */
+
+const RESET_ID_FORMAT = /^INV-\d{4}-\d{4}$/;
+const resetForm = document.getElementById("resetForm");
+const resetBtn = document.getElementById("resetBtn");
+const resetMessage = document.getElementById("resetMessage");
+const resetResult = document.getElementById("resetResult");
+let resetPasswordShown = false;
+
+function showResetMessage(text, kind) {
+  resetMessage.textContent = text;
+  resetMessage.className = "uploadMsg " + kind;   // "ok" or "bad"
+  resetMessage.hidden = false;
+}
+
+function clearResetResult() {
+  resetResult.replaceChildren();
+  resetResult.hidden = true;
+  resetPasswordShown = false;
+}
+
+resetForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (resetBtn.disabled) return;   // already resetting
+
+  const invId = document.getElementById("resetInvId").value.trim().toUpperCase();
+  resetMessage.hidden = true;
+  clearResetResult();
+
+  if (!RESET_ID_FORMAT.test(invId)) {
+    showResetMessage("Invigilator IDs look like INV-0001-0007.", "bad");
+    return;
+  }
+  if (!confirm("Give " + invId + " a new password? Their old one stops working straight away.")) return;
+
+  resetBtn.disabled = true;
+  resetBtn.textContent = "Resetting…";
+  try {
+    const r = await api("POST", "/invigilators/" + encodeURIComponent(invId) + "/reset-password");
+
+    const who = document.createElement("strong");
+    who.textContent = r.name + " (" + r.invId + ")";
+    const password = document.createElement("span");
+    password.className = "resetPassword";
+    password.textContent = r.password;   // textContent, never HTML
+
+    resetResult.append(who, document.createTextNode(" · new password: "), password,
+      document.createTextNode(". Shown only once. Give it to them privately."));
+    resetResult.hidden = false;
+    resetPasswordShown = true;
+    resetForm.reset();
+  } catch (error) {
+    showResetMessage(error.message, "bad");
+  } finally {
+    resetBtn.disabled = false;
+    resetBtn.textContent = "Reset password";
+  }
+});
+
+// warn before leaving while a new password is still on screen
+window.addEventListener("beforeunload", (event) => {
+  if (resetPasswordShown) event.preventDefault();
+});
