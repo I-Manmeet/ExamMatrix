@@ -532,7 +532,7 @@ function createExamCard(exam) {
                 : "Upcoming"
     );
 
-    status.className = "exam-status";
+    status.className = "exam-status " + status.textContent.toLowerCase();   // today / upcoming / previous
     header.appendChild(status);
 
     main.appendChild(header);
