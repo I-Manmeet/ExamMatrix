@@ -1,15 +1,17 @@
 /* =========================================================
    ExamMatrix — INVIGILATOR ROUTES  (/api/invigilators)
    ---------------------------------------------------------
-   git status
-git add backend/utils/myDuties.js
-git commit -m "feat(invigilator): add my-duties builder for the invigilator dashboard"
-git add backend/tests/myDuties.test.js
-git commit -m "test(invigilator): cover my-duties shape, co-invigilators and edge cases"
-   GET /api/invigilators/me/duties/:dutyId  invigilator  one duty: hall seats, marks, incidents
-   Always inside the logged-in admin's university.
+   GET  /api/invigilators                         admin        list (search with ?q=)
+   GET  /api/invigilators/me/duties               invigilator  my duties, soonest first
+   GET  /api/invigilators/me/duties/:dutyId       invigilator  one duty: hall seats, marks, incidents
+   GET  /api/invigilators/:invId                  admin        one invigilator
+   POST /api/invigilators/:invId/reset-password   admin        new temporary password, shown ONCE
+   Always inside the logged-in user's university.
    ========================================================= */
-
+   const bcrypt = require("bcrypt");
+const { makePassword } = require("../utils/invigilatorImport");
+const { activity } = require("../utils/events");
+const limiter = require("../utils/loginLimiter");
    const Duty = require("../models/Duty");
 const { toMyDuties } = require("../utils/myDuties");
 const express = require("express");
@@ -88,5 +90,24 @@ router.get("/me/duties/:dutyId", requireRole("invigilator"), async (req, res) =>
     }
   });
 });
+// POST /api/invigilators/INV-0001-0007/reset-password → a new temporary password, shown ONCE
+// for when someone loses theirs: the old one stops working straight away
+router.post("/:invId/reset-password", adminOnly, async (req, res) => {
+  const invId = cleanInvId(req.params.invId);
+  const plain = makePassword();
 
+  // only this university's invigilator; another university's ID is a 404, like a missing one
+  const person = await Invigilator.findOneAndUpdate(
+    { university: req.user.university, invId },
+    { $set: { password: await bcrypt.hash(plain, 10) } },
+    { returnDocument: "after" }
+  ).select("invId name email").lean();
+  if (!person) throw new AppError(404, "Invigilator " + invId + " not found");
+
+  // wrong tries before the reset shouldn't keep them locked out
+  limiter.clearFails(limiter.key("invigilator", invId));
+
+  activity.emit("invigilator:password-reset", { university: req.user.university, invId, by: req.user.id });
+  res.json({ data: { invId: person.invId, name: person.name, email: person.email, password: plain } });
+});
 module.exports = router;

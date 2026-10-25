@@ -153,6 +153,18 @@
         <button type="button" id="credentialsDone" class="btnGhostSmall">I've saved them</button>
         <button type="button" id="credentialsDownload" class="btnPrimary btnSmall">↓ Download CSV</button>
       </div>
+        </section>
+
+    <!-- Lost password: a new temporary password for one invigilator -->
+    <section class="card">
+      <div class="cardLabel">Reset an invigilator's password</div>
+      <p class="pageSub">For someone who lost theirs. Their old password stops working straight away.</p>
+      <form id="resetForm" class="resetRow">
+        <input id="resetInvId" class="resetInput" placeholder="INV-0001-0007" autocomplete="off" maxlength="13" required>
+        <button type="submit" id="resetBtn" class="btnPrimary btnSmall">Reset password</button>
+      </form>
+      <div id="resetMessage" class="uploadMsg" role="status" aria-live="polite" hidden></div>
+      <div id="resetResult" class="credWarning resetResult" hidden></div>
     </section>
 
   </main>
