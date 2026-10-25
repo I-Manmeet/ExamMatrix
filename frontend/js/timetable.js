@@ -1205,22 +1205,8 @@ function showDayExams(date, exams) {
         return exam.date === date;
     });
 
-    /* Sort Mid-Semester Exam before Semester Exam */
-    dayExams.sort(function (a, b) {
-
-        var aName = (a.examName || "").toLowerCase();
-        var bName = (b.examName || "").toLowerCase();
-
-        if (aName.includes("mid") && !bName.includes("mid")) {
-            return -1;
-        }
-
-        if (!aName.includes("mid") && bName.includes("mid")) {
-            return 1;
-        }
-
-        return 0;
-    });
+    /* same order as the calendar: time first, then Mid-Semester before Semester */
+    dayExams = sortExams(dayExams);
 
     /* Format selected date */
     var dateObject = new Date(date + "T00:00:00");
@@ -1319,8 +1305,7 @@ function showDayExams(date, exams) {
         /* Classes */
 
         if (
-            examCourses(exam).length &&
-            examCourses(exam).length
+            examCourses(exam).length > 0
         ) {
 
             var courses = document.createElement("div");
@@ -1338,8 +1323,7 @@ function showDayExams(date, exams) {
         /* Room */
 
         if (
-            examHalls(exam).length &&
-            examHalls(exam).length
+            examHalls(exam).length > 0
         ) {
 
             var halls = document.createElement("div");
@@ -1473,15 +1457,14 @@ function setupExport() {
                         return row.map(
                             function (field) {
 
-                                return (
-                                    '"' +
-                                    String(field)
-                                        .replace(
-                                            /"/g,
-                                            '""'
-                                        ) +
-                                    '"'
-                                );
+                                var text = String(field);
+
+                                /* stop Excel from running a cell as a formula */
+                                if (/^[=+\-@]/.test(text)) {
+                                    text = "'" + text;
+                                }
+
+                                return '"' + text.replace(/"/g, '""') + '"';
 
                             }
                         ).join(",");
