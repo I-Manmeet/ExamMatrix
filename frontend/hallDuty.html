@@ -68,13 +68,12 @@
         <div class="att-toolbar">
           <input id="roll-search" class="roll-search" placeholder="Find roll number…" autocomplete="off">
           <span id="search-result" class="section-subtitle"></span>
-          <button id="mark-all-btn" class="btn-primary-em" type="button"><i class="fa-solid fa-check-double"></i> Mark all present</button>
-          <button id="reset-btn" class="btn-danger-soft" type="button">Reset</button>
+          <button id="mark-all-btn" class="btn-primary-em" type="button"><i class="fa-solid fa-check-double"></i> Mark rest present</button>
         </div>
       </div>
 
-      <div id="legend" class="legendCard"></div>
-      <div id="hall-chart"><!-- JavaScript inserts the hall grid --></div>
+      <div id="att-msg"></div>
+      <div id="legend" class="legendCard"></div>      <div id="hall-chart"><!-- JavaScript inserts the hall grid --></div>
       <div id="lock-note" class="lock-note" style="display:none"></div>
     </section>
 
@@ -124,6 +123,8 @@
   <div id="footerContainer"></div>
 
   <!-- JAVASCRIPT -->
+    <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/inv-shell.js"></script>
   <script src="js/hallDuty.js"></script>
 </body>
