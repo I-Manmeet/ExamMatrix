@@ -8,11 +8,11 @@
    POST /api/invigilators/:invId/reset-password   admin        new temporary password, shown ONCE
    Always inside the logged-in user's university.
    ========================================================= */
-   const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const { makePassword } = require("../utils/invigilatorImport");
 const { activity } = require("../utils/events");
 const limiter = require("../utils/loginLimiter");
-   const Duty = require("../models/Duty");
+const Duty = require("../models/Duty");
 const { toMyDuties } = require("../utils/myDuties");
 const express = require("express");
 const Invigilator = require("../models/Invigilator");
@@ -99,7 +99,8 @@ router.post("/:invId/reset-password", adminOnly, async (req, res) => {
   // only this university's invigilator; another university's ID is a 404, like a missing one
   const person = await Invigilator.findOneAndUpdate(
     { university: req.user.university, invId },
-    { $set: { password: await bcrypt.hash(plain, 10) } },
+    // passwordChangedAt: anyone still logged in with the old password is logged out (middleware/auth.js)
+    { $set: { password: await bcrypt.hash(plain, 10), passwordChangedAt: new Date() } },
     { returnDocument: "after" }
   ).select("invId name email").lean();
   if (!person) throw new AppError(404, "Invigilator " + invId + " not found");
