@@ -1,470 +1,447 @@
 # 🎓 ExamMatrix
 
-**ExamMatrix** is a web-based **Examination Management and Seating Allocation System** designed to simplify the process of creating examinations, allocating students to available halls, and generating conflict-free seating arrangements.
+**ExamMatrix** is a web-based **Examination Management, Seating Allocation and Invigilation System**. A university registers, uploads its students, subjects, halls and invigilators, and ExamMatrix schedules exams without clashes, seats every student away from same-subject neighbours, assigns invigilators to every hall, and lets each student find their seat in seconds.
 
-The system uses examination, student, subject, hall, date, and time-slot information to automatically organize examinations and seating arrangements while detecting scheduling conflicts and preventing students taking the same examination from being seated next to each other.
+Phase 2 turns the original browser-only app into a full-stack application with a **Node.js + Express** server, a **MongoDB** database, logins with roles, and a new **invigilator portal**.
 
 ---
-# Click on the link for the demo: https://exammatrix-ws6g.onrender.com
+
+# 🌐 Live Demo: <ADD-DEPLOYED-LINK-HERE>
+
+---
+
+## 📜 Project History
+
+ExamMatrix was built in two phases in this same repository, so every commit from both phases is in one history.
+
+| Phase | What it was | Where to see it |
+|---|---|---|
+| **Phase 1** | Frontend only (HTML, CSS, JavaScript). Data came from JSON files and was saved in the browser's `localStorage`. | Tag [`v1.0-phase1`](https://github.com/I-Manmeet/ExamMatrix/tree/v1.0-phase1) |
+| **Phase 2** | Full stack: Express server, MongoDB, logins with roles, uploads, invigilator auto-assign, attendance, incidents and reports. | Branch `dev` |
+
+Full commit history: [github.com/I-Manmeet/ExamMatrix/commits/dev](https://github.com/I-Manmeet/ExamMatrix/commits/dev)
+
+---
 
 ## ✨ Features
 
-* 📅 **Exam Generation** — Create examination schedules using subjects, students, examination dates, time slots, and available halls.
+### 🏛 For University Admins
+* 🏛 **University Registration** — Register with a verified email and receive a unique university ID (e.g. `UNI-0001`). Each university only ever sees its own data.
+* 📤 **Bulk Data Upload** — Upload **halls, subjects, students and invigilators** from files. Every file is **previewed and checked row by row** before anything is saved, and re-uploading updates existing records instead of wiping them.
+* 📥 **Templates & Export** — Download a blank template for each file type, or export the saved data in the same format to edit and upload again.
+* 📅 **Exam Creation** — Pick an exam name, date, time slot, subjects and halls.
+* ⚠️ **Server-Side Clash Detection** — Blocks an exam if a student already has another exam at the same time, if two picked subjects share students, if a subject has already been examined, or if the halls don't have enough free seats.
+* 🛡️ **Conflict-Free Seating** — No two students writing the same subject sit next to each other (front, back, left or right).
+* 👥 **Invigilator Auto-Assign** — One click fills every hall with invigilators, following fixed rules. The admin can swap anyone by hand.
+* 📊 **Exam Reports** — Attendance per hall, the list of absent students, and every incident reported during the exam.
+* 🔑 **Invigilator Password Reset** — Give an invigilator a new temporary password. Their old logins stop working immediately.
 
-* 🏫 **Hall Allocation** — Allocate students to examination halls according to hall capacity and hall availability for the selected date and time slot.
+### 📋 For Invigilators
+* 🔐 **Own Login** — Log in with an invigilator ID (e.g. `INV-0001-0007`).
+* 🗓 **My Duties** — See every assigned hall, date and slot, soonest first, and who else shares the hall.
+* 🪑 **Hall Duty View** — The seating chart for their hall only.
+* ✅ **Attendance** — Tap a seat to mark a student present or absent.
+* 🚨 **Incident Reporting** — Report unfair means, unwell students, seat disputes and more, linked to the exam and hall.
 
-* 🛡️ **Conflict-Free Seating / Anti-Cheat Seating** — A constraint-based seating algorithm ensures that students appearing for the same examination are not seated adjacent to each other. The system checks **front, back, left, and right** positions and distributes students across available seats and halls where possible.
+### 🎓 For Students
+* 🔎 **Find My Seat** — On the home page, with **no login**: enter the university ID and roll number to see the hall, row, seat, subject, date and slot of every exam.
 
-* ⚠️ **Clash Detection** — Detect scheduling conflicts when a student or examination hall is already assigned to another examination during the same date and time slot.
+---
 
-* 🏫 **Time-Aware Hall Booking** — Hall availability is managed according to the examination date and time slot. A hall booked for one time slot can become available again for another slot, preventing unnecessary blocking of halls.
+## 👥 Roles at a Glance
 
-* 🪑 **Seating Arrangement** — Automatically generate and visualize student-specific seating arrangements inside examination halls.
-
-* 📊 **Dashboard** — View examination information and access the major examination management features from a centralized dashboard.
-
-* 👨‍🎓 **Student & Subject Data** — Student and subject information is loaded from JSON data files and used during examination generation and seating allocation.
-
-* 📈 **Exam Visualization** — View generated examinations, hall allocations, and seating arrangements through clear visual representations.
-
-* 🔎 **Find My Seat** — Students can search for their assigned examination hall and seat.
-
-* 📅 **Timetable** — Students can view their examination subject, date, time, and related examination information.
+```text
+                         ┌──────────────────┐
+                         │   🗄  MongoDB    │
+                         └────────┬─────────┘
+                                  │
+                         ┌────────┴─────────┐
+                         │ ⚙  Express API   │
+                         └────────┬─────────┘
+          ┌───────────────────────┼───────────────────────┐
+          ▼                       ▼                       ▼
+┌───────────────────┐   ┌───────────────────┐   ┌───────────────────┐
+│ 🏛 ADMIN          │   │ 📋 INVIGILATOR    │   │ 🎓 STUDENT        │
+│                   │   │                   │   │                   │
+│ Upload data       │   │ My duties         │   │ Find My Seat      │
+│ Create exams      │   │ Hall seat chart   │   │ (no login)        │
+│ Assign duties     │   │ Attendance        │   │                   │
+│ Read reports      │   │ Incidents         │   │                   │
+└───────────────────┘   └───────────────────┘   └───────────────────┘
+```
 
 ---
 
 ## 🛡️ Conflict-Free Seating Algorithm
 
-One of the key features of ExamMatrix is its **conflict-free seating algorithm**.
+The seating algorithm makes sure students writing the **same subject** never sit directly next to each other.
 
-The system is designed to prevent students taking the **same examination** from sitting directly next to each other.
-
-For each student, the seating logic considers adjacent positions:
+For every seat it checks four neighbours:
 
 ```text
              FRONT
                ↑
                │
         ┌──────┴──────┐
-        │    Seat     │
+ LEFT ← │    Seat     │ → RIGHT
         └──────┬──────┘
                │
-      ← LEFT   │   RIGHT →
-               │
-        ┌──────┴──────┐
-        │    BACK     │
-        └─────────────┘
+               ↓
+             BACK
 ```
 
-The algorithm checks the surrounding seats and attempts to place students in positions where their examination subject does not conflict with neighboring students.
+**How it works:**
+1. Students are grouped by subject. The **largest group goes first**, because it is the hardest to place.
+2. The groups are **interleaved** into one queue (A B C A B C A B A …).
+3. Each student takes the **first free seat** whose four neighbours aren't writing the same subject, hall by hall, front to back.
+4. Seats already used by another exam in the same slot are treated as taken.
+5. If anyone can't be seated safely, the exam is **not created** and the admin is asked to add halls.
 
-If necessary, the system can distribute students across different halls and use available buffer seats to reduce adjacency conflicts.
+Seating now runs **on the server** (`backend/utils/seating.js`), so the result is saved once and is the same on every device.
 
-This makes the seating arrangement more than a simple sequential seat assignment — it applies **constraints to reduce opportunities for collaboration between students taking the same examination**.
+---
+
+## 👥 Invigilator Auto-Assign Algorithm
+
+Auto-assign is built the same way as the seating algorithm:
+
+| Seating | Invigilator auto-assign |
+|---|---|
+| Students need seats | Hall positions need invigilators |
+| `fits()`: can this student sit here? | `canInvigilate()`: can this person take this hall? |
+| Biggest subject goes first | Hardest position to fill goes first |
+| Take the first seat that fits | Take the **least busy** person who fits |
+| Unplaced students are reported | Unfilled positions are reported, with a reason |
+
+**Rules:**
+* **1 invigilator per 30 students** in a hall, and at least 1 per hall.
+* Nobody invigilates a hall where **a subject they teach** is being written.
+* Nobody is in **two places in the same slot**.
+* At most **2 duties per day** per person.
+* Nobody is assigned on a day they marked as **unavailable**.
+
+**How it works:**
+1. Work out every position, e.g. a hall with 40 students needs *#1* and *#2*.
+2. After **every** assignment, pick the position with the **fewest eligible people right now** and fill it next.
+3. Give it to the eligible person with the **fewest duties so far**, choosing at random on a tie, so duties are spread fairly.
+4. If nobody is eligible, the position is left **unfilled with a reason** (e.g. *"No eligible invigilator: 2 teach this subject, 3 already on duty"*). A rule is never broken to fill a seat.
+
+Once attendance has been marked for an exam, its duties are **locked**.
 
 ---
 
 ## ⚠️ Clash Detection
 
-ExamMatrix also performs **clash detection** during examination planning.
+Before an exam is saved, the server checks it against **every exam of that university**:
 
-The system checks whether:
-
-* A student is assigned to multiple examinations at the same date and time.
-* A hall is already booked for another examination during the same date and time slot.
-* A new examination conflicts with an existing examination arrangement.
-
-This helps prevent invalid examination schedules before seating arrangements are generated.
+```text
+New exam
+   │
+   ├── Subject already examined?                 → ⚠️ blocked
+   ├── Two picked subjects share a student?      → ⚠️ blocked
+   ├── Student already in another exam
+   │   at an overlapping time?                   → ⚠️ blocked
+   └── Not enough free seats in the halls
+       at this time?                             → ⚠️ blocked
+```
 
 ---
 
 ## 🏫 Time-Aware Hall Booking
 
-Hall allocation is **time-aware** rather than treating a hall as permanently unavailable after it has been used once.
-
-For example:
+A hall is only busy for exams whose **date and time overlap**. The seats used are read from the **real saved seat maps**, so two smaller exams can share a hall in the same slot when there is room.
 
 ```text
 Hall A
 
-10:00 AM ──► Mathematics Exam
-             🔒 BOOKED
+09:00 – 12:00 ──► Mathematics Exam
+                  🔒 BOOKED
 
-02:00 PM ──► Physics Exam
-             🟢 AVAILABLE
+14:00 – 17:00 ──► Physics Exam
+                  🟢 AVAILABLE
 ```
 
-A hall is therefore considered booked according to its **date + time slot**.
-
-This allows the same hall to be reused for different examinations when their time slots do not overlap.
-
 ---
 
-## 🛠️ Technologies Used
+## 🆔 ID Formats
 
-* **HTML5**
-* **CSS3**
-* **JavaScript**
-* **JSON**
-* **Git & GitHub**
+| What | Example | Created when |
+|---|---|---|
+| University | `UNI-0001` | The registration email link is opened |
+| Invigilator | `INV-0001-0007` | The invigilator file is uploaded |
+| Exam | `EXM-0001-0045` | An exam passes every check and is saved |
+| Student | Their own college roll number | Uploaded by the admin |
 
----
-
-## 🚀 Getting Started
-
-Clone the repository:
-
-```bash
-git clone https://github.com/I-Manmeet/ExamMatrix.git
-```
-
-Open the project in **VS Code** and run it using **Live Server**.
-
----
-
-## 🎯 Objective
-
-The objective of **ExamMatrix** is to automate and simplify examination planning by:
-
-* Creating examination schedules
-* Detecting scheduling clashes
-* Allocating students to available halls
-* Managing hall availability according to time slots
-* Generating conflict-free seating arrangements
-* Providing students with their examination and seating information
-
-The system aims to reduce manual examination planning and improve the organization, efficiency, and reliability of examination seating.
+IDs come from a **counter in MongoDB** that increases safely, so two requests arriving at the same moment never get the same number.
 
 ---
 
 # 🔄 Project Workflow
 
-ExamMatrix follows a structured workflow from authentication and examination creation to hall allocation, conflict-free seating, and student-specific examination information.
+```text
+┌──────────────────────────────┐
+│  🏛 REGISTER UNIVERSITY      │
+│  Verify email → UNI- ID      │
+└──────────────┬───────────────┘
+               ▼
+┌──────────────────────────────┐
+│  📤 UPLOAD DATA              │
+│  Halls → Subjects →          │
+│  Students → Invigilators     │
+│  Preview → Confirm           │
+└──────────────┬───────────────┘
+               ▼
+┌──────────────────────────────┐
+│  📅 CREATE EXAM              │
+│  Date • Slot • Subjects •    │
+│  Halls                       │
+└──────────────┬───────────────┘
+               ▼
+┌──────────────────────────────┐
+│  ⚠️ CLASH CHECKS (server)    │
+└──────────────┬───────────────┘
+               ▼
+┌──────────────────────────────┐
+│  🛡️ CONFLICT-FREE SEATING    │
+│  saved in MongoDB            │
+└──────────────┬───────────────┘
+               ▼
+┌──────────────────────────────┐
+│  👥 AUTO-ASSIGN INVIGILATORS │
+│  admin can swap anyone       │
+└──────────────┬───────────────┘
+        ┌──────┴───────┐
+        ▼              ▼
+┌───────────────┐ ┌───────────────┐
+│ 📋 INVIGILATOR│ │ 🎓 STUDENT    │
+│ My duties     │ │ Find My Seat  │
+│ Attendance    │ │               │
+│ Incidents     │ │               │
+└───────┬───────┘ └───────────────┘
+        ▼
+┌──────────────────────────────┐
+│  📊 ADMIN REPORTS            │
+│  Attendance • Absentees •    │
+│  Incidents                   │
+└──────────────────────────────┘
+```
+
+### 🎯 In Simple Terms
+
+> **A university registers → uploads its data → creates exams → the server checks clashes and seats everyone → invigilators are assigned → students find their seats → invigilators mark attendance and incidents → the admin reads the report.**
+
+---
+
+## 🛠️ Technologies Used
+
+**Frontend**
+* HTML5, CSS3, JavaScript
+* Fetch API through one shared helper (`frontend/js/api.js`)
+
+**Backend**
+* **Node.js** with **Express 5**
+* **MongoDB Atlas** with **Mongoose** (schemas, validation, `ref` + `populate()`)
+* **JWT** login tokens and **bcrypt** password hashing
+* **Multer** for file uploads, **xlsx** for spreadsheets
+* **Nodemailer** for verification and password-reset emails
+* **Helmet** and **CORS** for security headers and cross-origin access
+* **EventEmitter** + **fs** activity log (`backend/logs/activity.log`)
+* **dotenv** for settings, **nodemon** for development
+* Node's built-in test runner (`node --test`)
+
+**Tools**
+* Git & GitHub (feature branches, Conventional Commits, pull requests)
+* Postman
+* Render (deployment)
+
+---
+
+## 📁 Folder Structure
 
 ```text
-┌─────────────────────────┐
-│       🔐 LOGIN          │
-│                         │
-│   User Authentication   │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│      📊 DASHBOARD       │
-│                         │
-│  Examination Overview   │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│  📅 EXAM CREATION               │
-│                                 │
-│  Exam Name • Date • Time Slot   │
-│  Subjects • Students            │
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│   ⚠️ CLASH DETECTION            │
-│                                 │
-│ Student Clash • Hall Clash      │
-│ Same Date + Time Slot           │
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│     🏫 HALL ALLOCATION          │
-│                                 │
-│ Hall Capacity + Availability    │
-│ Date + Time-Slot Based Booking  │
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│   🛡️ CONFLICT-FREE SEATING     │
-│                                 │
-│ Check Adjacent Seats            │
-│ Front • Back • Left • Right     │
-│ Avoid Same-Exam Neighbours      │
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│   🪑 SEATING ARRANGEMENT│
-│                         │
-│ Student → Hall → Seat   │
-└────────────┬────────────┘
-             │
-             ▼
-        ┌────┴────┐
-        │         │
-        ▼         ▼
-┌──────────────┐  ┌──────────────────┐
-│ 📅 TIMETABLE │  │ 🔎 FIND MY SEAT  │
-│              │  │                  │
-│ Exam Details │  │ Student Name     │
-│ Subject      │  │ Exam Hall        │
-│ Date         │  │ Assigned Seat    │
-│ Time         │  │ Exam Information │
-└──────┬───────┘  └────────┬─────────┘
-       │                   │
-       ▼                   ▼
-┌──────────────┐   ┌──────────────────┐
-│ 👨‍🎓 STUDENT  │   │ 👨‍🎓 STUDENT      │
-│     VIEW     │   │      VIEW        │
-│              │   │                  │
-│ "WHEN IS     │   │ "WHERE DO I      │
-│  MY EXAM?"   │   │  HAVE TO SIT?"   │
-└──────────────┘   └──────────────────┘
+ExamMatrix/
+├── backend/
+│   ├── config/          database connection
+│   ├── controllers/     request logic for each route
+│   ├── middleware/      login + role checks, ownsDuty, uploads, errors
+│   ├── models/          Mongoose schemas
+│   ├── routes/          URL list for each part of the API
+│   ├── utils/           seating, clash checks, auto-assign, parsers, events
+│   ├── tests/           automated tests
+│   ├── sample-data/     sample files to upload
+│   ├── scripts/
+│   ├── server.js
+│   └── .env.example
+├── frontend/
+│   ├── css/
+│   ├── js/
+│   └── *.html           one page per screen
+├── assets/screenshots/
+└── index.html           redirects to frontend/
 ```
 
 ---
 
-## 🔹 Workflow Summary
+## 🔌 API Overview
 
-**Index Page → Login/Register → Dashboard → Exam Creation → Clash Detection → Hall Allocation → Conflict-Free Seating → Student Services**
+All routes start with `/api`. Every reply is JSON: `{ data: ... }` on success, `{ error: "message" }` on failure.
 
-ExamMatrix takes examination and student information, checks for scheduling conflicts, allocates students to available halls based on capacity and time-slot availability, generates conflict-free seating arrangements, and finally provides students with their examination and seating information.
-
----
-
-## 🌐 1. Index Page
-
-When the website is opened, the user first reaches the **ExamMatrix Index Page**, which introduces the system and provides access to the application.
-
----
-
-## 🔐 2. Login / Register
-
-The user can log in or register to access the examination management system.
-
-After successful authentication, the user is redirected to the **Dashboard**.
-
----
-
-## 📊 3. Dashboard
-
-The Dashboard provides an overview of the examination system and allows users to access the main examination management features.
+| Area | Method & path | Who |
+|---|---|---|
+| Health | `GET /health` | public |
+| Register | `POST /universities` · `POST /universities/verify-email` · `POST /universities/resend-verification` | public |
+| Password | `POST /universities/forgot-password` · `POST /universities/reset-password` | public |
+| Login | `POST /auth/login` · `GET /auth/me` · `POST /auth/logout` | public / logged in |
+| Halls | `GET` `POST /halls` · `GET` `PUT` `DELETE /halls/:id` | admin |
+| Uploads | `GET /uploads/:type/template` (public) · `GET /uploads/status` · `GET /uploads/:type/export` · `POST /uploads/all/preview` · `POST /uploads/all/confirm` · `POST /uploads/:type/preview` · `POST /uploads/:type/confirm` | admin |
+| Exams | `GET /exams` · `GET /exams/options` · `GET /exams/:examId` · `POST /exams/check` · `POST /exams` · `DELETE /exams/:examId` | admin |
+| Duties | `GET` `PUT` `DELETE /exams/:examId/duties` · `POST /exams/:examId/duties/auto` | admin |
+| Invigilators | `GET /invigilators` · `GET /invigilators/:invId` · `POST /invigilators/:invId/reset-password` | admin |
+| My duties | `GET /invigilators/me/duties` · `GET /invigilators/me/duties/:dutyId` | invigilator |
+| Hall duty | `PUT /exams/:examId/hall/attendance` · `POST /exams/:examId/hall/incidents` | invigilator on that duty |
+| Reports | `GET /reports/:examId` | admin |
+| Find My Seat | `GET /public/seat?uni=UNI-0001&roll=24AI1001` | public |
 
 ---
 
-## 📅 4. Exam Creation
+## 🚀 Getting Started
 
-The examination creation process collects the information required to generate an examination arrangement.
-
-The user provides details such as:
-
-* Exam Name
-* Examination Date
-* Time Slot
-* Subject
-* Students
-* Available Halls
-
-The system uses these details as the input for clash detection, hall allocation, and seating generation.
-
-> **Note:** Semester is not listed because it is not currently collected as an input in the examination creation interface.
-
----
-
-## ⚠️ 5. Clash Detection
-
-Before allocating halls and generating seats, ExamMatrix checks for scheduling conflicts.
-
-The system verifies:
-
-```text
-Student
-   │
-   ├── Already assigned to another exam?
-   │
-   └── Same Date + Same Time Slot?
-             │
-             ▼
-          ⚠️ CLASH
+### 1. Clone the repository
+```bash
+git clone https://github.com/I-Manmeet/ExamMatrix.git
+cd ExamMatrix
 ```
 
-It also checks hall availability for the selected date and time slot.
-
-This prevents students and halls from being unintentionally assigned to overlapping examinations.
-
----
-
-## 🏫 6. Hall Allocation
-
-After the examination passes the required checks, students are allocated to available examination halls.
-
-The allocation considers:
-
-* Hall capacity
-* Number of students
-* Examination date
-* Examination time slot
-* Existing hall bookings
-
-A hall booked for one time slot can be reused during another non-overlapping time slot.
-
----
-
-## 🛡️ 7. Conflict-Free Seating
-
-After students have been allocated to halls, ExamMatrix generates their seating arrangement.
-
-The seating algorithm checks neighboring positions to avoid placing students appearing for the **same examination** next to each other.
-
-The system considers:
-
-* Left
-* Right
-* Front
-* Back
-
-The objective is to distribute students taking the same examination and reduce direct adjacency wherever possible.
-
----
-
-## 🪑 8. Seating Arrangement
-
-The final seating arrangement connects each student with:
-
-```text
-Student
-   ↓
-Examination
-   ↓
-Hall
-   ↓
-Seat Number
+### 2. Set up the backend
+```bash
+cd backend
+npm install
+cp .env.example .env
 ```
 
-The generated arrangement can then be visualized through the seating interface.
+Fill in `.env`:
 
----
+| Key | What it is |
+|---|---|
+| `MONGO_URI` | MongoDB Atlas connection string |
+| `JWT_SECRET` | Any long random string |
+| `PORT` | `5001` (5000 is used by AirPlay on Mac) |
+| `FRONTEND_URL` | Where the frontend runs, e.g. `http://127.0.0.1:5500/frontend` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | Email account for verification and reset emails |
+| `DNS_SERVERS` | Only if you see `querySrv ECONNREFUSED`, e.g. `8.8.8.8,1.1.1.1` |
 
-## 👨‍🎓 9. Student Services
+Start the server:
+```bash
+npm run dev
+```
+It runs on `http://localhost:5001`. Check `http://localhost:5001/api/health`.
 
-Once examination and seating information has been generated, students can access their information through two major services:
+### 3. Run the frontend
+Open the repo in **VS Code** and start **Live Server** from the root `index.html`. It redirects to `frontend/index.html`.
 
-```text
-                 👨‍🎓 STUDENT
-                       │
-          ┌────────────┴────────────┐
-          │                         │
-          ▼                         ▼
-   📅 TIMETABLE              🔎 FIND MY SEAT
-          │                         │
-          ▼                         ▼
-    What is my exam?         Where do I sit?
-          │                         │
-          ▼                         ▼
-   Subject • Date • Time     Name • Hall • Seat
+### 4. Run the tests
+```bash
+cd backend
+npm test
 ```
 
-### 📅 Timetable
-
-Students can view **what examination they have and when it is**, including:
-
-* Subject
-* Date
-* Time
-* Examination details
-
-### 🔎 Find My Seat
-
-Students can find **where they have to sit**, including:
-
-* Student Name
-* Examination Hall
-* Assigned Seat
-* Examination Information
+### 5. Try it
+1. Register a university and open the link in the email.
+2. Log in as the admin and upload the files in `backend/sample-data/`.
+3. Create an exam, then auto-assign invigilators.
+4. Log in as an invigilator with an `INV-` ID and the temporary password from the upload.
+5. Look up a roll number with **Find My Seat** on the home page.
 
 ---
 
-## 🎯 In Simple Terms
+## 🔐 Security
 
-> **ExamMatrix takes exam and student details → detects clashes → allocates available halls → generates conflict-free seats → provides the final examination and seating information to students.**
-
-### Core System Flow
-
-**Exam Creation → Clash Detection → Time-Aware Hall Allocation → Conflict-Free Seating → Student Information**
+* Passwords are stored as **bcrypt hashes**, never as plain text.
+* **JWT** tokens carry only the user's ID, role and university.
+* Every request is limited to the logged-in user's **own university**.
+* Invigilators can only open, mark and report on **their own duties** (`ownsDuty` middleware).
+* Repeated wrong logins are **temporarily locked**.
+* Resetting a password **ends old sessions**.
+* Find My Seat only returns seat details, never names or other student data.
 
 ---
 
 # ⭐ Project Highlights
 
-ExamMatrix combines **examination scheduling, clash detection, time-aware hall allocation, and conflict-free seating generation** into one examination management workflow.
-
-### 🏠 Home Page
-
-<img src="assets/screenshots/index.png" width="600" height="400">
+### 🏠 Home Page & Find My Seat
+<img src="assets/screenshots/index.png" width="600">
+<br><br>
+<img src="assets/screenshots/findMySeat.png" width="450">
 
 ---
 
-### 🔐 Signup & Login
-
+### 🏛 Register University & Login
 <table>
   <tr>
-    <td align="center">
-      <img src="assets/screenshots/register.png" width="250" height="280">
-    </td>
-    <td align="center">
-      <img src="assets/screenshots/login.png" width="250" height="280">
-    </td>
+    <td align="center"><img src="assets/screenshots/register.png" width="250"><br>Register</td>
+    <td align="center"><img src="assets/screenshots/verifyEmail.png" width="250"><br>Email verified</td>
+    <td align="center"><img src="assets/screenshots/login.png" width="250"><br>Login</td>
   </tr>
 </table>
 
 ---
 
-### 📊 Dashboard
+### 📊 Admin Dashboard
+<img src="assets/screenshots/dashboard.png" width="600">
 
-<img src="assets/screenshots/dashboard.png" width="600" height="500">
+---
+
+### 📤 Upload Data
+<img src="assets/screenshots/upload.png" width="600">
 
 ---
 
 ### 📅 Exam Creation & Hall Allocation
-
-<img src="assets/screenshots/createExam.png" width="600" height="500">
+<img src="assets/screenshots/createExam.png" width="600">
 
 ---
 
 ### 🛡️ Conflict-Free Seating
-
-<img src="assets/screenshots/Seating.png" width="500" height="500">
+<img src="assets/screenshots/Seating.png" width="500">
 
 ---
 
-### 🔎 Find My Seat
+### 👥 Assign Invigilators
+<img src="assets/screenshots/assign.png" width="600">
 
-<img src="assets/screenshots/findMySeat.png" width="450" height="300">
+---
+
+### 📋 Invigilator Dashboard
+<img src="assets/screenshots/invigilatorDashboard.png" width="600">
+
+---
+
+### ✅ Hall Duty: Attendance & Incidents
+<img src="assets/screenshots/hallDuty.png" width="600">
+
+---
+
+### 📊 Exam Reports
+<img src="assets/screenshots/reports.png" width="600">
 
 ---
 
 ### 📅 Timetable
-
-<img src="assets/screenshots/image.png" width="500" height="500">
+<img src="assets/screenshots/image.png" width="500">
 
 ---
 
 # 🔮 Future Improvements
 
-* **🔐 Secure Backend & Database Integration** — Store and manage examinations, students, halls, and seating data securely using a centralized database.
-
-* **🤖 Advanced Automated Exam Scheduling** — Automatically schedule examinations based on subjects, student groups, available halls, and time-slot constraints.
-
-* **🧠 Optimized Seating Algorithms** — Further improve seating allocation using advanced constraint-solving and optimization techniques to maximize conflict-free placements and hall utilization.
-
-* **☁️ Scalable Cloud-Based Deployment** — Deploy ExamMatrix on cloud infrastructure to provide reliable access, scalability, and improved performance.
-
-* **📱 Enhanced Student Experience** — Provide a more personalized student dashboard with examination reminders, hall information, and seating details.
+* **📱 Student Dashboard** — A personal page with each student's timetable, seats and exam reminders.
+* **🧠 Smarter Seating & Assignment** — Backtracking, so a hall left unfilled by an early choice can still be filled.
+* **📧 Duty Notifications** — Email invigilators when a duty is assigned or changed.
+* **📆 Automatic Timetabling** — Suggest dates and slots for all exams at once, with no clashes.
+* **📷 Incident Photos** — Attach a photo to an incident report.
 
 ---
 
 # 👥 Contributors
-
-* **I-Manmeet** — [@I-Manmeet](https://github.com/I-Manmeet)
-
-* **Anupam** — [@Anupamshraddha](https://github.com/Anupamshraddha)
-
-* **Jiya** — [@JiyaJindal3210](https://github.com/JiyaJindal3210)
-
-
+| 🟠 | **Manmeet** — [@I-Manmeet](https://github.com/I-Manmeet) 
+| 🟢 | **Jiya** — [@JiyaJindal3210](https://github.com/JiyaJindal3210) 
+| 🔵 | **Anupam** — [@Anupamshraddha](https://github.com/Anupamshraddha) 
