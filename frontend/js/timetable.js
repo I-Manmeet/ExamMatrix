@@ -26,36 +26,23 @@ var timetableExams = [];
    GET EXAMS FROM LOCAL STORAGE
 ========================================================= */
 
-function getTimetableExams() {
 
-    var exams = [];
 
-    try {
+async function getTimetableExams() {
+    const response = await api("GET", "/exams");
 
-        var raw = localStorage.getItem("em_exams");
-
-        if (raw) {
-
-            var parsed = JSON.parse(raw);
-
-            if (Array.isArray(parsed)) {
-                exams = (typeof getMyExams === "function") ? getMyExams() : parsed;
-
-            }
-
-        }
-
-    } catch (error) {
-
-        console.error("Unable to load exams:", error);
-
-        exams = [];
-
+    // API array return kare toh directly use karo
+    if (Array.isArray(response)) {
+        return response;
     }
 
-    return exams;
-}
+    // API object ke andar exams return kare toh
+    if (response && Array.isArray(response.exams)) {
+        return response.exams;
+    }
 
+    return [];
+}
 
 /* =========================================================
    DATE HELPERS
@@ -1554,133 +1541,68 @@ function setupExport() {
    PAGE STARTUP
 ========================================================= */
 
-function loadTimetable() {
 
-    timetableExams =
-        getTimetableExams();
-
-
-    /* =====================================
-       UPDATE INFO
-    ===================================== */
-
-    var info =
-        document.getElementById(
-            "ttInfo"
-        );
-
+async function loadTimetable() {
+    const info = document.getElementById("ttInfo");
+    const calendar = document.getElementById("calendarContainer");
 
     if (info) {
-
-        if (
-            timetableExams.length
-        ) {
-
-            info.textContent =
-                timetableExams.length +
-                " exam(s) scheduled";
-
-        } else {
-
-            info.textContent =
-                "No exams scheduled yet.";
-
-        }
-
+        info.textContent = "Loading exams...";
     }
 
+    try {
+        timetableExams = await getTimetableExams();
+        timetableExams = sortExams(timetableExams);
 
-    /* =====================================
-       NO EXAMS
-    ===================================== */
+        if (info) {
+            info.textContent = timetableExams.length
+                ? timetableExams.length + " exam(s) scheduled"
+                : "No exams scheduled yet.";
+        }
 
-    if (
-        timetableExams.length === 0
-    ) {
+        if (timetableExams.length === 0) {
+            if (calendar) {
+                calendar.textContent = "";
 
-        var calendar =
-            document.getElementById(
-                "calendarContainer"
-            );
+                const empty = document.createElement("div");
+                empty.className = "ttEmpty";
+                empty.appendChild(
+                    document.createTextNode("No exams scheduled yet. ")
+                );
 
+                const link = document.createElement("a");
+                link.href = "createExam.html";
+                link.textContent = "Create Exam";
+
+                empty.appendChild(link);
+                empty.appendChild(document.createTextNode("."));
+                calendar.appendChild(empty);
+            }
+        } else if (typeof renderCalendar === "function") {
+            renderCalendar(timetableExams);
+        }
+
+        if (typeof detectClashes === "function") {
+            detectClashes(timetableExams);
+        }
+
+        if (typeof setupExport === "function") {
+            setupExport();
+        }
+    } catch (error) {
+        console.error("Timetable API error:", error);
+
+        if (info) {
+            info.textContent = "Unable to load exams.";
+        }
 
         if (calendar) {
-
-            calendar.innerHTML =
-                '<div class="ttEmpty">' +
-                'No exams scheduled yet. ' +
-                '<a href="createExam.html">' +
-                'Create Exam' +
-                '</a>.' +
-                '</div>';
-
+            calendar.textContent =
+                "Could not load exams from the server. " +
+                (error.message || "Please try again.");
         }
-
-
-        setupExport();
-
-        return;
-
     }
-
-
-    /* =====================================
-       SORT DATA
-    ===================================== */
-
-    timetableExams =
-        sortExams(
-            timetableExams
-        );
-
-
-    /* =====================================
-       RENDER CALENDAR
-    ===================================== */
-
-    if (
-        typeof renderCalendar ===
-        "function"
-    ) {
-
-        renderCalendar(
-            timetableExams
-        );
-
-    }
-
-
-    /* =====================================
-       CLASH DETECTION
-    ===================================== */
-
-    if (
-        typeof detectClashes ===
-        "function"
-    ) {
-
-        detectClashes(
-            timetableExams
-        );
-
-    }
-
-
-    /* =====================================
-       EXPORT
-    ===================================== */
-
-    if (
-        typeof setupExport ===
-        "function"
-    ) {
-
-        setupExport();
-
-    }
-
 }
-
 
 /* =========================================================
    LOAD DATA
@@ -1691,9 +1613,11 @@ if (
     "function"
 ) {
 
-    loadExamData(
-        loadTimetable
-    );
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", loadTimetable);
+    } else {
+        loadTimetable();
+    }
 
 } else {
 
