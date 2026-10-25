@@ -428,32 +428,6 @@ document.getElementById("examName").addEventListener("input", updateStatusBar);
 ----------------------------------------------------------- */
 let saving = false;
 
-/* the dashboard (phase 1) still reads em_exams from the browser,
-   so keep a short copy there until it moves to the server */
-function rememberForDashboard(exam) {
-  let list = [];
-  try {
-    list = JSON.parse(localStorage.getItem("em_exams")) || [];
-    if (!Array.isArray(list)) { list = []; }
-  } catch (e) { list = []; }
-
-  list = list.filter(function (e) { return e.id !== exam.examId; });
-  list.push({
-    id: exam.examId,
-    examId: exam.examId,
-    examName: exam.examName,
-    date: exam.date,
-    slot: exam.slot,
-    pickedCourses: exam.subjects,
-    pickedHalls: exam.halls,
-    studentCount: exam.studentCount,
-    conflicts: exam.stats ? exam.stats.conflicts : 0,
-    owner: exam.university,   // dashboard shows exams whose owner = logged-in university
-    createdAt: Date.now()
-  });
-
-  try { localStorage.setItem("em_exams", JSON.stringify(list)); } catch (e) { }
-}
 
 function generateAndSave() {
   if (saving) { return; }   // ignore double clicks
@@ -466,7 +440,6 @@ function generateAndSave() {
 
   api("POST", "/exams", examBody())
     .then(function (exam) {
-      rememberForDashboard(exam);
       window.location.href = "seating.html?examId=" + encodeURIComponent(exam.examId);
     })
     .catch(function (err) {
@@ -498,3 +471,5 @@ adminReady
   .catch(function () {
     setLoadInfo("⚠ Can't check your login. Make sure the backend is running.");
   });
+
+  localStorage.removeItem("em_exams");   // the dashboard reads exams from the server now
