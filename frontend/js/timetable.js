@@ -426,7 +426,6 @@ function createExamCard(exam) {
     ===================================== */
 
     if (
-        examCourses(exam).length &&
         examCourses(exam).length > 0
     ) {
 
@@ -464,7 +463,6 @@ function createExamCard(exam) {
     ===================================== */
 
     if (
-        examHalls(exam).length &&
         examHalls(exam).length > 0
     ) {
 
