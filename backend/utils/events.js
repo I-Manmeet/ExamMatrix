@@ -24,10 +24,15 @@ const ACTIVITY_EVENTS = [
   "duties:cleared",        // { examId, by }
   "duty:changed",          // { examId, hall, position, invId, by }
   "incident:reported",     // { examId, hall, type, by }
-  "invigilators:uploaded"  // { added, updated, by }
+  "invigilators:uploaded", // { added, updated, by }
+  "auth:login",            // { role, university, by }
+  "university:registered", // { universityId, city }
+  "password:reset",        // { universityId }
+  "exam:created",          // { examId, students, halls, by }
+  "exam:deleted"           // { examId, dutiesRemoved, by }
 ];
 
-class ActivityEmitter extends EventEmitter {}
+class ActivityEmitter extends EventEmitter { }
 const activity = new ActivityEmitter();
 
 // 2026-10-27T04:42:00.000Z  incident:reported     {"examId":"EXM-0001-0001",...}

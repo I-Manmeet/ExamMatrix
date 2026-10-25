@@ -8,7 +8,7 @@ const limiter = require("../utils/loginLimiter");
 const { activity } = require("../utils/events");
 const { AppError } = require("../middleware/errorHandler");
 
-const router = express. Router();
+const router = express.Router();
 
 // compared against when the account doesn't exist, so a wrong email
 // takes as long as a wrong password (nobody can time which emails exist)
@@ -102,10 +102,11 @@ router.post("/login", async (req, res) => {
   const university = role === "admin" ? account.universityId : account.university;
   const token = signToken({ id: account._id, role, university });
 
+  // IDs only: never passwords, tokens or emails
   activity.emit("auth:login", {
     role,
     university,
-    who: role === "admin" ? account.email : account.invId
+    by: role === "admin" ? account.universityId : account.invId
   });
 
   res.json({ data: { token, expiresIn: 8 * 60 * 60, user: profileOf(account, role) } });
