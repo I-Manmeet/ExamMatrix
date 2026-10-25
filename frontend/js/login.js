@@ -27,6 +27,16 @@ document.addEventListener("DOMContentLoaded", function () {
     if (btnText) btnText.textContent = on ? "Verifying..." : "Log in";
   }
 
+  // the page to return to after an expired session; only a page in this folder,
+  // e.g. "hallDuty.html?examId=EXM-0001-0001", never another website
+  function safeNext() {
+    let next = new URLSearchParams(window.location.search).get("next") || "";
+    if (!/^[A-Za-z][\w-]*\.html(\?[^#]*)?$/.test(next)) return "";
+    if (next.startsWith("login.html")) return "";
+    return next;
+  }
+
+
   function goToDashboard(user) {
     // phase-1 pages (data.js) still read em_session until they move to the server
     sessionStorage.setItem("em_session", JSON.stringify({
@@ -35,7 +45,8 @@ document.addEventListener("DOMContentLoaded", function () {
       role: user.role,
       university: user.university
     }));
-    window.location.href = user.role === "admin" ? "dashboard.html" : "invigilatorDashboard.html";
+    window.location.href = safeNext() ||
+      (user.role === "admin" ? "dashboard.html" : "invigilatorDashboard.html");
   }
 
   // Toggle show/hide password

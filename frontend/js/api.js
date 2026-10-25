@@ -44,7 +44,9 @@ function api(method, path, body) {
           if (res.status === 401 && token) {
             clearAuthToken();
             if (!location.pathname.endsWith("login.html")) {
-              window.location.href = "login.html?expired=1";
+              // remember this page (e.g. hallDuty.html?examId=...) so login can bring you back
+              let here = location.pathname.split("/").pop() + location.search;
+              window.location.href = "login.html?expired=1&next=" + encodeURIComponent(here);
             }
           }
           if (!res.ok) {
