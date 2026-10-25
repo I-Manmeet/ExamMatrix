@@ -19,6 +19,7 @@ var uploadCounts = {
 var currentTab = "upcoming";
 var selectedExamId = null;
 var dashboardLoading = false;
+var selectedExamRequestId = 0;
 
 document.addEventListener("DOMContentLoaded", initDashboard);
 
@@ -475,18 +476,22 @@ function getLocalDateString() {
    EMPTY DATA NOTICE
 ========================================= */
 
+/* =========================================
+   EMPTY DATA NOTICE
+========================================= */
+
 function renderEmptyDataNotice() {
     var notice = document.getElementById("empty-data-notice");
 
     if (!notice) return;
 
-    var hasUploadedData =
-        uploadCounts.halls > 0 ||
-        uploadCounts.subjects > 0 ||
-        uploadCounts.students > 0 ||
+    var hasRequiredData =
+        uploadCounts.halls > 0 &&
+        uploadCounts.subjects > 0 &&
+        uploadCounts.students > 0 &&
         uploadCounts.invigilators > 0;
 
-    notice.hidden = hasUploadedData;
+    notice.hidden = hasRequiredData;
 }
 
 /* =========================================
@@ -804,9 +809,14 @@ function createExamCard(exam) {
     card.addEventListener("click", function (event) {
         if (event.target.closest("button, a")) return;
 
+        if (examId === null || examId === undefined || examId === "") {
+            showError("This examination does not have a valid exam ID.");
+            return;
+        }
+
         selectedExamId = examId;
         renderExamList();
-        renderSelectedExam();
+        loadSelectedExamDetails(examId);
     });
 
     return card;
@@ -1918,3 +1928,71 @@ function showError(message) {
     errorElement.textContent = message;
     errorElement.hidden = !message;
 }
+
+
+
+/* =========================================
+   LOAD SELECTED EXAM DETAILS
+========================================= */
+
+async function loadSelectedExamDetails(examId) {
+    var requestId = ++selectedExamRequestId;
+
+    var examName = document.getElementById("selected-exam-name");
+    var examDetails = document.getElementById("selected-exam-details");
+    var capacityGrid = document.getElementById("capacity-grid");
+
+    if (!examName || !examDetails || !capacityGrid) return;
+
+    examName.textContent = "Loading…";
+    examDetails.textContent = "Loading…";
+    capacityGrid.replaceChildren(createText("p", "Loading…"));
+
+    showError("");
+
+    try {
+        var response = await api(
+            "GET",
+            "/exams/" + encodeURIComponent(examId)
+        );
+
+        // Ignore a response if another exam was selected meanwhile.
+        if (
+            requestId !== selectedExamRequestId ||
+            String(selectedExamId) !== String(examId)
+        ) {
+            return;
+        }
+
+        var exam = extractObject(response);
+
+        // Support APIs that return the exam inside a data property.
+        if (
+            exam.data &&
+            typeof exam.data === "object" &&
+            !Array.isArray(exam.data)
+        ) {
+            exam = exam.data;
+        }
+
+        // Keep the detailed exam separate from the list response.
+        renderSelectedExamDetails(exam);
+
+    } catch (error) {
+        if (
+            requestId !== selectedExamRequestId ||
+            String(selectedExamId) !== String(examId)
+        ) {
+            return;
+        }
+
+        console.error("Unable to load exam details:", error);
+
+        examName.textContent = "Unable to load examination";
+        examDetails.textContent = "Please try selecting this exam again.";
+        capacityGrid.replaceChildren(
+            createText("p", "Unable to load seating details.")
+        );
+    }
+}
+ 
