@@ -12,8 +12,16 @@ const app = express();
 
 // Middleware
 app.use(helmet());                         // security headers on every reply
+// only our own pages may call the API from a browser
+const allowedOrigins = ["http://localhost:5500", "http://127.0.0.1:5500"];
+try {
+  allowedOrigins.push(new URL(process.env.FRONTEND_URL).origin);   // e.g. https://exammatrix.onrender.com
+} catch (e) {
+  console.warn("FRONTEND_URL is missing or not a full URL, so only localhost pages can call the API");
+}
+
 app.use(cors({
-  origin: true,
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
