@@ -6,4 +6,4 @@
 const API_BASE =
   (location.hostname === "localhost" || location.hostname === "127.0.0.1")
     ? "http://localhost:5001/api"
-    : "https://YOUR-BACKEND.onrender.com/api";   // set this when the backend is deployed
+    : "https://exammatrix-rib5.onrender.com/api/";   // set this when the backend is deployed
