@@ -5,7 +5,7 @@
    (Task 4 will swap the fetch below for the shared api.js helper.)
 ========================================================= */
 
-const API_BASE = "http://localhost:5001/api";
+
 
 let registerForm = document.getElementById("registerForm");
 let registerButton = document.getElementById("registerButton");
